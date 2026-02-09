@@ -1,0 +1,25 @@
+{
+    "name": "HD현대 계장설비 유틸리티",
+    "short_name": "HDO 유틸",
+    "description": "Industrial Instrumentation & Control Utility SPA",
+    "theme_color": "#000000",
+    "background_color": "#000000",
+    "display": "standalone",
+    "scope": "/",
+    "start_url": "/",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/pic/HDO_new.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/pic/HDO_new.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}

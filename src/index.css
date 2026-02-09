@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #121212;
+  --color-card: #1E1E1E;
+  --color-text: #E0E0E0;
+
+  --font-mono: "Fira Code", "Roboto Mono", monospace;
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-text font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
