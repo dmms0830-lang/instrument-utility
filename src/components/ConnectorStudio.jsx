@@ -1,389 +1,319 @@
-import React, { useState, useRef } from 'react';
-import { Layers, Plus, Trash2, Package, Download } from 'lucide-react';
+import React, { useState, useMemo, useRef } from 'react';
+import { Layers, Plus, Trash2, Camera, Download, AlertCircle } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
-const CONNECTOR_TYPES = [
-    { id: 'male', label: 'Male Connector' },
-    { id: 'female', label: 'Female Connector' },
-    { id: 'union_tee', label: 'Union Tee' },
-];
+// ══════════════════════════════════════════════════════════
+// CONSTANTS & CONFIGURATION
+// ══════════════════════════════════════════════════════════
+const THREAD_SIZES = ['1/8"', '1/4"', '3/8"', '1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"'];
+const TUBE_SIZES = ['1/8"', '1/4"', '3/8"', '1/2"', '3/4"', '1"', '6mm', '8mm', '10mm', '12mm'];
+const NIPPLE_TYPES = ['Hex Nipple (Standard)', 'Close Nipple', 'Long (50mm)', 'Long (75mm)', 'Long (100mm)', 'Long (150mm)'];
+const MATERIALS = ['SUS316', 'SUS304', 'Carbon Steel', 'Brass'];
 
-const SIZES_NPT = ['1/8"', '1/4"', '3/8"', '1/2"', '3/4"', '1"'];
-const SIZES_TUBE = ['1/8"', '1/4"', '3/8"', '1/2"', '3/4"', '1"'];
+// Each fitting type has:
+// - label: User-facing name
+// - fields: Array of input configs { id, label, options, prefix? }
+// - generateDescription: Function to create the standardized string
+const FITTING_TYPES = {
+    "male_connector": {
+        label: "Male Connector",
+        fields: [
+            { id: 'threadSize', label: 'Thread Size (NPT)', options: THREAD_SIZES },
+            { id: 'tubeSize', label: 'Tube Size (OD)', options: TUBE_SIZES },
+        ],
+        generateDescription: (v) => `${v.tubeSize} Tube OD × ${v.threadSize} NPT Male Connector`
+    },
+    "female_connector": {
+        label: "Female Connector",
+        fields: [
+            { id: 'threadSize', label: 'Thread Size (NPT)', options: THREAD_SIZES },
+            { id: 'tubeSize', label: 'Tube Size (OD)', options: TUBE_SIZES },
+        ],
+        generateDescription: (v) => `${v.tubeSize} Tube OD × ${v.threadSize} NPT Female Connector`
+    },
+    "union": {
+        label: "Union",
+        fields: [
+            { id: 'side1', label: 'Side 1 Size', options: THREAD_SIZES },
+            { id: 'side2', label: 'Side 2 Size', options: THREAD_SIZES },
+        ],
+        generateDescription: (v) => {
+            return v.side1 === v.side2
+                ? `${v.side1} Union`
+                : `${v.side1} × ${v.side2} Reducing Union`;
+        }
+    },
+    "elbow": {
+        label: "Elbow",
+        fields: [
+            { id: 'side1', label: 'Side 1 Size', options: THREAD_SIZES },
+            { id: 'side2', label: 'Side 2 Size', options: THREAD_SIZES },
+        ],
+        generateDescription: (v) => {
+            return v.side1 === v.side2
+                ? `${v.side1} Elbow`
+                : `${v.side1} × ${v.side2} Reducing Elbow`;
+        }
+    },
+    "tee": {
+        label: "Tee",
+        fields: [
+            { id: 'side1', label: 'Side 1 Size', options: THREAD_SIZES },
+            { id: 'side2', label: 'Side 2 Size', options: THREAD_SIZES },
+            { id: 'side3', label: 'Side 3 Size', options: THREAD_SIZES },
+        ],
+        generateDescription: (v) => {
+            if (v.side1 === v.side2 && v.side2 === v.side3) {
+                return `${v.side1} Tee`;
+            }
+            return `${v.side1} × ${v.side2} × ${v.side3} Reducing Tee`;
+        }
+    },
+    "reducer": {
+        label: "Reducer / Bushing",
+        fields: [
+            { id: 'large', label: 'From (Large Side)', options: THREAD_SIZES },
+            { id: 'small', label: 'To (Small Side)', options: THREAD_SIZES },
+        ],
+        generateDescription: (v) => `${v.large} × ${v.small} Reducer Bushing`
+    },
+    "nipple": {
+        label: "Nipple",
+        fields: [
+            { id: 'type', label: 'Type', options: NIPPLE_TYPES },
+            { id: 'side1', label: 'Side 1 Size', options: THREAD_SIZES },
+            { id: 'side2', label: 'Side 2 Size', options: THREAD_SIZES },
+        ],
+        generateDescription: (v) => {
+            const sizeStr = v.side1 === v.side2 ? v.side1 : `${v.side1} × ${v.side2}`;
+            return `${sizeStr} ${v.type}`;
+        }
+    },
+    "plug": {
+        label: "Plug",
+        fields: [
+            { id: 'size', label: 'Size', options: THREAD_SIZES },
+        ],
+        generateDescription: (v) => `${v.size} Plug`
+    },
+    "cap": {
+        label: "Cap",
+        fields: [
+            { id: 'size', label: 'Size', options: THREAD_SIZES },
+        ],
+        generateDescription: (v) => `${v.size} Cap`
+    },
+};
 
+const FITTING_KEYS = Object.keys(FITTING_TYPES);
+
+// ══════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ══════════════════════════════════════════════════════════
 export default function ConnectorStudio() {
-    const [connectorType, setConnectorType] = useState('male');
-    const [sideA, setSideA] = useState('1/4"');
-    const [sideB, setSideB] = useState('1/4"');
-    const [assemblyList, setAssemblyList] = useState([]);
-    const [isSaving, setIsSaving] = useState(false);
+    const [selectedType, setSelectedType] = useState('');
+    const [fieldValues, setFieldValues] = useState({});
+    const [savedList, setSavedList] = useState([]);
+    const listRef = useRef(null);
 
-    // Ref for the assembly list container
-    const assemblyListRef = useRef(null);
+    // Active configuration based on selection
+    const activeConfig = useMemo(() => {
+        return selectedType ? FITTING_TYPES[selectedType] : null;
+    }, [selectedType]);
 
-    const handleAdd = () => {
-        if (navigator.vibrate) navigator.vibrate(30);
-        const typeLabel = CONNECTOR_TYPES.find(t => t.id === connectorType)?.label || connectorType;
-        const isUnionTee = connectorType === 'union_tee';
+    // Derived description
+    const currentDescription = useMemo(() => {
+        if (!activeConfig) return '';
+        // Check if all required fields are filled
+        const allFilled = activeConfig.fields.every(f => fieldValues[f.id]);
+        if (!allFilled) return '';
+        return activeConfig.generateDescription(fieldValues);
+    }, [activeConfig, fieldValues]);
 
+    // Handlers
+    const handleTypeChange = (e) => {
+        setSelectedType(e.target.value);
+        setFieldValues({}); // Reset fields on type change
+    };
+
+    const handleFieldChange = (id, value) => {
+        setFieldValues(prev => ({ ...prev, [id]: value }));
+    };
+
+    const handleAddToList = () => {
+        if (!currentDescription) return;
         const newItem = {
             id: Date.now(),
-            type: typeLabel,
-            // Union Tee uses sideB for all three ports (same size)
-            sideA: isUnionTee ? sideB : sideA,
-            sideB: sideB,
-            isUnionTee: isUnionTee,
+            type: activeConfig.label,
+            description: currentDescription,
+            timestamp: new Date().toLocaleTimeString()
         };
-        setAssemblyList(prev => [...prev, newItem]);
-    };
-
-    const handleRemove = (id) => {
+        setSavedList(prev => [...prev, newItem]);
+        // Optional: vibrate
         if (navigator.vibrate) navigator.vibrate(30);
-        setAssemblyList(prev => prev.filter(item => item.id !== id));
     };
 
-    const handleClearAll = () => {
-        if (navigator.vibrate) navigator.vibrate(50);
-        setAssemblyList([]);
+    const handleRemoveItem = (id) => {
+        setSavedList(prev => prev.filter(item => item.id !== id));
     };
 
-    // Color mapping for oklch to hex conversion
-    const colorMap = {
-        'bg-card': '#0f172a',
-        'slate-950': '#020617',
-        'slate-900': '#0f172a',
-        'slate-800': '#1e293b',
-        'slate-700': '#334155',
-        'slate-600': '#475569',
-        'slate-500': '#64748b',
-        'slate-400': '#94a3b8',
-        'blue-600': '#2563eb',
-        'blue-400': '#60a5fa',
-        'cyan-400': '#22d3ee',
-        'green-400': '#4ade80',
-        'green-600': '#16a34a',
-        'red-400': '#f87171',
-        'red-900': '#7f1d1d',
-    };
-
-    // Image save function - High-Contrast Table Capture
     const handleSaveImage = async () => {
-        if (assemblyList.length === 0) {
-            alert('저장할 항목이 없습니다');
-            return;
-        }
-
-        setIsSaving(true);
-        if (navigator.vibrate) navigator.vibrate(30);
-
-        console.log('Starting high-contrast table capture...');
-
+        if (!listRef.current || savedList.length === 0) return;
         try {
-            // 1. Create hidden capture container - WHITE BACKGROUND for printing
-            const captureContainer = document.createElement('div');
-            captureContainer.id = 'capture-template';
-            captureContainer.style.cssText = `
-                position: fixed;
-                left: -9999px;
-                top: 0;
-                width: 600px;
-                padding: 24px;
-                background-color: #ffffff;
-                font-family: 'Malgun Gothic', 'Segoe UI', system-ui, sans-serif;
-                color: #000000;
-            `;
-
-            // 2. Create header with Korean title
-            const header = document.createElement('div');
-            header.style.cssText = `
-                text-align: center;
-                margin-bottom: 20px;
-                padding-bottom: 16px;
-                border-bottom: 2px solid #000000;
-            `;
-            header.innerHTML = `
-                <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: bold; color: #000000;">
-                    자재 청구 리스트
-                </h1>
-                <p style="margin: 0; font-size: 14px; color: #666666;">
-                    HD HYUNDAI OILBANK | ${new Date().toLocaleDateString('ko-KR')}
-                </p>
-            `;
-            captureContainer.appendChild(header);
-
-            // 3. Create table
-            const table = document.createElement('table');
-            table.style.cssText = `
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 14px;
-            `;
-
-            // 4. Create table header
-            const thead = document.createElement('thead');
-            thead.innerHTML = `
-                <tr style="background-color: #f0f0f0;">
-                    <th style="padding: 12px 8px; text-align: center; border: 1px solid #000000; color: #000000; font-weight: bold; width: 50px;">
-                        No
-                    </th>
-                    <th style="padding: 12px 8px; text-align: left; border: 1px solid #000000; color: #000000; font-weight: bold;">
-                        종류
-                    </th>
-                    <th style="padding: 12px 8px; text-align: center; border: 1px solid #000000; color: #000000; font-weight: bold;">
-                        상세 규격
-                    </th>
-                </tr>
-            `;
-            table.appendChild(thead);
-
-            // 5. Create table body with data
-            const tbody = document.createElement('tbody');
-            assemblyList.forEach((item, index) => {
-                const row = document.createElement('tr');
-                row.style.cssText = index % 2 === 0
-                    ? 'background-color: #ffffff;'
-                    : 'background-color: #f8f8f8;';
-
-                // Format spec based on type
-                const specText = item.isUnionTee
-                    ? `${item.sideB} (TUBE)`
-                    : `${item.sideA} (NPT) × ${item.sideB} (TUBE)`;
-
-                row.innerHTML = `
-                    <td style="padding: 10px 8px; text-align: center; border: 1px solid #000000; color: #000000; font-weight: bold;">
-                        ${index + 1}
-                    </td>
-                    <td style="padding: 10px 8px; text-align: left; border: 1px solid #000000; color: #000000;">
-                        ${item.type}
-                    </td>
-                    <td style="padding: 10px 8px; text-align: center; border: 1px solid #000000; color: #000000; font-family: monospace;">
-                        ${specText}
-                    </td>
-                `;
-                tbody.appendChild(row);
+            const canvas = await html2canvas(listRef.current, {
+                backgroundColor: '#0f172a', // slate-900
+                scale: 2, // High resolution
             });
-            table.appendChild(tbody);
-            captureContainer.appendChild(table);
-
-            // 6. Add footer
-            const footer = document.createElement('div');
-            footer.style.cssText = `
-                margin-top: 16px;
-                padding-top: 12px;
-                border-top: 1px solid #cccccc;
-                text-align: right;
-                font-size: 12px;
-                color: #666666;
-            `;
-            footer.textContent = `총 ${assemblyList.length}개 항목`;
-            captureContainer.appendChild(footer);
-
-            // 7. Append to body temporarily
-            document.body.appendChild(captureContainer);
-
-            // 8. Wait for render
-            await new Promise(r => setTimeout(r, 100));
-
-            // 9. Capture with html2canvas (simple white table - no oklch!)
-            const canvas = await html2canvas(captureContainer, {
-                backgroundColor: '#ffffff',
-                scale: 2,
-                useCORS: true,
-                logging: false,
-            });
-
-            // 10. Remove capture container
-            document.body.removeChild(captureContainer);
-
-            // 11. Download image
-            const dataUrl = canvas.toDataURL('image/png');
             const link = document.createElement('a');
-            link.download = `Connector_Assembly_${new Date().toISOString().split('T')[0]}.png`;
-            link.href = dataUrl;
-            document.body.appendChild(link);
+            link.download = `fitting-list-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
             link.click();
-            document.body.removeChild(link);
-
-            console.log('High-contrast table capture successful!', canvas.width, 'x', canvas.height);
-
-        } catch (error) {
-            console.error('Capture error:', error);
-            alert('이미지 저장에 실패했습니다.');
-        } finally {
-            setIsSaving(false);
+        } catch (err) {
+            console.error('Image save failed', err);
+            alert('이미지 저장 중 오류가 발생했습니다.');
         }
     };
 
     return (
-        <div className="flex flex-col gap-3 h-full">
+        <div className="flex flex-col gap-4 h-full">
             {/* Header */}
-            <div className="flex items-center gap-2 text-blue-400">
-                <Layers className="w-5 h-5" />
-                <h2 className="text-lg font-bold">Connector Studio</h2>
+            <div className="flex items-center gap-3 shrink-0">
+                <div className="w-10 h-10 bg-lime-500/20 rounded-xl flex items-center justify-center border border-lime-500/30">
+                    <Layers className="w-5 h-5 text-lime-400" />
+                </div>
+                <div>
+                    <h2 className="text-lg font-bold text-white">피팅 자재 선정</h2>
+                    <p className="text-xs text-lime-400/70">Fitting Selector & List Builder</p>
+                </div>
             </div>
 
-            {/* Input Section */}
-            <div className="bg-card rounded-2xl border border-slate-800 p-4 shadow-xl">
-                <div className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-3">
-                    커넥터 설정
-                </div>
+            <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
+                {/* ── SECTION 1: SELECTION ── */}
+                <div className="bg-slate-900/80 rounded-2xl p-4 border border-slate-800 shadow-xl">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">1. 부품 선택</h3>
 
-                {/* Dropdowns Grid */}
-                <div className="grid grid-cols-1 gap-3 mb-4">
-                    {/* Type */}
-                    <div>
-                        <label className="block text-xs text-slate-400 font-bold mb-1">종류 (Type)</label>
+                    {/* Type Selector */}
+                    <div className="mb-4">
+                        <label className="block text-xs text-lime-400 font-bold mb-1 ml-1">부품 종류</label>
                         <select
-                            value={connectorType}
-                            onChange={e => setConnectorType(e.target.value)}
-                            className="w-full h-12 bg-black rounded-xl px-3 font-mono text-base font-bold text-white border border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 outline-none transition-all appearance-none cursor-pointer"
+                            value={selectedType}
+                            onChange={handleTypeChange}
+                            className="w-full h-12 bg-slate-800 rounded-xl px-3 text-base font-bold text-lime-400 border border-lime-500 focus:ring-2 focus:ring-lime-500/50 outline-none appearance-none"
+                            style={{ backgroundImage: 'none' }} // Ensure cross-browser consistency
                         >
-                            {CONNECTOR_TYPES.map(type => (
-                                <option key={type.id} value={type.id}>{type.label}</option>
+                            <option value="" className="text-slate-500">부품을 선택하세요...</option>
+                            {FITTING_KEYS.map(key => (
+                                <option key={key} value={key} className="bg-slate-800 text-lime-400 py-2">
+                                    {FITTING_TYPES[key].label}
+                                </option>
                             ))}
                         </select>
                     </div>
 
-                    {/* Size Dropdowns - Conditional for Union Tee */}
-                    {connectorType === 'union_tee' ? (
-                        // Union Tee: Single dropdown (all three ports same size)
-                        <div>
-                            <label className="block text-xs text-slate-400 font-bold mb-1">튜빙 규격 (3방향 동일)</label>
-                            <select
-                                value={sideB}
-                                onChange={e => setSideB(e.target.value)}
-                                className="w-full h-12 bg-black rounded-xl px-3 font-mono text-base font-bold text-green-400 border border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 outline-none transition-all appearance-none cursor-pointer"
-                            >
-                                {SIZES_TUBE.map(size => (
-                                    <option key={size} value={size}>{size}</option>
-                                ))}
-                            </select>
+                    {/* Dynamic Fields */}
+                    {activeConfig && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                            {activeConfig.fields.map(field => (
+                                <div key={field.id} className="flex flex-col">
+                                    <label className="text-xs text-slate-500 font-bold mb-1 ml-1">{field.label}</label>
+                                    <select
+                                        value={fieldValues[field.id] || ''}
+                                        onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                                        className="w-full h-12 bg-slate-800 rounded-xl px-3 text-base font-bold text-lime-400 border border-lime-500 focus:ring-2 focus:ring-lime-500/50 outline-none appearance-none"
+                                    >
+                                        <option value="" className="text-slate-500">선택...</option>
+                                        {field.options.map(opt => (
+                                            <option key={opt} value={opt} className="bg-slate-800 text-lime-400">
+                                                {opt}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ))}
                         </div>
-                    ) : (
-                        // Male/Female Connector: Two dropdowns
-                        <div className="grid grid-cols-2 gap-3">
-                            {/* Side A - NPT */}
-                            <div>
-                                <label className="block text-xs text-slate-400 font-bold mb-1">규격 1 (NPT)</label>
-                                <select
-                                    value={sideA}
-                                    onChange={e => setSideA(e.target.value)}
-                                    className="w-full h-12 bg-black rounded-xl px-3 font-mono text-base font-bold text-cyan-400 border border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 outline-none transition-all appearance-none cursor-pointer"
-                                >
-                                    {SIZES_NPT.map(size => (
-                                        <option key={size} value={size}>{size}</option>
-                                    ))}
-                                </select>
-                            </div>
+                    )}
 
-                            {/* Side B - Tube */}
-                            <div>
-                                <label className="block text-xs text-slate-400 font-bold mb-1">규격 2 (Tube OD)</label>
-                                <select
-                                    value={sideB}
-                                    onChange={e => setSideB(e.target.value)}
-                                    className="w-full h-12 bg-black rounded-xl px-3 font-mono text-base font-bold text-green-400 border border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 outline-none transition-all appearance-none cursor-pointer"
-                                >
-                                    {SIZES_TUBE.map(size => (
-                                        <option key={size} value={size}>{size}</option>
-                                    ))}
-                                </select>
-                            </div>
+                    {/* Add to List Button */}
+                    <button
+                        onClick={handleAddToList}
+                        disabled={!currentDescription}
+                        className={`w-full mt-4 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 ${currentDescription
+                                ? 'bg-lime-500 text-slate-900 hover:bg-lime-400 shadow-lg shadow-lime-500/20'
+                                : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+                            }`}
+                    >
+                        <Plus className="w-5 h-5" />
+                        {currentDescription ? '리스트에 추가 (Add to List)' : '옵션을 모두 선택하세요'}
+                    </button>
+
+                    {/* Live Preview */}
+                    {currentDescription && (
+                        <div className="mt-3 p-3 bg-slate-950/50 rounded-lg border border-slate-800 text-center">
+                            <span className="text-xs text-slate-500 block mb-1">PREVIEW</span>
+                            <span className="text-lime-300 font-mono font-bold">{currentDescription}</span>
                         </div>
                     )}
                 </div>
 
-                {/* Add Button */}
-                <button
-                    onClick={handleAdd}
-                    className="w-full h-12 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] touch-manipulation shadow-lg shadow-blue-900/50"
-                >
-                    <Plus className="w-5 h-5" />
-                    추가하기
-                </button>
-            </div>
-
-            {/* Assembly List Section - Inline styles for html2canvas compatibility */}
-            <div
-                ref={assemblyListRef}
-                className="bg-card rounded-2xl border border-slate-800 p-4 shadow-xl flex-1 min-h-[200px] overflow-auto"
-                style={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#ffffff' }}
-            >
-                <div className="flex items-center justify-between mb-3">
-                    <div className="text-xs text-slate-500 font-bold uppercase tracking-wider">
-                        Assembly List ({assemblyList.length})
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {/* Save Image Button */}
-                        <button
-                            onClick={handleSaveImage}
-                            disabled={assemblyList.length === 0 || isSaving}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 ${assemblyList.length === 0
-                                ? 'bg-slate-800 text-slate-600 cursor-not-allowed'
-                                : 'bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/30'
-                                }`}
-                        >
-                            <Download className="w-3.5 h-3.5" />
-                            {isSaving ? '저장 중...' : '이미지 저장'}
-                        </button>
-
-                        {/* Clear All Button */}
-                        {assemblyList.length > 0 && (
+                {/* ── SECTION 2: SAVED LIST ── */}
+                <div className="flex-1 bg-slate-900/80 rounded-2xl p-4 border border-slate-800 shadow-xl flex flex-col min-h-[200px]">
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                            2. 자재 목록 <span className="bg-lime-500/20 text-lime-400 px-2 py-0.5 rounded-full text-[10px]">{savedList.length}</span>
+                        </h3>
+                        {savedList.length > 0 && (
                             <button
-                                onClick={handleClearAll}
-                                className="text-xs text-red-400 hover:text-red-300 font-bold px-2 py-1 rounded-lg hover:bg-red-900/30 transition-all"
+                                onClick={handleSaveImage}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-lime-400 text-xs font-bold rounded-lg border border-slate-700 transition-colors"
                             >
-                                전체 삭제
+                                <Camera className="w-3.5 h-3.5" />
+                                <span>이미지 저장</span>
                             </button>
                         )}
                     </div>
-                </div>
 
-                {assemblyList.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-32 text-slate-600">
-                        <Package className="w-12 h-12 mb-2 opacity-50" />
-                        <p className="text-sm font-bold">커넥터를 추가해주세요</p>
-                        <p className="text-xs text-slate-500 mt-1">↑ 상단에서 종류와 규격을 선택하세요</p>
-                    </div>
-                ) : (
-                    <div className="flex flex-col gap-2">
-                        {assemblyList.map((item, index) => (
-                            <div
-                                key={item.id}
-                                className="bg-black/50 rounded-xl border border-slate-700 p-3 flex items-center gap-3 hover:border-slate-600 transition-all"
-                            >
-                                {/* Index Badge */}
-                                <div className="w-8 h-8 bg-blue-600/20 rounded-lg flex items-center justify-center text-blue-400 font-bold text-sm flex-shrink-0">
-                                    {index + 1}
-                                </div>
-
-                                {/* Image Placeholder */}
-                                <div className="w-16 h-12 bg-slate-800 rounded-lg flex items-center justify-center flex-shrink-0 border border-slate-700">
-                                    <Package className="w-6 h-6 text-slate-600" />
-                                </div>
-
-                                {/* Info */}
-                                <div className="flex-1 min-w-0">
-                                    <div className="text-sm font-bold text-white truncate">{item.type}</div>
-                                    <div className="text-xs text-slate-400 font-mono">
-                                        <span className="text-cyan-400">{item.sideA}</span>
-                                        <span className="text-slate-600 mx-1">×</span>
-                                        <span className="text-green-400">{item.sideB}</span>
-                                    </div>
-                                </div>
-
-                                {/* Remove Button - Ignored in capture */}
-                                <button
-                                    onClick={() => handleRemove(item.id)}
-                                    data-ignore-capture="true"
-                                    className="w-8 h-8 bg-red-900/30 hover:bg-red-900/50 rounded-lg flex items-center justify-center text-red-400 transition-all active:scale-95 flex-shrink-0"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
+                    <div
+                        ref={listRef}
+                        className="flex-1 flex flex-col gap-2 p-2 bg-slate-900/50 rounded-xl border border-slate-800/50 min-h-[150px]"
+                    >
+                        {savedList.length === 0 ? (
+                            <div className="flex-1 flex flex-col items-center justify-center text-slate-600 opacity-50">
+                                <AlertCircle className="w-12 h-12 mb-2" />
+                                <p className="text-sm font-bold">리스트가 비어있습니다</p>
                             </div>
-                        ))}
+                        ) : (
+                            savedList.map((item, index) => (
+                                <div
+                                    key={item.id}
+                                    className="flex items-center justify-between bg-slate-800 p-3 rounded-lg border border-slate-700 group hover:border-lime-500/50 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <span className="w-6 h-6 flex items-center justify-center bg-slate-900 text-slate-500 text-xs font-bold rounded-full">
+                                            {index + 1}
+                                        </span>
+                                        <div>
+                                            <p className="text-xs text-slate-500 font-bold mb-0.5">{item.type}</p>
+                                            <p className="text-sm text-white font-mono font-bold leading-tight">{item.description}</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => handleRemoveItem(item.id)}
+                                        className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ))
+                        )}
+                        {/* Timestamp for screenshot */}
+                        {savedList.length > 0 && (
+                            <div className="mt-4 pt-2 border-t border-slate-800 flex justify-between items-center text-[10px] text-slate-600">
+                                <span>Instrument Fitting List</span>
+                                <span>{new Date().toLocaleString()}</span>
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );
