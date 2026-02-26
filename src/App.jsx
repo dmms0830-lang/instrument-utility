@@ -9,6 +9,7 @@ import LoopTest from './components/LoopTest';
 import ConnectorStudio from './components/ConnectorStudio';
 import GasketBoltCalc from './components/GasketBoltCalc';
 import TransmitterAlarmFinder from './components/TransmitterAlarmFinder';
+import InstallButton from './components/InstallButton';
 import { Activity, Database, Thermometer, Gauge, Cpu, Waves, Menu, ChevronDown, Check, Zap, Layers, Cog, ShieldAlert } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -137,6 +138,9 @@ function App() {
           <ActiveComponent />
         </div>
       </main>
+
+      {/* PWA 설치 버튼 (플로팅) */}
+      <InstallButton />
     </div>
   );
 }
