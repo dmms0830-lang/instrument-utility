@@ -8,7 +8,8 @@ import UnitConverter from './components/UnitConverter';
 import LoopTest from './components/LoopTest';
 import ConnectorStudio from './components/ConnectorStudio';
 import GasketBoltCalc from './components/GasketBoltCalc';
-import { Activity, Database, Thermometer, Gauge, Cpu, Waves, Menu, ChevronDown, Check, Zap, Layers, Cog } from 'lucide-react';
+import TransmitterAlarmFinder from './components/TransmitterAlarmFinder';
+import { Activity, Database, Thermometer, Gauge, Cpu, Waves, Menu, ChevronDown, Check, Zap, Layers, Cog, ShieldAlert } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -30,6 +31,7 @@ const TABS = [
   { id: 'gasket', label: 'Gasket/Bolt', icon: Cog, component: GasketBoltCalc },
   { id: 'unit', label: 'Converter', icon: Gauge, component: UnitConverter },
   { id: 'transmitter', label: 'Transmitter DB', icon: Database, component: TransmitterDatabase },
+  { id: 'alarm', label: 'Alarm Finder', icon: ShieldAlert, component: TransmitterAlarmFinder },
 ];
 
 function App() {
@@ -130,7 +132,7 @@ function App() {
       </header>
 
       {/* Main Content Area - Full Height */}
-      <main className="flex-1 overflow-auto px-4 py-4 max-w-3xl mx-auto w-full">
+      <main className="flex-1 overflow-auto px-4 py-4 w-full">
         <div className="h-full animate-in fade-in slide-in-from-bottom-2 duration-300">
           <ActiveComponent />
         </div>
