@@ -12,25 +12,18 @@ const isInStandaloneMode = () =>
     window.matchMedia('(display-mode: standalone)').matches ||
     window.navigator.standalone === true;
 
-export default function InstallButton() {
+export default function InstallButton({ className = '' }) {
     const [deferredPrompt, setDeferredPrompt] = useState(null);
-    const [isInstalled, setIsInstalled] = useState(isInStandaloneMode());
     const [showIosGuide, setShowIosGuide] = useState(false);
+    const [showFallback, setShowFallback] = useState(false);
 
     useEffect(() => {
-        // 이미 standalone 모드이면 아무것도 안 함
-        if (isInStandaloneMode()) {
-            setIsInstalled(true);
-            return;
-        }
-
         const handleBeforeInstall = (e) => {
             e.preventDefault();
             setDeferredPrompt(e);
         };
 
         const handleAppInstalled = () => {
-            setIsInstalled(true);
             setDeferredPrompt(null);
         };
 
@@ -43,6 +36,13 @@ export default function InstallButton() {
         };
     }, []);
 
+    // 폴백 토스트 자동 닫기
+    useEffect(() => {
+        if (!showFallback) return;
+        const timer = setTimeout(() => setShowFallback(false), 4000);
+        return () => clearTimeout(timer);
+    }, [showFallback]);
+
     const handleInstallClick = useCallback(async () => {
         // iOS: 안내 모달 표시
         if (isIos()) {
@@ -51,36 +51,58 @@ export default function InstallButton() {
         }
 
         // 크롬/엣지 등: 설치 프롬프트 실행
-        if (!deferredPrompt) return;
-
-        try {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            console.log('[Install]', outcome);
-        } catch (err) {
-            console.error('[Install] error:', err);
-        } finally {
-            setDeferredPrompt(null);
+        if (deferredPrompt) {
+            try {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log('[Install]', outcome);
+            } catch (err) {
+                console.error('[Install] error:', err);
+            } finally {
+                setDeferredPrompt(null);
+            }
+            return;
         }
+
+        // deferredPrompt 없음 → 폴백 안내
+        setShowFallback(true);
     }, [deferredPrompt]);
-
-    // 설치 완료 상태면 버튼 숨김
-    if (isInstalled) return null;
-
-    // iOS도 아니고 beforeinstallprompt도 아직 안 온 경우 → iOS면 보여주고, 아니면 숨김
-    if (!deferredPrompt && !isIos()) return null;
 
     return (
         <>
-            {/* 플로팅 설치 버튼 */}
+            {/* 인라인 설치 버튼 (항상 표시) */}
             <button
                 id="pwa-install-btn"
                 onClick={handleInstallClick}
-                className="fixed bottom-6 right-6 z-[999] flex items-center gap-2 px-5 py-3 bg-lime-500 text-slate-950 font-bold text-sm rounded-xl shadow-lg shadow-lime-500/30 transition-all duration-200 hover:bg-lime-400 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-lime-400/40 active:scale-95 active:translate-y-0 touch-manipulation"
+                className={className}
+                aria-label="앱 설치"
             >
-                <Download className="w-5 h-5" />
-                <span>앱 설치</span>
+                <Download className="w-[18px] h-[18px]" />
+                <span className="hidden sm:inline">설치</span>
             </button>
+
+            {/* 폴백 안내 토스트 */}
+            {showFallback && (
+                <div className="fixed bottom-6 left-4 right-4 z-[1000] flex justify-center animate-in slide-in-from-bottom-4 fade-in duration-300">
+                    <div className="w-full max-w-md bg-slate-800/95 backdrop-blur-xl border border-slate-600 rounded-2xl shadow-2xl p-4 flex items-start gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-lime-500/15 flex items-center justify-center mt-0.5">
+                            <Download className="w-4 h-4 text-lime-400" />
+                        </div>
+                        <p className="flex-1 text-sm text-slate-300 leading-relaxed">
+                            이미 설치되었거나 지원하지 않는 브라우저입니다.
+                            <br />
+                            <span className="text-lime-400 font-semibold">아이폰</span>은 공유 버튼을 통해 홈 화면에 추가해주세요.
+                        </p>
+                        <button
+                            onClick={() => setShowFallback(false)}
+                            className="flex-shrink-0 p-1 text-slate-500 hover:text-white transition-colors"
+                            aria-label="닫기"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* iOS 안내 모달 */}
             {showIosGuide && (
@@ -89,7 +111,7 @@ export default function InstallButton() {
                     onClick={() => setShowIosGuide(false)}
                 >
                     <div
-                        className="w-full max-w-md mx-4 mb-8 bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-4 duration-300"
+                        className="w-full max-w-md mx-4 mb-8 bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-4 duration-300 relative"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* 닫기 버튼 */}

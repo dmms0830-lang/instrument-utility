@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['pic/favicon.png', 'pic/HDO_new.png'],
       workbox: {
         // Skip waiting and claim clients immediately

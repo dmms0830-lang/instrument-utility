@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import LevelTransmitter from './components/LevelTransmitter';
 import ValtekDiagnosis from './components/ValtekDiagnosis';
 import TransmitterDatabase from './components/TransmitterDatabase';
@@ -10,7 +10,8 @@ import ConnectorStudio from './components/ConnectorStudio';
 import GasketBoltCalc from './components/GasketBoltCalc';
 import TransmitterAlarmFinder from './components/TransmitterAlarmFinder';
 import InstallButton from './components/InstallButton';
-import { Activity, Database, Thermometer, Gauge, Cpu, Waves, Menu, ChevronDown, Check, Zap, Layers, Cog, ShieldAlert } from 'lucide-react';
+import UpdateToast, { checkForUpdate } from './components/UpdateToast';
+import { Activity, Database, Thermometer, Gauge, Cpu, Waves, Menu, ChevronDown, Check, Zap, Layers, Cog, ShieldAlert, RefreshCw } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -38,6 +39,19 @@ const TABS = [
 function App() {
   const [activeTab, setActiveTab] = useState('lt');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleManualRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await checkForUpdate();
+    } catch (err) {
+      console.error('[Refresh] error:', err);
+    } finally {
+      // 스피너를 잠깐 보여주기 위해 최소 800ms 유지
+      setTimeout(() => setIsRefreshing(false), 800);
+    }
+  }, []);
 
   const ActiveComponent = TABS.find(t => t.id === activeTab)?.component || LevelTransmitter;
   const activeTabData = TABS.find(t => t.id === activeTab);
@@ -80,10 +94,26 @@ function App() {
           )} />
         </button>
 
-        {/* HD Hyundai Oilbank Logo - Integrated Pure White */}
+        {/* 수동 새로고침 버튼 */}
+        <button
+          onClick={handleManualRefresh}
+          disabled={isRefreshing}
+          className={cn(
+            "ml-auto h-10 w-10 flex items-center justify-center rounded-xl transition-all duration-200 touch-manipulation",
+            "bg-slate-800/60 border border-slate-700 text-slate-400",
+            "hover:bg-slate-700 hover:border-lime-500/50 hover:text-lime-400",
+            "active:scale-90",
+            isRefreshing && "border-lime-500/50 text-lime-400"
+          )}
+          aria-label="업데이트 확인"
+        >
+          <RefreshCw className={cn("w-[18px] h-[18px]", isRefreshing && "animate-spin")} />
+        </button>
+
+        {/* HD Hyundai Oilbank Logo */}
         <button
           onClick={() => setActiveTab('lt')}
-          className="h-full flex items-center px-2 hover:opacity-80 transition-opacity ml-auto"
+          className="h-full flex items-center px-2 hover:opacity-80 transition-opacity ml-2"
           aria-label="Go to Home"
         >
           <img
@@ -141,6 +171,9 @@ function App() {
 
       {/* PWA 설치 버튼 (플로팅) */}
       <InstallButton />
+
+      {/* SW 업데이트 토스트 */}
+      <UpdateToast />
     </div>
   );
 }
