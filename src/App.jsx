@@ -10,7 +10,9 @@ import ConnectorStudio from './components/ConnectorStudio';
 import GasketBoltCalc from './components/GasketBoltCalc';
 import TransmitterAlarmFinder from './components/TransmitterAlarmFinder';
 import InstallButton from './components/InstallButton';
+import InstallGuide from './components/InstallGuide';
 import UpdateToast, { checkForUpdate } from './components/UpdateToast';
+import { version as appVersion } from '../package.json';
 import { Activity, Database, Thermometer, Gauge, Cpu, Waves, Menu, ChevronDown, Check, Zap, Layers, Cog, ShieldAlert, RefreshCw } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -40,15 +42,34 @@ function App() {
   const [activeTab, setActiveTab] = useState('lt');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showStatusMessage, setShowStatusMessage] = useState(false);
 
   const handleManualRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      await checkForUpdate();
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.getRegistration();
+
+        await checkForUpdate();
+
+        // checkForUpdate 이후에 새로운 워커가 설치 대기 중인지 확인
+        if (registration && registration.waiting) {
+          // 업데이트가 있으면 새로고침 (기존 로직)
+          window.location.reload();
+        } else {
+          // 업데이트가 없으면 상태 메시지 표시
+          setShowStatusMessage(true);
+          setTimeout(() => setShowStatusMessage(false), 3000);
+        }
+      } else {
+        await checkForUpdate();
+        window.location.reload();
+      }
     } catch (err) {
       console.error('[Refresh] error:', err);
+      // 에러 시에도 기본적으로는 새로고침 시도
+      window.location.reload();
     } finally {
-      // 스피너를 잠깐 보여주기 위해 최소 800ms 유지
       setTimeout(() => setIsRefreshing(false), 800);
     }
   }, []);
@@ -63,65 +84,76 @@ function App() {
 
   return (
     <div className="h-screen bg-slate-950 text-white font-sans selection:bg-blue-500/30 overflow-hidden flex flex-col">
-      {/* Header with Title Dropdown and Logo */}
-      <header className="h-14 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 flex items-center px-4 shadow-xl flex-shrink-0 z-50 relative">
-        {/* Title Dropdown Button - Pill-shaped Design */}
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className={cn(
-            "flex items-center gap-3 px-4 py-2 rounded-full transition-all duration-200",
-            "bg-slate-800/80 border border-slate-600 shadow-lg",
-            "hover:bg-slate-700 hover:border-cyan-500 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-cyan-500/20",
-            "active:scale-95 active:translate-y-0 touch-manipulation",
-            isMenuOpen && "bg-slate-700 border-cyan-500 shadow-xl shadow-cyan-500/20"
-          )}
-        >
-          {/* Menu Icon */}
-          <Menu className="w-5 h-5 text-cyan-400" />
+      {/* Header with Menu Left, Controls & Logo Right */}
+      <header className="h-14 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 flex items-center justify-between px-4 shadow-xl flex-shrink-0 z-50 relative gap-2">
+        {/* Left: Menu Dropdown */}
+        <div className="flex items-center h-full flex-shrink-0">
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className={cn(
+              "flex items-center gap-2 h-10 px-3 sm:px-4 rounded-xl transition-all duration-200",
+              "bg-slate-800 border border-slate-700 shadow-lg",
+              "hover:bg-slate-700 hover:border-cyan-500 hover:-translate-y-0.5",
+              "active:scale-95 active:translate-y-0 touch-manipulation shrink-0",
+              isMenuOpen && "bg-slate-700 border-cyan-500"
+            )}
+          >
+            <Menu className="w-[18px] h-[18px] sm:w-5 sm:h-5 text-cyan-400" />
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm font-bold tracking-tight text-white">
+                메뉴
+              </span>
+            </div>
+            <ChevronDown className={cn(
+              "w-4 h-4 sm:w-5 sm:h-5 text-slate-400 transition-all duration-300",
+              isMenuOpen ? "rotate-180 text-cyan-400" : ""
+            )} />
+          </button>
+        </div>
 
-          {/* Tab Icon and Name */}
-          <div className="flex items-center gap-2">
-            {activeTabData && <activeTabData.icon className="w-5 h-5 text-blue-400" />}
-            <span className="text-sm font-bold tracking-tight text-white">
-              {activeTabData?.label || 'Industrial Utility'}
-            </span>
-          </div>
-
-          {/* Chevron with rotation animation */}
-          <ChevronDown className={cn(
-            "w-5 h-5 text-slate-400 transition-all duration-300",
-            isMenuOpen ? "rotate-180 text-cyan-400" : ""
-          )} />
-        </button>
-
-        {/* 수동 새로고침 버튼 */}
-        <button
-          onClick={handleManualRefresh}
-          disabled={isRefreshing}
-          className={cn(
-            "ml-auto h-10 w-10 flex items-center justify-center rounded-xl transition-all duration-200 touch-manipulation",
-            "bg-slate-800/60 border border-slate-700 text-slate-400",
-            "hover:bg-slate-700 hover:border-lime-500/50 hover:text-lime-400",
-            "active:scale-90",
-            isRefreshing && "border-lime-500/50 text-lime-400"
-          )}
-          aria-label="업데이트 확인"
-        >
-          <RefreshCw className={cn("w-[18px] h-[18px]", isRefreshing && "animate-spin")} />
-        </button>
-
-        {/* HD Hyundai Oilbank Logo */}
-        <button
-          onClick={() => setActiveTab('lt')}
-          className="h-full flex items-center px-2 hover:opacity-80 transition-opacity ml-2"
-          aria-label="Go to Home"
-        >
-          <img
-            src="/pic/HDO_new.png"
-            alt="HD현대오일뱅크"
-            className="h-full max-h-[28px] w-auto object-contain"
+        {/* Right: Controls & Logo Container */}
+        <div className="flex items-center justify-end gap-2 h-full flex-1 min-w-0 pl-2">
+          {/* App Install Button */}
+          <InstallButton
+            onClick={() => setActiveTab('install-guide')}
+            className={cn(
+              "flex items-center justify-center gap-1.5 h-10 px-3 sm:px-4 rounded-xl transition-all duration-200 touch-manipulation shrink-0",
+              "bg-slate-800 border border-lime-500/50 text-lime-400 shadow-lg font-bold text-xs sm:text-sm whitespace-nowrap",
+              "hover:bg-lime-500 hover:text-slate-950 hover:border-lime-500 hover:-translate-y-0.5",
+              "active:scale-95 active:translate-y-0"
+            )}
           />
-        </button>
+
+          {/* Manual Refresh Button */}
+          <button
+            onClick={handleManualRefresh}
+            disabled={isRefreshing}
+            className={cn(
+              "flex shrink-0 items-center justify-center gap-1.5 h-10 px-3 rounded-xl transition-all duration-200 touch-manipulation",
+              "bg-slate-800 border border-slate-700 text-lime-400 shadow-lg font-bold text-xs sm:text-sm whitespace-nowrap",
+              "hover:bg-slate-700 hover:border-lime-500/50 hover:-translate-y-0.5",
+              "active:scale-95 active:translate-y-0",
+              isRefreshing && "border-lime-500/50 opacity-80"
+            )}
+            aria-label="업데이트"
+          >
+            <RefreshCw className={cn("w-[16px] h-[16px] sm:w-[18px] sm:h-[18px]", isRefreshing && "animate-spin")} />
+            업데이트
+          </button>
+
+          {/* HD Hyundai Oilbank Logo */}
+          <button
+            onClick={() => setActiveTab('lt')}
+            className="h-full py-3 flex items-center justify-end hover:opacity-80 transition-opacity shrink min-w-[60px]"
+            aria-label="Go to Home"
+          >
+            <img
+              src="/pic/HDO_new.png"
+              alt="HD현대오일뱅크"
+              className="h-full w-auto object-contain max-w-full object-right"
+            />
+          </button>
+        </div>
 
         {/* Global Dropdown Menu Overlay */}
         {isMenuOpen && (
@@ -165,15 +197,28 @@ function App() {
       {/* Main Content Area - Full Height */}
       <main className="flex-1 overflow-auto px-4 py-4 w-full">
         <div className="h-full animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <ActiveComponent />
+          {activeTab === 'install-guide' ? (
+            <InstallGuide setActiveTab={setActiveTab} />
+          ) : (
+            <ActiveComponent />
+          )}
         </div>
       </main>
 
-      {/* PWA 설치 버튼 (플로팅) */}
-      <InstallButton />
+      {/* PWA 설치 버튼 (플로팅)이었던 자리 - 제거됨 (이제 헤더 내부에 렌더링됨) */}
 
       {/* SW 업데이트 토스트 */}
       <UpdateToast />
+
+      {/* 최신 버전 확인 토스트 */}
+      {showStatusMessage && (
+        <div className="fixed bottom-20 left-4 right-4 z-[998] flex justify-center animate-in slide-in-from-bottom-4 fade-in duration-300">
+          <div className="bg-slate-800 text-lime-400 border border-lime-500/30 rounded-xl px-4 py-3 shadow-lg flex items-center gap-2">
+            <Check className="w-4 h-4" />
+            <span className="text-sm font-medium">이미 최신 버전(v{appVersion})을 사용 중입니다</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

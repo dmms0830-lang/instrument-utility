@@ -1,11 +1,43 @@
 import React, { useState, useMemo } from 'react';
-import { Activity, Zap, BarChart3, Cpu, RotateCcw } from 'lucide-react';
+import { Activity, Zap, BarChart3, Cpu, RotateCcw, Copy, Check } from 'lucide-react';
 
 export default function LoopTest() {
     const [mA, setMA] = useState('12');
     const [pct, setPct] = useState('50');
     const [mode, setMode] = useState('linear');
     const [activeField, setActiveField] = useState(null);
+
+    // Flow MA Calculator state
+    const [flowLrv, setFlowLrv] = useState('');
+    const [flowUrv, setFlowUrv] = useState('');
+    const [targetFlow, setTargetFlow] = useState('');
+    const [calculatedMa, setCalculatedMa] = useState(null);
+    const [isCopied, setIsCopied] = useState(false);
+
+    const handleCalculateMa = () => {
+        const lrv = parseFloat(flowLrv);
+        const urv = parseFloat(flowUrv);
+        const target = parseFloat(targetFlow);
+
+        if (isNaN(lrv) || isNaN(urv) || isNaN(target) || (urv - lrv) === 0) {
+            setCalculatedMa('error');
+            setTimeout(() => setCalculatedMa(null), 2000);
+            return;
+        }
+
+        const p = (target - lrv) / (urv - lrv);
+        const ma = (Math.pow(p, 2) * 16) + 4;
+        setCalculatedMa(ma.toFixed(2));
+    };
+
+    const handleCopyMa = () => {
+        if (calculatedMa && calculatedMa !== 'error') {
+            navigator.clipboard.writeText(calculatedMa);
+            if (navigator.vibrate) navigator.vibrate(30);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
+        }
+    };
 
     // Conversion functions
     const maToPct = (maValue, isLinear) => {
@@ -96,6 +128,75 @@ export default function LoopTest() {
                     Square Root
                 </button>
             </div>
+
+            {/* 유량 기반 mA 역계산 (Square Root 모드일 때만 표시) */}
+            {mode === 'sqrt' && (
+                <div className="bg-card rounded-2xl border border-slate-800 p-3 shadow-xl flex flex-col gap-2">
+                    {/* 첫 번째 줄: LRV, URV */}
+                    <div className="flex gap-2 items-stretch">
+                        <div className="flex-1 rounded-xl bg-slate-800 border border-slate-700 flex flex-col p-1.5 focus-within:border-lime-500 focus-within:ring-1 focus-within:ring-lime-500/50 transition-all">
+                            <span className="text-[10px] text-slate-400 font-bold px-1 mb-0.5">LRV</span>
+                            <input
+                                type="number"
+                                placeholder="0"
+                                value={flowLrv}
+                                onChange={(e) => setFlowLrv(e.target.value)}
+                                className="w-full bg-transparent text-lime-400 text-sm font-bold px-1 outline-none placeholder:text-slate-600"
+                            />
+                        </div>
+                        <div className="flex-1 rounded-xl bg-slate-800 border border-slate-700 flex flex-col p-1.5 focus-within:border-lime-500 focus-within:ring-1 focus-within:ring-lime-500/50 transition-all">
+                            <span className="text-[10px] text-slate-400 font-bold px-1 mb-0.5">URV</span>
+                            <input
+                                type="number"
+                                placeholder="100"
+                                value={flowUrv}
+                                onChange={(e) => setFlowUrv(e.target.value)}
+                                className="w-full bg-transparent text-lime-400 text-sm font-bold px-1 outline-none placeholder:text-slate-600"
+                            />
+                        </div>
+                    </div>
+                    {/* 두 번째 줄: Target, 계산 버튼, 결과(복사 포함) */}
+                    <div className="flex gap-2 items-stretch min-h-[52px]">
+                        <div className="flex-[1.2] rounded-xl bg-slate-800 border border-slate-700 flex flex-col justify-center p-1.5 focus-within:border-lime-500 focus-within:ring-1 focus-within:ring-lime-500/50 transition-all">
+                            <span className="text-[10px] text-slate-400 font-bold px-1 mb-0.5">Target</span>
+                            <input
+                                type="number"
+                                placeholder="Flow"
+                                value={targetFlow}
+                                onChange={(e) => setTargetFlow(e.target.value)}
+                                className="w-full bg-transparent text-lime-400 text-sm font-bold px-1 outline-none placeholder:text-slate-600"
+                            />
+                        </div>
+                        <button
+                            onClick={handleCalculateMa}
+                            className="flex-1 bg-lime-500 text-slate-950 rounded-xl text-[13px] font-black active:scale-[0.98] hover:scale-[1.02] transition-all hover:bg-lime-400 shadow-[0_0_15px_rgba(132,204,22,0.15)] flex items-center justify-center"
+                        >
+                            계산
+                        </button>
+                        <div className="flex-[1.2] bg-slate-800 rounded-xl flex items-center justify-center border border-slate-700 relative overflow-hidden group">
+                            {calculatedMa === 'error' ? (
+                                <span className="text-red-400 text-[11px] font-bold">오류</span>
+                            ) : calculatedMa ? (
+                                <div className="flex items-center justify-between w-full px-1.5">
+                                    <div className="flex items-baseline gap-0.5 min-w-0 flex-shrink pl-0.5">
+                                        <span className="text-lime-400 text-[13px] sm:text-sm font-black tracking-tight truncate">{calculatedMa}</span>
+                                        <span className="text-slate-500 text-[9px] font-bold">mA</span>
+                                    </div>
+                                    <button
+                                        onClick={handleCopyMa}
+                                        className="p-1.5 text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-700 rounded-lg transition-all active:scale-90 flex-shrink-0 ml-1"
+                                        title="복사하기"
+                                    >
+                                        {isCopied ? <Check className="w-3.5 h-3.5 text-lime-400" /> : <Copy className="w-3.5 h-3.5" />}
+                                    </button>
+                                </div>
+                            ) : (
+                                <span className="text-slate-600 text-[10px] font-bold text-center leading-tight">결과<br />mA</span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Input + Quick Buttons */}
             <div className="bg-card rounded-2xl border border-slate-800 p-2 shadow-xl">

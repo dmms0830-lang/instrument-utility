@@ -34,22 +34,103 @@ export default function ThermocoupleCalc() {
     const inputUnit = mode === 'mV2T' ? 'mV' : '°C';
     const outputUnit = mode === 'mV2T' ? '°C' : 'mV';
 
-    // Color codes
-    const colorCodes = {
-        K: { ansi: { jacket: 'bg-yellow-400', pos: 'bg-yellow-400', neg: 'bg-red-600' }, jis: { jacket: 'bg-blue-600', pos: 'bg-red-600', neg: 'bg-white' } },
-        J: { ansi: { jacket: 'bg-black', pos: 'bg-white', neg: 'bg-red-600' }, jis: { jacket: 'bg-yellow-400', pos: 'bg-red-600', neg: 'bg-white' } },
-        E: { ansi: { jacket: 'bg-purple-600', pos: 'bg-purple-600', neg: 'bg-red-600' }, jis: { jacket: 'bg-purple-600', pos: 'bg-red-600', neg: 'bg-white' } },
-        T: { ansi: { jacket: 'bg-blue-600', pos: 'bg-blue-600', neg: 'bg-red-600' }, jis: { jacket: 'bg-amber-700', pos: 'bg-red-600', neg: 'bg-white' } },
-        S: { ansi: { jacket: 'bg-green-600', pos: 'bg-black', neg: 'bg-red-600' }, jis: { jacket: 'bg-gray-400', pos: 'bg-red-600', neg: 'bg-white' } },
-        R: { ansi: { jacket: 'bg-green-600', pos: 'bg-black', neg: 'bg-red-600' }, jis: { jacket: 'bg-black', pos: 'bg-red-600', neg: 'bg-white' } },
+    // Color and Material data mapping
+    const tcData = {
+        K: { materials: { pos: 'Chromel', neg: 'Alumel' }, ansi: { jacket: '#FFD700', pos: '#FFD700', neg: '#E53935' }, jis: { jacket: '#2563EB', pos: '#E53935', neg: '#F8F9FA' } },
+        J: { materials: { pos: 'Iron', neg: 'Constantan' }, ansi: { jacket: '#27272A', pos: '#F8F9FA', neg: '#E53935' }, jis: { jacket: '#FFD700', pos: '#E53935', neg: '#F8F9FA' } },
+        E: { materials: { pos: 'Chromel', neg: 'Constantan' }, ansi: { jacket: '#9333EA', pos: '#9333EA', neg: '#E53935' }, jis: { jacket: '#9333EA', pos: '#E53935', neg: '#F8F9FA' } },
+        T: { materials: { pos: 'Copper', neg: 'Constantan' }, ansi: { jacket: '#2563EB', pos: '#2563EB', neg: '#E53935' }, jis: { jacket: '#92400E', pos: '#E53935', neg: '#F8F9FA' } },
+        S: { materials: { pos: 'Pt-10%Rh', neg: 'Platinum' }, ansi: { jacket: '#16A34A', pos: '#27272A', neg: '#E53935' }, jis: { jacket: '#9CA3AF', pos: '#E53935', neg: '#F8F9FA' } },
+        R: { materials: { pos: 'Pt-13%Rh', neg: 'Platinum' }, ansi: { jacket: '#16A34A', pos: '#27272A', neg: '#E53935' }, jis: { jacket: '#27272A', pos: '#E53935', neg: '#F8F9FA' } },
     };
 
-    const CableIcon = ({ jacket, pos, neg }) => (
-        <div className={`w-16 h-8 ${jacket} rounded-full flex items-center justify-center gap-2 shadow border border-white/30`}>
-            <div className={`w-3 h-3 rounded-full ${pos} ring-1 ring-black/30`} />
-            <div className={`w-3 h-3 rounded-full ${neg} ring-1 ring-black/30`} />
-        </div>
-    );
+    const getContrastYIQ = (hexcolor) => {
+        const hex = hexcolor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+        return (yiq >= 128) ? '#000000' : '#FFFFFF';
+    };
+
+    const RealisticWire = ({ standard, colors, materials }) => {
+        const getCylinderStyle = (baseColor) => ({
+            backgroundColor: baseColor,
+            backgroundImage: 'linear-gradient(to bottom, rgba(255,255,255,0.4) 0%, transparent 40%, rgba(0,0,0,0.3) 80%, rgba(0,0,0,0.7) 100%)',
+            boxShadow: 'inset 0px 4px 6px -2px rgba(255,255,255,0.3), inset 0px -4px 6px -2px rgba(0,0,0,0.7)'
+        });
+
+        const getMetalColor = (material) => {
+            if (material.includes('Copper')) return '#b87333';
+            if (material.includes('Iron')) return '#71717a';
+            if (material.includes('Pt') || material.includes('Platinum')) return '#e5e7eb';
+            return '#d1d5db';
+        };
+
+        const getMetalStyle = (material) => ({
+            backgroundColor: getMetalColor(material),
+            backgroundImage: 'linear-gradient(to bottom, rgba(255,255,255,0.8) 10%, transparent 45%, rgba(0,0,0,0.6) 90%)',
+            boxShadow: 'inset -2px 0 4px rgba(0,0,0,0.6)'
+        });
+
+        return (
+            <div className="flex flex-col w-full h-full bg-slate-800/40 rounded-xl sm:rounded-2xl p-2 sm:p-3 border border-slate-700/50 shadow-inner relative justify-center">
+                <div className="absolute top-2 left-2 sm:top-2 sm:left-3 z-20">
+                    <span className="text-[9px] sm:text-[10px] md:text-xs text-slate-300 font-bold tracking-widest uppercase bg-slate-900/80 px-2 py-0.5 rounded shadow-sm border border-slate-700">
+                        {standard}
+                    </span>
+                </div>
+
+                <div className="flex w-full min-h-[70px] h-[60%] sm:h-[70%] mt-3 sm:mt-5 items-center relative pl-1 sm:pl-2">
+                    {/* Outer Jacket */}
+                    <div
+                        className="w-[15%] sm:w-[20%] h-[90%] sm:h-full rounded-l-md border-y border-l border-black/80 z-10 relative flex items-center justify-end"
+                        style={{ ...getCylinderStyle(colors.jacket), boxShadow: 'inset 0px 4px 6px -2px rgba(255,255,255,0.3), inset 0px -4px 6px -2px rgba(0,0,0,0.7), 4px 0 10px rgba(0,0,0,0.9)' }}
+                    >
+                    </div>
+
+                    {/* Inner Wires Container */}
+                    <div className="flex flex-col flex-1 h-[75%] z-0 relative ml-[-2px] justify-between py-[1%]">
+                        {/* Positive Wire */}
+                        <div className="flex w-full h-[45%] relative group">
+                            {/* Insulation */}
+                            <div
+                                className="flex-1 rounded-r-sm border-y border-black/60 flex items-center pl-2 sm:pl-4 shadow-[0_2px_5px_rgba(0,0,0,0.6)] z-10 overflow-hidden"
+                                style={getCylinderStyle(colors.pos)}
+                            >
+                                <span className="font-bold font-sans text-[clamp(0.6rem,2.5vw,1rem)] sm:text-xs md:text-sm tracking-wide truncate" style={{ color: getContrastYIQ(colors.pos) }}>
+                                    + : {materials.pos}
+                                </span>
+                            </div>
+                            {/* Stripped Metal Tip */}
+                            <div
+                                className="w-[12%] sm:w-[15%] h-[60%] my-auto rounded-r-full border-y border-r border-black/60 ml-[-1px] z-0 shadow-sm"
+                                style={getMetalStyle(materials.pos)}
+                            ></div>
+                        </div>
+
+                        {/* Negative Wire */}
+                        <div className="flex w-full h-[45%] relative group mt-[2%]">
+                            {/* Insulation */}
+                            <div
+                                className="flex-1 rounded-r-sm border-y border-black/60 flex items-center pl-2 sm:pl-4 shadow-[0_2px_5px_rgba(0,0,0,0.6)] z-10 overflow-hidden"
+                                style={getCylinderStyle(colors.neg)}
+                            >
+                                <span className="font-bold font-sans text-[clamp(0.6rem,2.5vw,1rem)] sm:text-xs md:text-sm tracking-wide truncate" style={{ color: getContrastYIQ(colors.neg) }}>
+                                    - : {materials.neg}
+                                </span>
+                            </div>
+                            {/* Stripped Metal Tip */}
+                            <div
+                                className="w-[12%] sm:w-[15%] h-[60%] my-auto rounded-r-full border-y border-r border-black/60 ml-[-1px] z-0 shadow-sm"
+                                style={getMetalStyle(materials.neg)}
+                            ></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
 
     return (
         <div className="flex flex-col gap-2 h-full">
@@ -161,28 +242,14 @@ export default function ThermocoupleCalc() {
                 </div>
             </div>
 
-            {/* Color Codes - Always Visible 2 Column */}
-            <div className="bg-card rounded-2xl border border-slate-800 p-3 shadow-2xl">
-                <div className="text-[10px] text-slate-500 font-bold mb-2 text-center uppercase tracking-wider">
-                    Type {type} 보상도선 컬러 코드
+            {/* Extended Color Codes & Materials display */}
+            <div className="bg-slate-900 rounded-2xl border border-slate-800 p-2 sm:p-3 shadow-2xl flex flex-col gap-2 min-h-[220px] sm:min-h-[25vh]">
+                <div className="text-xs sm:text-sm text-slate-400 font-black text-center uppercase tracking-widest bg-slate-950/50 py-1.5 rounded-lg flex-shrink-0">
+                    Type {type} 보상도선 사양
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                    {/* ANSI */}
-                    <div className="text-center">
-                        <div className="text-xs text-slate-400 mb-2 font-bold">ANSI (USA)</div>
-                        <div className="flex justify-center mb-1">
-                            <CableIcon {...(colorCodes[type]?.ansi || colorCodes.K.ansi)} />
-                        </div>
-                        <div className="text-[9px] text-slate-600">Red = (−)</div>
-                    </div>
-                    {/* JIS */}
-                    <div className="text-center">
-                        <div className="text-xs text-slate-400 mb-2 font-bold">JIS (Japan)</div>
-                        <div className="flex justify-center mb-1">
-                            <CableIcon {...(colorCodes[type]?.jis || colorCodes.K.jis)} />
-                        </div>
-                        <div className="text-[9px] text-slate-600">Red = (+), White = (−)</div>
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1 relative">
+                    <RealisticWire standard="ANSI (USA)" colors={tcData[type].ansi} materials={tcData[type].materials} />
+                    <RealisticWire standard="JIS (Japan)" colors={tcData[type].jis} materials={tcData[type].materials} />
                 </div>
             </div>
         </div>
