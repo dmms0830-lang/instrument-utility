@@ -29,8 +29,7 @@ const isInStandaloneMode = () =>
     window.navigator.standalone === true;
 
 // === 메인 컴포넌트 ===
-export default function InstallButton({ className = '', onClick }) {
-    const [deferredPrompt, setDeferredPrompt] = useState(null);
+export default function InstallButton({ className = '', onClick, deferredPrompt, setDeferredPrompt }) {
     const [showIosGuide, setShowIosGuide] = useState(false);
     const [showFallback, setShowFallback] = useState(false);
 

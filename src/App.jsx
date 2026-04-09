@@ -43,6 +43,7 @@ function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showStatusMessage, setShowStatusMessage] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
 
   const handleManualRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -116,6 +117,8 @@ function App() {
           {/* App Install Button */}
           <InstallButton
             onClick={() => setActiveTab('install-guide')}
+            deferredPrompt={deferredPrompt}
+            setDeferredPrompt={setDeferredPrompt}
             className={cn(
               "flex items-center justify-center gap-1.5 h-10 px-3 sm:px-4 rounded-xl transition-all duration-200 touch-manipulation shrink-0",
               "bg-slate-800 border border-lime-500/50 text-lime-400 shadow-lg font-bold text-xs sm:text-sm whitespace-nowrap",
@@ -198,7 +201,11 @@ function App() {
       <main className="flex-1 overflow-auto px-4 py-4 w-full">
         <div className="h-full animate-in fade-in slide-in-from-bottom-2 duration-300">
           {activeTab === 'install-guide' ? (
-            <InstallGuide setActiveTab={setActiveTab} />
+            <InstallGuide
+              setActiveTab={setActiveTab}
+              deferredPrompt={deferredPrompt}
+              setDeferredPrompt={setDeferredPrompt}
+            />
           ) : (
             <ActiveComponent />
           )}

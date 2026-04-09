@@ -42,6 +42,7 @@ export default function ThermocoupleCalc() {
         T: { materials: { pos: 'Copper', neg: 'Constantan' }, ansi: { jacket: '#2563EB', pos: '#2563EB', neg: '#E53935' }, jis: { jacket: '#92400E', pos: '#E53935', neg: '#F8F9FA' } },
         S: { materials: { pos: 'Pt-10%Rh', neg: 'Platinum' }, ansi: { jacket: '#16A34A', pos: '#27272A', neg: '#E53935' }, jis: { jacket: '#9CA3AF', pos: '#E53935', neg: '#F8F9FA' } },
         R: { materials: { pos: 'Pt-13%Rh', neg: 'Platinum' }, ansi: { jacket: '#16A34A', pos: '#27272A', neg: '#E53935' }, jis: { jacket: '#27272A', pos: '#E53935', neg: '#F8F9FA' } },
+        N: { materials: { pos: 'Nicrosil', neg: 'Nisil' }, ansi: { jacket: '#F97316', pos: '#F97316', neg: '#E53935' }, jis: { jacket: '#16A34A', pos: '#16A34A', neg: '#F8F9FA' } },
     };
 
     const getContrastYIQ = (hexcolor) => {
@@ -64,6 +65,8 @@ export default function ThermocoupleCalc() {
             if (material.includes('Copper')) return '#b87333';
             if (material.includes('Iron')) return '#71717a';
             if (material.includes('Pt') || material.includes('Platinum')) return '#e5e7eb';
+            if (material.includes('Nicrosil')) return '#c0c8d8';  // Nicrosil: silver-blue metallic
+            if (material.includes('Nisil')) return '#b8c4b8';     // Nisil: silver-green metallic
             return '#d1d5db';
         };
 
@@ -135,8 +138,8 @@ export default function ThermocoupleCalc() {
     return (
         <div className="flex flex-col gap-2 h-full">
             {/* Type Selector */}
-            <div className="grid grid-cols-6 gap-1">
-                {['K', 'J', 'E', 'T', 'S', 'R'].map(t => (
+            <div className="grid grid-cols-7 gap-1">
+                {['K', 'J', 'E', 'T', 'S', 'R', 'N'].map(t => (
                     <button
                         key={t}
                         onClick={() => setType(t)}

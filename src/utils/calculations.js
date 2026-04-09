@@ -142,6 +142,42 @@ export const thermocoupleInverse = {
             2.8159440E+01,
             -2.7555000E+00
         ]
+    },
+    N: {
+        // NIST Monograph 175 Inverse Polynomial (mV → °C)
+        // high: 600 to 1300°C (20.613 to 47.513 mV)
+        high: [
+            1.972485E+01,
+            3.300943E+01,
+            -3.915159E-01,
+            9.855391E-03,
+            -1.274371E-04,
+            7.767022E-07
+        ],
+        // mid: 0 to 600°C (0 to 20.613 mV)
+        mid: [
+            0.00000E+00,
+            3.86896E+01,
+            -1.08267E+00,
+            4.70205E-02,
+            -2.12169E-06,
+            -1.17272E-04,
+            5.39280E-06,
+            -7.98156E-08
+        ],
+        // low: -200 to 0°C (-3.990 to 0 mV)
+        low: [
+            0.0000000E+00,
+            3.8436847E+01,
+            1.1010485E+00,
+            5.2229312E+00,
+            7.2060525E+00,
+            5.8488586E+00,
+            2.7754916E+00,
+            7.7075166E-01,
+            1.1582665E-01,
+            7.3138868E-03
+        ]
     }
 };
 
@@ -317,6 +353,36 @@ export const thermocoupleForward = {
             1.44067E-23,
             -3.11242E-27
         ]
+    },
+    N: {
+        // NIST Monograph 175 Forward Polynomial (°C → mV)
+        // high: 0 to 1300°C (coefficients in µV, divided by 1000 for mV)
+        high: [
+            0.000000000000E+00,
+            2.5929394601E-02,
+            1.5710141880E-05,
+            4.3825627237E-08,
+            -2.5261169794E-10,
+            6.4311819339E-13,
+            -1.0063471519E-15,
+            9.9745338992E-19,
+            -6.0863245607E-22,
+            2.0849229339E-25,
+            -3.0682196151E-29
+        ],
+        // low: -270 to 0°C (coefficients in µV, divided by 1000 for mV)
+        low: [
+            0.000000000000E+00,
+            2.6159105962E-02,
+            1.0957484228E-05,
+            -9.3841111975E-09,
+            -4.6412039759E-11,
+            -2.6303357716E-14,
+            -2.2653438003E-16,
+            1.5225094239E-19,
+            -3.2178027106E-22,
+            -1.5948423498E-28
+        ]
     }
 };
 
@@ -356,6 +422,13 @@ function getForwardCoeffs(type, T) {
 function getInverseCoeffs(type, mV) {
     const inv = thermocoupleInverse[type];
     if (!inv) return null;
+
+    // N-type has 3 inverse ranges: low (<0), mid (0~20.613), high (>20.613)
+    if (type === 'N' && inv.mid) {
+        if (mV < 0) return inv.low;
+        if (mV <= 20.613) return inv.mid;
+        return inv.high;
+    }
 
     if (inv.high && inv.low) {
         return mV >= 0 ? inv.high : inv.low;
