@@ -19,7 +19,9 @@ export default function InstallGuide({ setActiveTab }) {
     };
 
     const handleChromeIntent = () => {
-        const intentUrl = 'intent://' + window.location.host + '#Intent;scheme=https;package=com.android.chrome;end';
+        // [개선 1] 현재 전체 URL 기반으로 intent 구성
+        const targetUrl = window.location.href.replace(/^https?:\/\//i, '');
+        const intentUrl = `intent://${targetUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
         window.location.href = intentUrl;
     };
 
@@ -92,6 +94,7 @@ export default function InstallGuide({ setActiveTab }) {
                             <p className="text-slate-400 text-sm">안드로이드 환경에서는 크롬 브라우저를 권장합니다.</p>
                         </div>
 
+                        {/* [개선 1] Chrome 즉시 이동 버튼 — URL 전체 경로 포함 */}
                         <button
                             onClick={handleChromeIntent}
                             className={cn(
@@ -124,6 +127,31 @@ export default function InstallGuide({ setActiveTab }) {
                             </ul>
                         </div>
 
+                        {/* 설치 버튼이 안 보이는 경우 별도 안내 카드 */}
+                        <div className="bg-slate-800/80 rounded-2xl p-5 border border-amber-500/30 mt-2">
+                            <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+                                <span className="bg-amber-500/20 text-xs px-2 py-0.5 rounded text-amber-400">주의</span>
+                                크롬에서도 설치 버튼이 안 보인다면?
+                            </h3>
+                            <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+                                크롬이 설치 조건을 아직 확인 중이거나, 이미 설치된 경우 버튼이 표시되지 않을 수 있습니다. 이 경우 메뉴에서 직접 추가하세요.
+                            </p>
+                            <ul className="flex flex-col gap-4 text-sm text-slate-300">
+                                <li className="flex items-start gap-3">
+                                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 text-xs font-bold shrink-0">1</span>
+                                    <span className="leading-snug">화면 우측 상단의 <strong>점 세 개(<MoreVertical className="inline w-4 h-4 text-slate-400" />) 아이콘</strong>을 클릭하세요.</span>
+                                </li>
+                                <li className="flex items-start gap-3">
+                                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 text-xs font-bold shrink-0">2</span>
+                                    <span className="leading-snug">메뉴에서 <strong className="text-amber-300">[앱 설치]</strong> 또는 <strong className="text-amber-300">[홈 화면에 추가]</strong>를 선택하세요.</span>
+                                </li>
+                                <li className="flex items-start gap-3">
+                                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 text-xs font-bold shrink-0">3</span>
+                                    <span className="leading-snug">팝업이 뜨면 <strong>[설치]</strong> 또는 <strong>[추가]</strong>를 눌러 완료하세요.</span>
+                                </li>
+                            </ul>
+                        </div>
+
                         <button
                             onClick={() => setStep('selection')}
                             className="mt-4 text-slate-400 hover:text-white pb-2 text-sm font-semibold transition-colors decoration-slate-500 underline underline-offset-4 text-center"
@@ -133,6 +161,7 @@ export default function InstallGuide({ setActiveTab }) {
                     </div>
                 )}
 
+                {/* [개선 4] iOS step 순서 버그 수정 — 일반 Safari 기준으로 재작성 */}
                 {step === 'ios' && (
                     <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="text-center mb-2">
@@ -149,38 +178,42 @@ export default function InstallGuide({ setActiveTab }) {
                             </h3>
 
                             <ul className="flex flex-col gap-6 text-sm text-slate-300 relative z-10">
+                                {/* Step 1: 공유 버튼 클릭 */}
                                 <li className="flex items-start gap-3">
                                     <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold shrink-0 mt-0.5">1</span>
                                     <div className="flex-1">
                                         <p className="font-medium text-slate-200 mb-2 leading-snug">
-                                            화면 우측 하단 혹은 상단의 <strong className="text-blue-400 bg-blue-500/10 px-1 py-0.5 rounded ml-0.5 mr-0.5">공유</strong> 아이콘을 클릭하세요.
+                                            화면 하단 가운데 또는 상단의{' '}
+                                            <strong className="text-blue-400 bg-blue-500/10 px-1 py-0.5 rounded mx-0.5">공유</strong>
+                                            아이콘을 클릭하세요.
                                         </p>
                                         <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 flex justify-center items-center">
                                             <Share className="w-6 h-6 text-blue-400" />
                                         </div>
                                     </div>
                                 </li>
+
+                                {/* [개선 4] Step 2: 홈 화면에 추가 — 기존에 "Safari로 열기"가 잘못 들어가 있던 것 수정 */}
                                 <li className="flex items-start gap-3">
                                     <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold shrink-0 mt-0.5">2</span>
                                     <div className="flex-1">
-                                        <p className="font-medium text-slate-200 mb-2 leading-snug">메뉴 리스트를 내려서 <strong className="text-white">Safari로 열기</strong>를 선택하세요.</p>
-                                        <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 flex gap-2 flex-col">
-                                            <div className="h-8 bg-slate-800 rounded flex items-center px-3 opacity-50"><span className="text-slate-400">복사</span></div>
-                                            <div className="h-8 bg-slate-800 border-l-2 border-blue-500 rounded flex items-center px-3 font-semibold text-white">Safari로 열기</div>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li className="flex items-start gap-3">
-                                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold shrink-0 mt-0.5">3</span>
-                                    <div className="flex-1">
                                         <p className="font-medium text-slate-200 mb-2 leading-snug">
-                                            사파리에서 열리면 다시 한번 <strong className="text-blue-400 bg-blue-500/10 px-1 py-0.5 rounded mx-0.5">공유</strong> 아이콘 클릭 후,
-                                            메뉴에서 <strong className="text-white">홈 화면에 추가</strong>를 선택하세요.
+                                            목록을 아래로 내려 <strong className="text-white">홈 화면에 추가</strong>를 선택하세요.
                                         </p>
                                         <div className="bg-slate-900 border border-slate-700 rounded-lg p-4 flex justify-between items-center px-4">
                                             <span className="font-medium text-white">홈 화면에 추가</span>
                                             <PlusSquare className="w-6 h-6 text-slate-400" />
                                         </div>
+                                    </div>
+                                </li>
+
+                                {/* Step 3: 추가 확인 */}
+                                <li className="flex items-start gap-3">
+                                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold shrink-0 mt-0.5">3</span>
+                                    <div className="flex-1">
+                                        <p className="font-medium text-slate-200 leading-snug">
+                                            우측 상단 <strong className="text-white">추가</strong>를 탭하면 홈 화면에 아이콘이 생성됩니다.
+                                        </p>
                                     </div>
                                 </li>
                             </ul>

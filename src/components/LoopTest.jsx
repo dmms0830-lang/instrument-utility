@@ -132,10 +132,10 @@ export default function LoopTest() {
             {/* 유량 기반 mA 역계산 (Square Root 모드일 때만 표시) */}
             {mode === 'sqrt' && (
                 <div className="bg-card rounded-2xl border border-slate-800 p-3 shadow-xl flex flex-col gap-2">
-                    {/* 첫 번째 줄: Qm_Min / Qm_Max / Qm_Target — 3등분 */}
-                    <div className="grid grid-cols-3 gap-2">
-                        <div className="rounded-xl bg-slate-800 border border-slate-700 flex flex-col p-1.5 focus-within:border-lime-500 focus-within:ring-1 focus-within:ring-lime-500/50 transition-all">
-                            <span className="text-[10px] text-slate-400 font-bold px-1 mb-0.5">Qm_Min</span>
+                    {/* 첫 번째 줄: LRV, URV */}
+                    <div className="flex gap-2 items-stretch">
+                        <div className="flex-1 rounded-xl bg-slate-800 border border-slate-700 flex flex-col p-1.5 focus-within:border-lime-500 focus-within:ring-1 focus-within:ring-lime-500/50 transition-all">
+                            <span className="text-[10px] text-slate-400 font-bold px-1 mb-0.5">LRV</span>
                             <input
                                 type="number"
                                 placeholder="0"
@@ -144,8 +144,8 @@ export default function LoopTest() {
                                 className="w-full bg-transparent text-lime-400 text-sm font-bold px-1 outline-none placeholder:text-slate-600"
                             />
                         </div>
-                        <div className="rounded-xl bg-slate-800 border border-slate-700 flex flex-col p-1.5 focus-within:border-lime-500 focus-within:ring-1 focus-within:ring-lime-500/50 transition-all">
-                            <span className="text-[10px] text-slate-400 font-bold px-1 mb-0.5">Qm_Max</span>
+                        <div className="flex-1 rounded-xl bg-slate-800 border border-slate-700 flex flex-col p-1.5 focus-within:border-lime-500 focus-within:ring-1 focus-within:ring-lime-500/50 transition-all">
+                            <span className="text-[10px] text-slate-400 font-bold px-1 mb-0.5">URV</span>
                             <input
                                 type="number"
                                 placeholder="100"
@@ -154,8 +154,11 @@ export default function LoopTest() {
                                 className="w-full bg-transparent text-lime-400 text-sm font-bold px-1 outline-none placeholder:text-slate-600"
                             />
                         </div>
-                        <div className="rounded-xl bg-slate-800 border border-slate-700 flex flex-col p-1.5 focus-within:border-lime-500 focus-within:ring-1 focus-within:ring-lime-500/50 transition-all">
-                            <span className="text-[10px] text-slate-400 font-bold px-1 mb-0.5">Qm_Target</span>
+                    </div>
+                    {/* 두 번째 줄: Target, 계산 버튼, 결과(복사 포함) */}
+                    <div className="flex gap-2 items-stretch min-h-[52px]">
+                        <div className="flex-[1.2] rounded-xl bg-slate-800 border border-slate-700 flex flex-col justify-center p-1.5 focus-within:border-lime-500 focus-within:ring-1 focus-within:ring-lime-500/50 transition-all">
+                            <span className="text-[10px] text-slate-400 font-bold px-1 mb-0.5">Target</span>
                             <input
                                 type="number"
                                 placeholder="Flow"
@@ -164,40 +167,33 @@ export default function LoopTest() {
                                 className="w-full bg-transparent text-lime-400 text-sm font-bold px-1 outline-none placeholder:text-slate-600"
                             />
                         </div>
-                    </div>
-
-                    {/* 두 번째 줄: 계산 버튼 (전체 너비) */}
-                    <button
-                        onClick={handleCalculateMa}
-                        className="w-full bg-lime-500 text-slate-950 rounded-xl py-3 text-[14px] font-black active:scale-[0.98] hover:scale-[1.01] transition-all hover:bg-lime-400 shadow-[0_0_15px_rgba(132,204,22,0.2)] flex items-center justify-center gap-2"
-                    >
-                        <span>⚡</span>
-                        <span>계산</span>
-                        <span className="text-[11px] font-bold opacity-60">→ mA 역산</span>
-                    </button>
-
-                    {/* 세 번째 줄: 결과값 (전체 너비) */}
-                    <div className="w-full bg-slate-800 rounded-xl border border-slate-700 min-h-[44px] flex items-center justify-center relative overflow-hidden">
-                        {calculatedMa === 'error' ? (
-                            <span className="text-red-400 text-[11px] font-bold">⚠ 입력값 오류 — Min/Max/Target 확인</span>
-                        ) : calculatedMa ? (
-                            <div className="flex items-center justify-between w-full px-3">
-                                <div className="flex items-baseline gap-1.5">
-                                    <span className="text-[10px] text-slate-500 font-bold">결과값</span>
-                                    <span className="text-lime-400 text-xl font-black tracking-tight">{calculatedMa}</span>
-                                    <span className="text-slate-400 text-xs font-bold">mA</span>
+                        <button
+                            onClick={handleCalculateMa}
+                            className="flex-1 bg-lime-500 text-slate-950 rounded-xl text-[13px] font-black active:scale-[0.98] hover:scale-[1.02] transition-all hover:bg-lime-400 shadow-[0_0_15px_rgba(132,204,22,0.15)] flex items-center justify-center"
+                        >
+                            계산
+                        </button>
+                        <div className="flex-[1.2] bg-slate-800 rounded-xl flex items-center justify-center border border-slate-700 relative overflow-hidden group">
+                            {calculatedMa === 'error' ? (
+                                <span className="text-red-400 text-[11px] font-bold">오류</span>
+                            ) : calculatedMa ? (
+                                <div className="flex items-center justify-between w-full px-1.5">
+                                    <div className="flex items-baseline gap-0.5 min-w-0 flex-shrink pl-0.5">
+                                        <span className="text-lime-400 text-[13px] sm:text-sm font-black tracking-tight truncate">{calculatedMa}</span>
+                                        <span className="text-slate-500 text-[9px] font-bold">mA</span>
+                                    </div>
+                                    <button
+                                        onClick={handleCopyMa}
+                                        className="p-1.5 text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-700 rounded-lg transition-all active:scale-90 flex-shrink-0 ml-1"
+                                        title="복사하기"
+                                    >
+                                        {isCopied ? <Check className="w-3.5 h-3.5 text-lime-400" /> : <Copy className="w-3.5 h-3.5" />}
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={handleCopyMa}
-                                    className="p-1.5 text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-700 rounded-lg transition-all active:scale-90 flex-shrink-0"
-                                    title="복사하기"
-                                >
-                                    {isCopied ? <Check className="w-3.5 h-3.5 text-lime-400" /> : <Copy className="w-3.5 h-3.5" />}
-                                </button>
-                            </div>
-                        ) : (
-                            <span className="text-slate-600 text-[11px] font-bold">결과값 mA</span>
-                        )}
+                            ) : (
+                                <span className="text-slate-600 text-[10px] font-bold text-center leading-tight">결과<br />mA</span>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

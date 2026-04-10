@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { RefreshCw, X } from 'lucide-react';
 
 export default function UpdateToast() {
-    const [registrationObj, setRegistrationObj] = useState(null);
+    const registrationRef = useRef(null); // [개선 6] useRef로 안정화 — 리스너 재등록 방지
 
     const {
         needRefresh: [needRefresh, setNeedRefresh],
         updateServiceWorker,
     } = useRegisterSW({
         onRegisteredSW(swUrl, registration) {
-            // 주기적으로 SW 업데이트 확인 (1분: 60000ms 간격)
             if (registration) {
-                setRegistrationObj(registration);
+                registrationRef.current = registration;
+                // 주기적으로 SW 업데이트 확인 (1분 간격)
                 setInterval(() => {
                     registration.update().catch(err => console.error('[SW] Interval update error:', err));
                 }, 60000);
@@ -23,24 +23,29 @@ export default function UpdateToast() {
         },
     });
 
-    // Smart Refresh (윈도우 포커스 시 즉시 체크)
+    // [개선 6] useRef 기반으로 visibility/focus 리스너 등록
+    // registrationRef는 ref이므로 변경돼도 effect 재실행 없음 → 리스너 재등록 없음
     useEffect(() => {
+        const triggerUpdate = (source) => {
+            if (registrationRef.current) {
+                registrationRef.current.update().catch(err =>
+                    console.error(`[SW] ${source} update error:`, err)
+                );
+            } else {
+                checkForUpdate().catch(err =>
+                    console.error(`[SW] ${source} fallback update error:`, err)
+                );
+            }
+        };
+
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
-                if (registrationObj) {
-                    registrationObj.update().catch(err => console.error('[SW] Visibility update error:', err));
-                } else {
-                    checkForUpdate().catch(err => console.error('[SW] Fallback visibility update error:', err));
-                }
+                triggerUpdate('visibility');
             }
         };
 
         const handleFocus = () => {
-            if (registrationObj) {
-                registrationObj.update().catch(err => console.error('[SW] Focus update error:', err));
-            } else {
-                checkForUpdate().catch(err => console.error('[SW] Fallback focus update error:', err));
-            }
+            triggerUpdate('focus');
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -50,7 +55,7 @@ export default function UpdateToast() {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('focus', handleFocus);
         };
-    }, [registrationObj]);
+    }, []); // [개선 6] 의존성 배열 비움 — 마운트 시 1회만 등록
 
     if (!needRefresh) return null;
 

@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Download, X, Share, PlusSquare, Smartphone, ExternalLink, Chrome } from 'lucide-react';
+import { Download, X, Share, PlusSquare, Smartphone, ExternalLink, Chrome, CheckCircle } from 'lucide-react';
 
 // === 유틸리티 함수 ===
 
 // 1. 카카오톡, 라인 등 인앱 브라우저 감지
 const isInAppBrowser = () => {
     const ua = window.navigator.userAgent.toLowerCase();
-    // 정규식 개선: 카카오, 라인, 페이스북, 인스타, 네이버 앱 등 주요 인앱 브라우저 감지
     const inAppRegex = /kakaotalk|line|fban|fbav|fb_iab|instagram|naver|snapchat|twitter/i;
     return inAppRegex.test(ua);
 };
@@ -32,14 +31,13 @@ const isInStandaloneMode = () =>
 export default function InstallButton({ className = '', onClick, deferredPrompt, setDeferredPrompt }) {
     const [showIosGuide, setShowIosGuide] = useState(false);
     const [showFallback, setShowFallback] = useState(false);
-
-    // 인앱 차단 모달 상태 (기본적으로 환경 검사해서 띄움)
+    const [showInstallSuccess, setShowInstallSuccess] = useState(false); // [개선 7] 설치 완료 피드백
     const [showInAppBlocker, setShowInAppBlocker] = useState(false);
     const [showIosInlineGuide, setShowIosInlineGuide] = useState(false);
 
     useEffect(() => {
-        // 컴포넌트 마운트 시, 인앱 브라우저면 세션스토리지 확인 후 모달 띄움
-        if (isInAppBrowser() && !isInStandaloneMode() && !sessionStorage.getItem('inAppModalDismissed')) {
+        // [개선 5] localStorage로 변경 — 탭 닫아도 dismiss 기억 유지
+        if (isInAppBrowser() && !isInStandaloneMode() && !localStorage.getItem('inAppModalDismissed')) {
             setShowInAppBlocker(true);
         }
 
@@ -48,8 +46,10 @@ export default function InstallButton({ className = '', onClick, deferredPrompt,
             setDeferredPrompt(e);
         };
 
+        // [개선 7] 설치 완료 시 성공 토스트 표시
         const handleAppInstalled = () => {
             setDeferredPrompt(null);
+            setShowInstallSuccess(true);
         };
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstall);
@@ -61,27 +61,34 @@ export default function InstallButton({ className = '', onClick, deferredPrompt,
         };
     }, []);
 
-    // 폴백 모달 닫기
+    // [개선 7] 설치 성공 토스트 4초 후 자동 닫기
+    useEffect(() => {
+        if (!showInstallSuccess) return;
+        const timer = setTimeout(() => setShowInstallSuccess(false), 4000);
+        return () => clearTimeout(timer);
+    }, [showInstallSuccess]);
+
+    // [개선 5] localStorage로 변경
     const dismissInAppBlocker = useCallback(() => {
-        sessionStorage.setItem('inAppModalDismissed', 'true');
+        localStorage.setItem('inAppModalDismissed', 'true');
         setShowInAppBlocker(false);
     }, []);
 
     // 설치 버튼 클릭 핸들러
     const handleInstallClick = useCallback(async () => {
-        // 1. 인앱 브라우저일 경우 -> 차단 안내 모달 호출
+        // 1. 인앱 브라우저일 경우 -> 차단 안내 모달
         if (isInAppBrowser()) {
             setShowInAppBlocker(true);
             return;
         }
 
-        // 2. iOS 일반(사파리/크롬) 브라우저일 경우 -> iOS 전용 설치 가이드 표시
+        // 2. iOS 일반 브라우저 -> iOS 전용 설치 가이드
         if (isIos()) {
             setShowIosGuide(true);
             return;
         }
 
-        // 3. 앱 설치 이벤트(Prompt)가 준비된 경우 (일반적인 크롬/엣지)
+        // 3. 앱 설치 이벤트(Prompt)가 준비된 경우 (Chrome/Edge)
         if (deferredPrompt) {
             try {
                 deferredPrompt.prompt();
@@ -95,13 +102,18 @@ export default function InstallButton({ className = '', onClick, deferredPrompt,
             return;
         }
 
-        // 4. 설치 프롬프트도 없고, iOS도 아닌 경우 (PC 사파리, 이미 설치된 기기 등) -> 폴백 안내
+        // [개선 1] Android인데 deferredPrompt 없으면 Chrome으로 즉시 이동
+        if (isAndroid()) {
+            openChromeOnAndroid();
+            return;
+        }
+
+        // 4. 그 외 (PC Safari, 이미 설치 등) -> 폴백 안내
         setShowFallback(true);
     }, [deferredPrompt]);
 
-    // 안드로이드 크롬 강제 이동 처리 (`intent://` 스킴)
+    // 안드로이드 Chrome 강제 이동
     const openChromeOnAndroid = () => {
-        // 현재 URL 추출
         const targetUrl = window.location.href.replace(/^https?:\/\//i, '');
         const intentUrl = `intent://${targetUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
         window.location.href = intentUrl;
@@ -113,7 +125,6 @@ export default function InstallButton({ className = '', onClick, deferredPrompt,
         const timer = setTimeout(() => setShowFallback(false), 4000);
         return () => clearTimeout(timer);
     }, [showFallback]);
-
 
     return (
         <>
@@ -128,18 +139,27 @@ export default function InstallButton({ className = '', onClick, deferredPrompt,
                 <span className="inline">설치</span>
             </button>
 
-            {/* 2. 일반 폴백 안내 토스트 (이미 설치됨 / 데스크탑 등) */}
+            {/* 2. 일반 폴백 안내 토스트 — Android/기타 분기 */}
             {showFallback && (
                 <div className="fixed bottom-6 left-4 right-4 z-[1000] flex justify-center animate-in slide-in-from-bottom-4 fade-in duration-300">
                     <div className="w-full max-w-md bg-slate-800/95 backdrop-blur-xl border border-slate-600 rounded-2xl shadow-2xl p-4 flex items-start gap-3">
                         <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-lime-500/15 flex items-center justify-center mt-0.5">
                             <Download className="w-4 h-4 text-lime-400" />
                         </div>
-                        <p className="flex-1 text-sm text-slate-300 leading-relaxed">
-                            이미 설치되었거나 지원하지 않는 브라우저입니다.
-                            <br />
-                            <span className="text-lime-400 font-semibold">아이폰</span>은 공유 버튼을 통해 홈 화면에 추가해주세요.
-                        </p>
+                        {isAndroid() ? (
+                            <p className="flex-1 text-sm text-slate-300 leading-relaxed">
+                                설치 버튼이 보이지 않으면{' '}
+                                <strong className="text-white">점 세 개 메뉴</strong>에서{' '}
+                                <strong className="text-lime-400">[앱 설치]</strong> 또는{' '}
+                                <strong className="text-lime-400">[홈 화면에 추가]</strong>를 선택하세요.
+                            </p>
+                        ) : (
+                            <p className="flex-1 text-sm text-slate-300 leading-relaxed">
+                                이미 설치되었거나 지원하지 않는 브라우저입니다.
+                                <br />
+                                <span className="text-lime-400 font-semibold">아이폰</span>은 공유 버튼을 통해 홈 화면에 추가해주세요.
+                            </p>
+                        )}
                         <button
                             onClick={() => setShowFallback(false)}
                             className="flex-shrink-0 p-1 text-slate-500 hover:text-white transition-colors"
@@ -151,7 +171,28 @@ export default function InstallButton({ className = '', onClick, deferredPrompt,
                 </div>
             )}
 
-            {/* 3. iOS 기본 브라우저용 수동 설치 안내 모달 (React Portal 적용) */}
+            {/* [개선 7] 설치 완료 성공 토스트 */}
+            {showInstallSuccess && (
+                <div className="fixed bottom-6 left-4 right-4 z-[1000] flex justify-center animate-in slide-in-from-bottom-4 fade-in duration-300">
+                    <div className="w-full max-w-md bg-slate-800/95 backdrop-blur-xl border border-lime-500/40 rounded-2xl shadow-2xl p-4 flex items-center gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-lime-500/20 flex items-center justify-center">
+                            <CheckCircle className="w-4 h-4 text-lime-400" />
+                        </div>
+                        <p className="flex-1 text-sm text-white font-semibold">
+                            앱이 성공적으로 설치되었습니다! 🎉
+                        </p>
+                        <button
+                            onClick={() => setShowInstallSuccess(false)}
+                            className="flex-shrink-0 p-1 text-slate-500 hover:text-white transition-colors"
+                            aria-label="닫기"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* 3. iOS 기본 브라우저용 수동 설치 안내 모달 */}
             {showIosGuide && createPortal(
                 <div
                     className="fixed inset-0 h-[100dvh] w-screen z-[9999] flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200 px-4"
@@ -207,15 +248,13 @@ export default function InstallButton({ className = '', onClick, deferredPrompt,
                 document.body
             )}
 
-            {/* 4. 인앱 브라우저 차단 전면 오버레이 (화면 중앙 강제 배치 - React Portal 적용) */}
+            {/* 4. 인앱 브라우저 차단 전면 오버레이 */}
             {showInAppBlocker && createPortal(
                 <div className="fixed inset-0 h-[100dvh] w-screen z-[9999] flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm px-4 animate-in fade-in duration-300">
                     <div className="bg-slate-900 border border-slate-700 w-full max-w-[90%] sm:max-w-sm rounded-2xl p-6 shadow-2xl flex flex-col items-center text-center">
 
-                        {/* 현대오일뱅크 로고 */}
                         <img src="/pic/HDO_new.png" alt="HD현대오일뱅크" className="h-5 object-contain opacity-80 mb-5" />
 
-                        {/* 경고 아이콘 */}
                         <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-5">
                             <Smartphone className="w-8 h-8 text-red-400" />
                         </div>
@@ -230,7 +269,7 @@ export default function InstallButton({ className = '', onClick, deferredPrompt,
                         </p>
 
                         <div className="w-full flex flex-col">
-                            {/* 안드로이드 버튼 */}
+                            {/* [개선 1] Android: Chrome 즉시 이동 */}
                             <button
                                 onClick={openChromeOnAndroid}
                                 className="h-14 w-full mb-3 rounded-xl font-bold flex items-center justify-center gap-2 bg-lime-600 text-slate-950 hover:bg-lime-500 active:scale-95 transition-all shadow-lg"
@@ -239,25 +278,46 @@ export default function InstallButton({ className = '', onClick, deferredPrompt,
                                 Android 사용자 (Chrome으로 열기)
                             </button>
 
-                            {/* iOS 버튼 */}
+                            {/* [개선 2] iOS: 시각 가이드 강화 */}
                             <button
-                                onClick={() => setShowIosInlineGuide(true)}
+                                onClick={() => setShowIosInlineGuide(prev => !prev)}
                                 className="h-14 w-full mb-3 rounded-xl font-bold flex items-center justify-center gap-2 bg-blue-600 text-white hover:bg-blue-500 active:scale-95 transition-all shadow-lg"
                             >
                                 <ExternalLink className="w-5 h-5" />
                                 iOS 사용자 (Safari로 열기)
                             </button>
 
-                            {/* iOS 인라인 가이드 메세지 (애니메이션 강조) */}
+                            {/* [개선 2] iOS 인라인 가이드 — 애니메이션 시각 가이드로 강화 */}
                             {showIosInlineGuide && (
-                                <div className="mb-4 p-4 bg-slate-800 rounded-xl border border-blue-500/50 text-sm text-blue-300 animate-in slide-in-from-top-4 fade-in duration-300 shadow-md">
-                                    우측 하단 또는 상단 <Share className="inline w-5 h-5 mx-1 animate-bounce text-blue-400" /> 버튼을 눌러<br />
-                                    <strong className="text-white text-base">Safari로 열기</strong>를 선택하세요.
+                                <div className="mb-4 p-4 bg-slate-800 rounded-xl border border-blue-500/50 animate-in slide-in-from-top-2 fade-in duration-300 shadow-md">
+                                    <ol className="flex flex-col gap-3 text-sm text-left">
+                                        <li className="flex items-center gap-3">
+                                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold flex items-center justify-center">1</span>
+                                            <span className="text-slate-200">
+                                                우측 하단 또는 상단{' '}
+                                                <Share className="inline w-4 h-4 text-blue-400 animate-bounce mx-0.5" />{' '}
+                                                <strong className="text-white">공유 버튼</strong> 클릭
+                                            </span>
+                                        </li>
+                                        <li className="flex items-center gap-3">
+                                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold flex items-center justify-center">2</span>
+                                            <span className="text-slate-200">
+                                                메뉴에서 <strong className="text-white">Safari로 열기</strong> 선택
+                                            </span>
+                                        </li>
+                                        <li className="flex items-center gap-3">
+                                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-lime-500/20 text-lime-400 text-xs font-bold flex items-center justify-center">3</span>
+                                            <span className="text-slate-200">
+                                                Safari에서 다시{' '}
+                                                <strong className="text-lime-400">설치 버튼</strong> 클릭
+                                            </span>
+                                        </li>
+                                    </ol>
                                 </div>
                             )}
                         </div>
 
-                        {/* 닫기 (그냥 계속하기) - 최하단 여유를 둠 */}
+                        {/* [개선 5] localStorage로 dismiss 유지 */}
                         <button
                             onClick={dismissInAppBlocker}
                             className="mt-8 text-sm font-medium text-slate-400 hover:text-white underline underline-offset-4 transition-colors p-3"
