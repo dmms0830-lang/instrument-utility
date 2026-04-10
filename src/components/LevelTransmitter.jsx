@@ -24,70 +24,81 @@ function LiveViewSVG({ currPct, targetPct }) {
     const ltPct = hasCurrent ? Math.min(Math.max(parseFloat(currPct), 0), 100) : 0;
     const lgPct = hasTarget  ? Math.min(Math.max(parseFloat(targetPct), 0), 100) : 0;
 
-    /* ══════════════════════════════════════════════════════
-       HORIZONTAL LAYOUT — viewBox 500×300
-       [LT Transmitter]  [Lead Lines]  [Vessel]  [Pipes]  [LG + Scale]
-       All bottom-aligned at y=285
-    ══════════════════════════════════════════════════════ */
-    const W = 500, HH = 300;
-    const BOT = 285, TOP = 15;
+    /* ═══════════════════════════════════════════════════════
+       HORIZONTAL CENTERED LAYOUT — viewBox 480×300
+       [LT]  ╲Lead Lines╲  [Vessel]  ─Pipes─  [LG│Scale]
+       
+       LT order (top→bottom):
+         Amplifier (green/Head) → Coupling → Sensor (silver/Body, H/L ports)
+       
+       Lead lines: DIAGONAL, no bends (self-draining, anti-plugging)
+       LRV = 1/5 vessel height, URV = 4/5 vessel height
+       LG height spans LRV~URV
+       All bottom-aligned at y=282
+    ═══════════════════════════════════════════════════════ */
+    const W = 480, HH = 300;
+    const BOT = 282, TOP = 12;
 
-    const VX = 185, VW = 125, VY = TOP, VH = BOT - VY, VBot = BOT;
+    // ── VESSEL ──
+    const VX = 190, VW = 118, VY = TOP, VH = BOT - VY, VBot = BOT;
     const VCX = VX + VW / 2;
 
+    // ── Taps: URV at 4/5, LRV at 1/5 from bottom ──
     const URV_Y = VBot - 0.80 * VH;
-    const LRV_Y = VBot - 0.40 * VH;
+    const LRV_Y = VBot - 0.20 * VH;
 
-    const lgMargin = (LRV_Y - URV_Y) * 0.08;
-    const LG_X = 365, LG_W = 28;
-    const LG_TOP = URV_Y - lgMargin;
-    const LG_BOT = LRV_Y + lgMargin;
+    // ── LEVEL GAUGE ──
+    const lgM = (LRV_Y - URV_Y) * 0.05;
+    const LG_X = 362, LG_W = 26;
+    const LG_TOP = URV_Y - lgM;
+    const LG_BOT = LRV_Y + lgM;
     const LG_H = LG_BOT - LG_TOP;
+    const lgAT = URV_Y, lgAB = LRV_Y, lgAH = lgAB - lgAT;
+    const lgFH = (lgPct / 100) * lgAH;
+    const lgFY = lgAB - lgFH;
 
-    const lgActiveTop = URV_Y;
-    const lgActiveBot = LRV_Y;
-    const lgActiveH = lgActiveBot - lgActiveTop;
-    const lgFillH = (lgPct / 100) * lgActiveH;
-    const lgFillY = lgActiveBot - lgFillH;
+    // ── TRANSMITTER (left, bottom-aligned) ──
+    // Order top→bottom: Amplifier(head) → Coupling → Sensor(body) → Conduit
+    const LT_W = 56, LT_CX = 82;
+    const LT_L = LT_CX - LT_W / 2, LT_R = LT_CX + LT_W / 2;
 
-    const LT_W = 58, LT_CX = 68;
-    const LT_LEFT = LT_CX - LT_W / 2;
-    const LT_RIGHT = LT_CX + LT_W / 2;
-
-    const SENS_H = 48, COUP_H = 12, AMP_H = 62, COND_H = 16;
-    const LT_TOTAL = SENS_H + COUP_H + AMP_H + COND_H;
+    const AMP_H = 68, COUP_H = 10, SENS_H = 58, COND_H = 12;
+    const LT_TOTAL = AMP_H + COUP_H + SENS_H + COND_H;
     const LT_TOP = BOT - LT_TOTAL;
-    const SENS_TOP = LT_TOP;
-    const SENS_BOT = SENS_TOP + SENS_H;
-    const COUP_TOP = SENS_BOT;
-    const AMP_TOP = COUP_TOP + COUP_H;
-    const AMP_BOT = AMP_TOP + AMP_H;
-    const COND_TOP = AMP_BOT;
 
+    const AMP_TOP = LT_TOP, AMP_BOT = AMP_TOP + AMP_H;
+    const COUP_TOP = AMP_BOT, COUP_BOT = COUP_TOP + COUP_H;
+    const SENS_TOP = COUP_BOT, SENS_BOT = SENS_TOP + SENS_H;
+    const COND_TOP = SENS_BOT;
+
+    // H/L ports on sensor RIGHT side
     const H_PORT_Y = SENS_TOP + 14;
-    const L_PORT_Y = SENS_TOP + 36;
-    const PORT_RIGHT_X = LT_RIGHT + 16;
+    const L_PORT_Y = SENS_BOT - 14;
+    const PORT_EX = LT_R + 16; // port tip X
 
-    const LEAD_H_VERT_X = 140;
-    const LEAD_L_VERT_X = 128;
+    // ── DIAGONAL LEAD LINES (vessel tap → sensor port, straight, no bends) ──
+    // H: from vessel LEFT upper tap straight diagonal to sensor H port
+    // L: from vessel LEFT lower tap straight diagonal to sensor L port
 
-    const measRange = LRV_Y - URV_Y;
-    const vesLiqTop = LRV_Y - (lgPct / 100) * measRange;
-    const vesLiqH = VBot - vesLiqTop;
+    // ── Vessel liquid ──
+    const mR = LRV_Y - URV_Y;
+    const vLT = LRV_Y - (lgPct / 100) * mR;
+    const vLH = VBot - vLT;
 
-    const PIPE_LEFT = VX + VW + 8;
-    const PIPE_RIGHT = LG_X - 2;
+    // ── Connection pipes (vessel right → LG) ──
+    const PP_L = VX + VW + 7, PP_R = LG_X - 2;
 
-    const ltLevelOnLG = lgActiveBot - (ltPct / 100) * lgActiveH;
-    const lgLevelOnLG = lgFillY;
+    // ── Level diff indicator ──
+    const ltOnLG = lgAB - (ltPct / 100) * lgAH;
+    const lgOnLG = lgFY;
 
     return (
         <svg viewBox={`0 0 ${W} ${HH}`} xmlns="http://www.w3.org/2000/svg"
              preserveAspectRatio="xMidYMid meet"
-             style={{ width: '100%', height: '100%', display: 'block' }}>
+             style={{ width:'100%', height:'100%', display:'block' }}>
             <defs>
                 <style>{`
-                    @keyframes wv1{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
+                    @keyframes wv1{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
                     @keyframes wv2{0%,100%{transform:translateX(0)}50%{transform:translateX(-3px)}}
                     @keyframes glP{0%,100%{opacity:.45}50%{opacity:.85}}
                     @keyframes ldB{0%,88%,100%{opacity:1}94%{opacity:.25}}
@@ -96,7 +107,6 @@ function LiveViewSVG({ currPct, targetPct }) {
                     .gp{animation:glP 2.2s ease-in-out infinite}
                     .lb{animation:ldB 3.5s ease-in-out infinite}
                 `}</style>
-
                 <linearGradient id="gVB" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#071822" stopOpacity=".95"/><stop offset="12%" stopColor="#122e42" stopOpacity=".80"/><stop offset="50%" stopColor="#163a52" stopOpacity=".38"/><stop offset="88%" stopColor="#122e42" stopOpacity=".80"/><stop offset="100%" stopColor="#071822" stopOpacity=".95"/></linearGradient>
                 <linearGradient id="gVL" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#67d4ff" stopOpacity=".42"/><stop offset="40%" stopColor="#2196f3" stopOpacity=".52"/><stop offset="100%" stopColor="#0d47a1" stopOpacity=".68"/></linearGradient>
                 <linearGradient id="gVLS" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#e3f2fd" stopOpacity="0"/><stop offset="18%" stopColor="#e3f2fd" stopOpacity=".14"/><stop offset="40%" stopColor="#bbdefb" stopOpacity=".05"/><stop offset="100%" stopColor="#e3f2fd" stopOpacity="0"/></linearGradient>
@@ -107,7 +117,6 @@ function LiveViewSVG({ currPct, targetPct }) {
                 <linearGradient id="gLL" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#0a3a18"/><stop offset="30%" stopColor="#16a34a"/><stop offset="70%" stopColor="#22c55e"/><stop offset="100%" stopColor="#86efac"/></linearGradient>
                 <linearGradient id="gLG" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#22c55e" stopOpacity="0"/><stop offset="50%" stopColor="#22c55e" stopOpacity=".28"/><stop offset="100%" stopColor="#4ade80" stopOpacity="0"/></linearGradient>
                 <linearGradient id="gGS" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#f0f9ff" stopOpacity=".52"/><stop offset="20%" stopColor="#f0f9ff" stopOpacity=".68"/><stop offset="42%" stopColor="#bae6fd" stopOpacity=".10"/><stop offset="100%" stopColor="#bae6fd" stopOpacity=".02"/></linearGradient>
-                <linearGradient id="gPp" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3a6a88"/><stop offset="50%" stopColor="#1e4460"/><stop offset="100%" stopColor="#0e2438"/></linearGradient>
                 <linearGradient id="gPH" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#3a6a88"/><stop offset="50%" stopColor="#1e4460"/><stop offset="100%" stopColor="#0e2438"/></linearGradient>
                 <linearGradient id="gFl" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#4a7a9a"/><stop offset="50%" stopColor="#2a5870"/><stop offset="100%" stopColor="#163848"/></linearGradient>
                 <linearGradient id="gSn" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#787878"/><stop offset="35%" stopColor="#b0b0b0"/><stop offset="60%" stopColor="#c8c8c8"/><stop offset="100%" stopColor="#808080"/></linearGradient>
@@ -116,7 +125,7 @@ function LiveViewSVG({ currPct, targetPct }) {
                 <linearGradient id="gAmS" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#6ab87a" stopOpacity=".52"/><stop offset="50%" stopColor="#8ad09a" stopOpacity=".22"/><stop offset="100%" stopColor="#6ab87a" stopOpacity="0"/></linearGradient>
                 <linearGradient id="gCp" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#4a7888"/><stop offset="50%" stopColor="#244a5a"/><stop offset="100%" stopColor="#122838"/></linearGradient>
                 <linearGradient id="gLd" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#091a0c"/><stop offset="100%" stopColor="#040e06"/></linearGradient>
-
+                <linearGradient id="gPipe" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3a6a88"/><stop offset="50%" stopColor="#1e4460"/><stop offset="100%" stopColor="#0e2438"/></linearGradient>
                 <filter id="fS" x="-12%" y="-6%" width="130%" height="118%"><feDropShadow dx="2" dy="4" stdDeviation="6" floodColor="#000" floodOpacity=".50"/></filter>
                 <filter id="fSL" x="-25%" y="-8%" width="160%" height="125%"><feDropShadow dx="2" dy="4" stdDeviation="7" floodColor="#000" floodOpacity=".60"/></filter>
                 <filter id="fST" x="-18%" y="-4%" width="150%" height="112%"><feDropShadow dx="2" dy="3" stdDeviation="5" floodColor="#000" floodOpacity=".55"/></filter>
@@ -124,162 +133,168 @@ function LiveViewSVG({ currPct, targetPct }) {
                 <filter id="fC" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                 <filter id="fLgG" x="-80%" y="-8%" width="260%" height="118%"><feGaussianBlur in="SourceGraphic" stdDeviation="5"/></filter>
                 <filter id="fD" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur in="SourceGraphic" stdDeviation="1.5"/></filter>
-
                 <clipPath id="cV"><rect x={VX+3} y={VY+3} width={VW-6} height={VH-6} rx="3"/></clipPath>
                 <clipPath id="cL"><rect x={LG_X+3} y={LG_TOP+3} width={LG_W-6} height={LG_H-6} rx="3"/></clipPath>
             </defs>
 
             {/* GRID */}
-            <g opacity=".05">
-                {Array.from({length:11},(_,i)=>{const y=TOP+i*(BOT-TOP)/10;return <line key={`h${i}`} x1="0" y1={y} x2={W} y2={y} stroke="#4a8ab0" strokeWidth=".5"/>;})}
-                {Array.from({length:11},(_,i)=>{const x=30+i*(W-60)/10;return <line key={`v${i}`} x1={x} y1={TOP} x2={x} y2={BOT} stroke="#4a8ab0" strokeWidth=".5"/>;})}
+            <g opacity=".04">
+                {Array.from({length:11},(_,i)=>{const y=TOP+i*(BOT-TOP)/10;return <line key={`h${i}`} x1={20} y1={y} x2={W-20} y2={y} stroke="#4a8ab0" strokeWidth=".5"/>;})}
+                {Array.from({length:10},(_,i)=>{const x=40+i*(W-80)/9;return <line key={`v${i}`} x1={x} y1={TOP} x2={x} y2={BOT} stroke="#4a8ab0" strokeWidth=".5"/>;})}
             </g>
 
-            {/* VESSEL */}
+            {/* ═══════ VESSEL ═══════ */}
             <g filter="url(#fS)" opacity=".88">
                 <rect x={VX} y={VY} width={VW} height={VH} rx="7" fill="url(#gVB)" stroke="#1e3d58" strokeWidth="1.8"/>
                 <g clipPath="url(#cV)">
-                    {hasTarget && vesLiqH > 0 && (<>
-                        <rect x={VX+3} y={vesLiqTop} width={VW-6} height={vesLiqH} fill="url(#gVL)" style={{transition:'all .8s cubic-bezier(.34,1.2,.64,1)'}}/>
-                        <rect x={VX+3} y={vesLiqTop} width={VW-6} height={vesLiqH} fill="url(#gVLS)" style={{transition:'all .8s cubic-bezier(.34,1.2,.64,1)'}}/>
-                        <g className="w1"><ellipse cx={VCX} cy={vesLiqTop} rx={VW/2-4} ry="3.5" fill="#e1f5fe" fillOpacity=".32" style={{transition:'cy .8s cubic-bezier(.34,1.2,.64,1)'}}/></g>
-                        <g className="w2"><ellipse cx={VCX+6} cy={vesLiqTop+1.5} rx={VW/2-14} ry="2" fill="#bbdefb" fillOpacity=".15" style={{transition:'cy .8s cubic-bezier(.34,1.2,.64,1)'}}/></g>
+                    {hasTarget && vLH > 0 && (<>
+                        <rect x={VX+3} y={vLT} width={VW-6} height={vLH} fill="url(#gVL)" style={{transition:'all .8s cubic-bezier(.34,1.2,.64,1)'}}/>
+                        <rect x={VX+3} y={vLT} width={VW-6} height={vLH} fill="url(#gVLS)" style={{transition:'all .8s cubic-bezier(.34,1.2,.64,1)'}}/>
+                        <g className="w1"><ellipse cx={VCX} cy={vLT} rx={VW/2-4} ry="3.5" fill="#e1f5fe" fillOpacity=".30" style={{transition:'cy .8s cubic-bezier(.34,1.2,.64,1)'}}/></g>
+                        <g className="w2"><ellipse cx={VCX+5} cy={vLT+1.5} rx={VW/2-14} ry="2" fill="#bbdefb" fillOpacity=".14" style={{transition:'cy .8s cubic-bezier(.34,1.2,.64,1)'}}/></g>
                     </>)}
                 </g>
                 <rect x={VX} y={VY} width="6" height={VH} rx="3" fill="url(#gSL)"/>
                 <rect x={VX+VW-6} y={VY} width="6" height={VH} rx="3" fill="url(#gSR)"/>
-                <rect x={VX-1} y={VY-1} width={VW+2} height="11" rx="5.5" fill="url(#gVC)"/>
-                <rect x={VX-1} y={VBot-10} width={VW+2} height="11" rx="5.5" fill="#081620" fillOpacity=".92"/>
-                <rect x={VCX-11} y={VY-13} width="22" height="15" rx="3.5" fill="#16304a" stroke="#1e3d58" strokeWidth="1"/>
-                <rect x={VCX-7} y={VY-18} width="14" height="7" rx="2.5" fill="#0f2438" stroke="#1e3d58" strokeWidth=".8"/>
-                <rect x={VCX-11} y={VBot} width="22" height="13" rx="3.5" fill="#081620" stroke="#142a3a" strokeWidth="1"/>
-                {[URV_Y,LRV_Y].map((y,i)=>(<g key={`vL${i}`}><rect x={VX-12} y={y-7} width="14" height="14" rx="2.8" fill="url(#gFl)" stroke="#0c1d2c" strokeWidth=".8"/>{[-4.5,4.5].map((dy,j)=>(<circle key={j} cx={VX-5.5} cy={y+dy} r="1.2" fill="#0c1d2c" stroke="#2a5070" strokeWidth=".4"/>))}</g>))}
-                {[URV_Y,LRV_Y].map((y,i)=>(<g key={`vR${i}`}><rect x={VX+VW-2} y={y-7} width="14" height="14" rx="2.8" fill="url(#gFl)" stroke="#0c1d2c" strokeWidth=".8"/>{[-4.5,4.5].map((dy,j)=>(<circle key={j} cx={VX+VW+5.5} cy={y+dy} r="1.2" fill="#0c1d2c" stroke="#2a5070" strokeWidth=".4"/>))}</g>))}
-                <line x1={VX+5} y1={URV_Y} x2={VX+VW-5} y2={URV_Y} stroke="#4a90b8" strokeWidth=".6" strokeDasharray="3.5,2" strokeOpacity=".50"/>
-                <text x={VX+VW-7} y={URV_Y-3.5} fontSize="5.5" fontFamily="'SF Mono','Courier New',monospace" fill="#4a90b8" fillOpacity=".6" textAnchor="end" fontWeight="bold">URV</text>
-                <line x1={VX+5} y1={LRV_Y} x2={VX+VW-5} y2={LRV_Y} stroke="#4a90b8" strokeWidth=".6" strokeDasharray="3.5,2" strokeOpacity=".50"/>
-                <text x={VX+VW-7} y={LRV_Y+8} fontSize="5.5" fontFamily="'SF Mono','Courier New',monospace" fill="#4a90b8" fillOpacity=".6" textAnchor="end" fontWeight="bold">LRV</text>
+                <rect x={VX-1} y={VY-1} width={VW+2} height="10" rx="5" fill="url(#gVC)"/>
+                <rect x={VX-1} y={VBot-9} width={VW+2} height="10" rx="5" fill="#081620" fillOpacity=".92"/>
+                <rect x={VCX-10} y={VY-12} width="20" height="14" rx="3" fill="#16304a" stroke="#1e3d58" strokeWidth="1"/>
+                <rect x={VCX-6} y={VY-17} width="12" height="7" rx="2.5" fill="#0f2438" stroke="#1e3d58" strokeWidth=".8"/>
+                <rect x={VCX-10} y={VBot} width="20" height="12" rx="3" fill="#081620" stroke="#142a3a" strokeWidth="1"/>
+                {/* LEFT taps */}
+                {[URV_Y,LRV_Y].map((y,i)=>(<g key={`vL${i}`}><rect x={VX-11} y={y-6.5} width="13" height="13" rx="2.5" fill="url(#gFl)" stroke="#0c1d2c" strokeWidth=".8"/>{[-4,4].map((dy,j)=>(<circle key={j} cx={VX-5} cy={y+dy} r="1.1" fill="#0c1d2c" stroke="#2a5070" strokeWidth=".4"/>))}</g>))}
+                {/* RIGHT taps */}
+                {[URV_Y,LRV_Y].map((y,i)=>(<g key={`vR${i}`}><rect x={VX+VW-2} y={y-6.5} width="13" height="13" rx="2.5" fill="url(#gFl)" stroke="#0c1d2c" strokeWidth=".8"/>{[-4,4].map((dy,j)=>(<circle key={j} cx={VX+VW+5} cy={y+dy} r="1.1" fill="#0c1d2c" stroke="#2a5070" strokeWidth=".4"/>))}</g>))}
+                <line x1={VX+5} y1={URV_Y} x2={VX+VW-5} y2={URV_Y} stroke="#4a90b8" strokeWidth=".6" strokeDasharray="3,2" strokeOpacity=".50"/>
+                <text x={VX+VW-6} y={URV_Y-3} fontSize="5" fontFamily="'SF Mono',monospace" fill="#4a90b8" fillOpacity=".6" textAnchor="end" fontWeight="bold">URV</text>
+                <line x1={VX+5} y1={LRV_Y} x2={VX+VW-5} y2={LRV_Y} stroke="#4a90b8" strokeWidth=".6" strokeDasharray="3,2" strokeOpacity=".50"/>
+                <text x={VX+VW-6} y={LRV_Y+7.5} fontSize="5" fontFamily="'SF Mono',monospace" fill="#4a90b8" fillOpacity=".6" textAnchor="end" fontWeight="bold">LRV</text>
             </g>
 
-            {/* CONNECTION PIPES */}
+            {/* ═══════ PIPES Vessel→LG ═══════ */}
             {[URV_Y,LRV_Y].map((y,i)=>(<g key={`cp${i}`}>
-                <rect x={PIPE_LEFT} y={y-3.5} width={PIPE_RIGHT-PIPE_LEFT} height="7" rx="2.8" fill="url(#gPH)" stroke="#0a1820" strokeWidth=".7"/>
-                <rect x={PIPE_LEFT} y={y-2.8} width={PIPE_RIGHT-PIPE_LEFT} height="2.2" rx="1" fill="#4a8aaa" fillOpacity=".32"/>
-                <rect x={LG_X-10} y={y-8} width="12" height="16" rx="2.8" fill="url(#gFl)" stroke="#0a1820" strokeWidth=".8"/>
-                {[-5,5].map((dy,j)=>(<circle key={j} cx={LG_X-4.5} cy={y+dy} r="1.2" fill="#0c1d2c" stroke="#2a5070" strokeWidth=".4"/>))}
+                <rect x={PP_L} y={y-3} width={PP_R-PP_L} height="6" rx="2.5" fill="url(#gPH)" stroke="#0a1820" strokeWidth=".7"/>
+                <rect x={PP_L} y={y-2.2} width={PP_R-PP_L} height="2" rx="1" fill="#4a8aaa" fillOpacity=".30"/>
+                <rect x={LG_X-9} y={y-7} width="11" height="14" rx="2.5" fill="url(#gFl)" stroke="#0a1820" strokeWidth=".8"/>
+                {[-4.5,4.5].map((dy,j)=>(<circle key={j} cx={LG_X-4} cy={y+dy} r="1.1" fill="#0c1d2c" stroke="#2a5070" strokeWidth=".4"/>))}
             </g>))}
 
-            {/* LEVEL GAUGE */}
+            {/* ═══════ LEVEL GAUGE ═══════ */}
             <g filter="url(#fST)">
-                {hasTarget && lgFillH > 0 && (
-                    <rect x={LG_X-3} y={lgFillY} width={LG_W+6} height={lgActiveBot-lgFillY} fill="url(#gLG)" filter="url(#fLgG)" className="gp" style={{transition:'all .8s cubic-bezier(.34,1.2,.64,1)'}}/>
+                {hasTarget && lgFH > 0 && (
+                    <rect x={LG_X-3} y={lgFY} width={LG_W+6} height={lgAB-lgFY} fill="url(#gLG)" filter="url(#fLgG)" className="gp" style={{transition:'all .8s cubic-bezier(.34,1.2,.64,1)'}}/>
                 )}
-                <rect x={LG_X} y={LG_TOP} width={LG_W} height={LG_H} rx="5.5" fill="url(#gTB)" stroke="#1e3d58" strokeWidth="2"/>
+                <rect x={LG_X} y={LG_TOP} width={LG_W} height={LG_H} rx="5" fill="url(#gTB)" stroke="#1e3d58" strokeWidth="2"/>
                 <g clipPath="url(#cL)">
-                    {hasTarget && lgFillH > 0 && (<>
-                        <rect x={LG_X+3} y={lgFillY} width={LG_W-6} height={lgActiveBot-lgFillY} fill="url(#gLL)" filter="url(#fG)" style={{transition:'all .8s cubic-bezier(.34,1.2,.64,1)'}}/>
-                        <ellipse cx={LG_X+LG_W/2} cy={lgFillY} rx={LG_W/2-3} ry="3" fill="#86efac" fillOpacity=".78" style={{transition:'all .8s cubic-bezier(.34,1.2,.64,1)'}}/>
-                        <rect x={LG_X+5} y={lgFillY+3} width="4" height={Math.max(lgActiveBot-lgFillY-6,0)} rx="2" fill="#86efac" fillOpacity=".10" style={{transition:'all .8s ease'}}/>
+                    {hasTarget && lgFH > 0 && (<>
+                        <rect x={LG_X+3} y={lgFY} width={LG_W-6} height={lgAB-lgFY} fill="url(#gLL)" filter="url(#fG)" style={{transition:'all .8s cubic-bezier(.34,1.2,.64,1)'}}/>
+                        <ellipse cx={LG_X+LG_W/2} cy={lgFY} rx={LG_W/2-3} ry="2.8" fill="#86efac" fillOpacity=".78" style={{transition:'all .8s cubic-bezier(.34,1.2,.64,1)'}}/>
+                        <rect x={LG_X+4.5} y={lgFY+3} width="3.5" height={Math.max(lgAB-lgFY-6,0)} rx="1.8" fill="#86efac" fillOpacity=".10" style={{transition:'all .8s ease'}}/>
                     </>)}
                 </g>
-                <rect x={LG_X} y={LG_TOP} width={LG_W} height={LG_H} rx="5.5" fill="url(#gGS)" opacity=".82"/>
-                <rect x={LG_X+3} y={LG_TOP+5} width="4.5" height={LG_H-10} rx="2.2" fill="#e0f2fe" fillOpacity=".14"/>
-                <rect x={LG_X-5} y={LG_TOP-7} width={LG_W+10} height="11" rx="3.8" fill="url(#gFl)" stroke="#0c1d2c" strokeWidth="1"/>
-                {[-7,7].map((dx,i)=>(<circle key={i} cx={LG_X+LG_W/2+dx} cy={LG_TOP-1.5} r="1.4" fill="#0c1d2c" stroke="#1e3d58" strokeWidth=".4"/>))}
-                <rect x={LG_X-5} y={LG_BOT-4} width={LG_W+10} height="11" rx="3.8" fill="url(#gFl)" stroke="#0c1d2c" strokeWidth="1"/>
-                {[-7,7].map((dx,i)=>(<circle key={i} cx={LG_X+LG_W/2+dx} cy={LG_BOT+1.5} r="1.4" fill="#0c1d2c" stroke="#1e3d58" strokeWidth=".4"/>))}
+                <rect x={LG_X} y={LG_TOP} width={LG_W} height={LG_H} rx="5" fill="url(#gGS)" opacity=".82"/>
+                <rect x={LG_X+3} y={LG_TOP+4} width="4" height={LG_H-8} rx="2" fill="#e0f2fe" fillOpacity=".13"/>
+                <rect x={LG_X-5} y={LG_TOP-6} width={LG_W+10} height="10" rx="3.5" fill="url(#gFl)" stroke="#0c1d2c" strokeWidth="1"/>
+                {[-7,7].map((dx,i)=>(<circle key={i} cx={LG_X+LG_W/2+dx} cy={LG_TOP-1} r="1.3" fill="#0c1d2c" stroke="#1e3d58" strokeWidth=".4"/>))}
+                <rect x={LG_X-5} y={LG_BOT-4} width={LG_W+10} height="10" rx="3.5" fill="url(#gFl)" stroke="#0c1d2c" strokeWidth="1"/>
+                {[-7,7].map((dx,i)=>(<circle key={i} cx={LG_X+LG_W/2+dx} cy={LG_BOT+1} r="1.3" fill="#0c1d2c" stroke="#1e3d58" strokeWidth=".4"/>))}
             </g>
 
-            {/* SCALE */}
-            {[0,25,50,75,100].map(pct=>{const ty=lgActiveBot-(pct/100)*lgActiveH;return(<g key={pct}><line x1={LG_X+LG_W+3} y1={ty} x2={LG_X+LG_W+10} y2={ty} stroke="#4a8aaa" strokeWidth="1.4"/><text x={LG_X+LG_W+14} y={ty+3.5} fontSize="10" fontFamily="'SF Mono','Courier New',monospace" fontWeight="bold" fill="#5a9aba">{pct}</text></g>);})}
-            {Array.from({length:21},(_,i)=>{if([0,5,10,15,20].includes(i))return null;const ty=lgActiveBot-(i/20)*lgActiveH;return <line key={i} x1={LG_X+LG_W+3} y1={ty} x2={LG_X+LG_W+7} y2={ty} stroke="#1e3d58" strokeWidth=".7"/>;})}
+            {/* ═══════ SCALE ═══════ */}
+            {[0,25,50,75,100].map(pct=>{const ty=lgAB-(pct/100)*lgAH;return(<g key={pct}><line x1={LG_X+LG_W+3} y1={ty} x2={LG_X+LG_W+9} y2={ty} stroke="#4a8aaa" strokeWidth="1.3"/><text x={LG_X+LG_W+13} y={ty+3.5} fontSize="9.5" fontFamily="'SF Mono',monospace" fontWeight="bold" fill="#5a9aba">{pct}</text></g>);})}
+            {Array.from({length:21},(_,i)=>{if([0,5,10,15,20].includes(i))return null;const ty=lgAB-(i/20)*lgAH;return <line key={i} x1={LG_X+LG_W+3} y1={ty} x2={LG_X+LG_W+6.5} y2={ty} stroke="#1e3d58" strokeWidth=".6"/>;})}
 
-            {/* DIFF INDICATOR */}
+            {/* ═══════ DIFF INDICATOR ═══════ */}
             {hasCurrent && hasTarget && Math.abs(ltPct-lgPct)>0.5 && (<g>
-                <line x1={LG_X+LG_W+12} y1={ltLevelOnLG} x2={LG_X+LG_W+12} y2={lgLevelOnLG} stroke="#f59e0b" strokeWidth="1.4" strokeDasharray="2.5,1.5" filter="url(#fD)" opacity=".65"/>
-                <line x1={LG_X+LG_W+3} y1={ltLevelOnLG} x2={LG_X+LG_W+16} y2={ltLevelOnLG} stroke="#22d3ee" strokeWidth="1" strokeDasharray="2,1.2"/>
-                <polygon points={ltPct<lgPct?`${LG_X+LG_W+9},${ltLevelOnLG+2.5} ${LG_X+LG_W+12},${ltLevelOnLG+7} ${LG_X+LG_W+15},${ltLevelOnLG+2.5}`:`${LG_X+LG_W+9},${ltLevelOnLG-2.5} ${LG_X+LG_W+12},${ltLevelOnLG-7} ${LG_X+LG_W+15},${ltLevelOnLG-2.5}`} fill="#f59e0b" fillOpacity=".55"/>
+                <line x1={LG_X+LG_W+11} y1={ltOnLG} x2={LG_X+LG_W+11} y2={lgOnLG} stroke="#f59e0b" strokeWidth="1.3" strokeDasharray="2.5,1.5" filter="url(#fD)" opacity=".60"/>
+                <line x1={LG_X+LG_W+3} y1={ltOnLG} x2={LG_X+LG_W+15} y2={ltOnLG} stroke="#22d3ee" strokeWidth="1" strokeDasharray="2,1"/>
+                <polygon points={ltPct<lgPct?`${LG_X+LG_W+8},${ltOnLG+2} ${LG_X+LG_W+11},${ltOnLG+6} ${LG_X+LG_W+14},${ltOnLG+2}`:`${LG_X+LG_W+8},${ltOnLG-2} ${LG_X+LG_W+11},${ltOnLG-6} ${LG_X+LG_W+14},${ltOnLG-2}`} fill="#f59e0b" fillOpacity=".55"/>
             </g>)}
 
-            {/* LEAD LINES — H (right/inner) */}
-            <g>
-                <rect x={PORT_RIGHT_X} y={H_PORT_Y-3.5} width={LEAD_H_VERT_X-PORT_RIGHT_X+3} height="7" rx="2.5" fill="url(#gPH)" stroke="#0a1820" strokeWidth=".7"/>
-                <rect x={PORT_RIGHT_X} y={H_PORT_Y-2.8} width={LEAD_H_VERT_X-PORT_RIGHT_X+3} height="2.2" rx="1" fill="#4a8aaa" fillOpacity=".28"/>
-                <rect x={LEAD_H_VERT_X} y={URV_Y} width="7" height={H_PORT_Y-URV_Y} rx="2.5" fill="url(#gPp)" stroke="#0a1820" strokeWidth=".7"/>
-                <rect x={LEAD_H_VERT_X+.5} y={URV_Y} width="2.2" height={H_PORT_Y-URV_Y} rx="1" fill="#4a8aaa" fillOpacity=".28"/>
-                <rect x={LEAD_H_VERT_X+4} y={URV_Y-3.5} width={VX-12-LEAD_H_VERT_X-4} height="7" rx="2.5" fill="url(#gPH)" stroke="#0a1820" strokeWidth=".7"/>
-                <rect x={LEAD_H_VERT_X+4} y={URV_Y-2.8} width={VX-12-LEAD_H_VERT_X-4} height="2.2" rx="1" fill="#4a8aaa" fillOpacity=".28"/>
-                <rect x={LEAD_H_VERT_X-2} y={H_PORT_Y-5} width="11" height="11" rx="3" fill="url(#gFl)" stroke="#0a1820" strokeWidth=".6"/>
-                <rect x={LEAD_H_VERT_X-2} y={URV_Y-5} width="11" height="11" rx="3" fill="url(#gFl)" stroke="#0a1820" strokeWidth=".6"/>
-                <text x={LEAD_H_VERT_X+3.5} y={(H_PORT_Y+URV_Y)/2+2} fontSize="6.5" fontFamily="'SF Mono','Courier New',monospace" fontWeight="bold" fill="#5a9aba" textAnchor="middle" fillOpacity=".70">H</text>
-            </g>
-            {/* LEAD LINES — L (left/outer) */}
-            <g>
-                <rect x={PORT_RIGHT_X} y={L_PORT_Y-3.5} width={LEAD_L_VERT_X-PORT_RIGHT_X+3} height="7" rx="2.5" fill="url(#gPH)" stroke="#0a1820" strokeWidth=".7"/>
-                <rect x={PORT_RIGHT_X} y={L_PORT_Y-2.8} width={LEAD_L_VERT_X-PORT_RIGHT_X+3} height="2.2" rx="1" fill="#4a8aaa" fillOpacity=".28"/>
-                <rect x={LEAD_L_VERT_X} y={L_PORT_Y} width="7" height={LRV_Y-L_PORT_Y} rx="2.5" fill="url(#gPp)" stroke="#0a1820" strokeWidth=".7"/>
-                <rect x={LEAD_L_VERT_X+.5} y={L_PORT_Y} width="2.2" height={LRV_Y-L_PORT_Y} rx="1" fill="#4a8aaa" fillOpacity=".28"/>
-                <rect x={LEAD_L_VERT_X+4} y={LRV_Y-3.5} width={VX-12-LEAD_L_VERT_X-4} height="7" rx="2.5" fill="url(#gPH)" stroke="#0a1820" strokeWidth=".7"/>
-                <rect x={LEAD_L_VERT_X+4} y={LRV_Y-2.8} width={VX-12-LEAD_L_VERT_X-4} height="2.2" rx="1" fill="#4a8aaa" fillOpacity=".28"/>
-                <rect x={LEAD_L_VERT_X-2} y={L_PORT_Y-5} width="11" height="11" rx="3" fill="url(#gFl)" stroke="#0a1820" strokeWidth=".6"/>
-                <rect x={LEAD_L_VERT_X-2} y={LRV_Y-5} width="11" height="11" rx="3" fill="url(#gFl)" stroke="#0a1820" strokeWidth=".6"/>
-                <text x={LEAD_L_VERT_X+3.5} y={(L_PORT_Y+LRV_Y)/2+2} fontSize="6.5" fontFamily="'SF Mono','Courier New',monospace" fontWeight="bold" fill="#5a9aba" textAnchor="middle" fillOpacity=".70">L</text>
-            </g>
+            {/* ═══════ DIAGONAL LEAD LINES (no bends, self-draining slope) ═══════ */}
+            {/* H lead: vessel upper tap → sensor H port (diagonal down-left) */}
+            <line x1={VX-11} y1={URV_Y} x2={PORT_EX} y2={H_PORT_Y}
+                stroke="#1e4460" strokeWidth="6" strokeLinecap="round"/>
+            <line x1={VX-11} y1={URV_Y} x2={PORT_EX} y2={H_PORT_Y}
+                stroke="#3a7a9a" strokeWidth="2.5" strokeLinecap="round" strokeOpacity=".35"/>
+            {/* H label */}
+            <text x={(VX-11+PORT_EX)/2-8} y={(URV_Y+H_PORT_Y)/2+3}
+                fontSize="7" fontFamily="'SF Mono',monospace" fontWeight="bold"
+                fill="#5a9aba" fillOpacity=".70">H</text>
 
-            {/* YOKOGAWA TRANSMITTER */}
+            {/* L lead: vessel lower tap → sensor L port (diagonal down-left) */}
+            <line x1={VX-11} y1={LRV_Y} x2={PORT_EX} y2={L_PORT_Y}
+                stroke="#1e4460" strokeWidth="6" strokeLinecap="round"/>
+            <line x1={VX-11} y1={LRV_Y} x2={PORT_EX} y2={L_PORT_Y}
+                stroke="#3a7a9a" strokeWidth="2.5" strokeLinecap="round" strokeOpacity=".35"/>
+            {/* L label */}
+            <text x={(VX-11+PORT_EX)/2-8} y={(LRV_Y+L_PORT_Y)/2+3}
+                fontSize="7" fontFamily="'SF Mono',monospace" fontWeight="bold"
+                fill="#5a9aba" fillOpacity=".70">L</text>
+
+            {/* Vessel-side flanges on lead lines */}
+            {[URV_Y,LRV_Y].map((y,i)=>(<rect key={`lf${i}`} x={VX-16} y={y-5} width="7" height="10" rx="2" fill="url(#gFl)" stroke="#0a1820" strokeWidth=".6"/>))}
+            {/* Sensor-side flanges on lead lines */}
+            {[H_PORT_Y,L_PORT_Y].map((y,i)=>(<rect key={`sf${i}`} x={PORT_EX-2} y={y-5} width="7" height="10" rx="2" fill="url(#gFl)" stroke="#0a1820" strokeWidth=".6"/>))}
+
+            {/* ═══════ YOKOGAWA TRANSMITTER ═══════ */}
             <g filter="url(#fSL)">
-                {/* SENSOR (top, silver) */}
-                <rect x={LT_LEFT} y={SENS_TOP} width={LT_W} height={SENS_H} rx="6" fill="url(#gSn)" stroke="#585858" strokeWidth="1.5"/>
-                <rect x={LT_LEFT} y={SENS_TOP} width={LT_W} height={SENS_H} rx="6" fill="url(#gSnS)" opacity=".38"/>
-                {[0,1,2,3].map(i=>(<rect key={i} x={LT_LEFT} y={SENS_TOP+6+i*10} width={LT_W} height="5.5" rx="1" fill="#909090" fillOpacity=".15"/>))}
-                <rect x={LT_LEFT} y={SENS_TOP} width={LT_W} height="8" rx="5.5" fill="#c8c8c8" fillOpacity=".48"/>
-                <rect x={LT_LEFT} y={SENS_BOT-8} width={LT_W} height="8" rx="5.5" fill="#606060" fillOpacity=".42"/>
+
+                {/* ── AMPLIFIER HOUSING (green/Head) — TOP ── */}
+                {[0,1,2,3,4,5,6].map(i=>(<rect key={i} x={LT_L-4} y={AMP_TOP+i*9} width={LT_W+8} height="5.5" rx="1" fill="#1e3a28" fillOpacity=".38"/>))}
+                <rect x={LT_L-2} y={AMP_TOP} width={LT_W+4} height={AMP_H} rx="8" fill="url(#gAm)" stroke="#284a30" strokeWidth="1.6"/>
+                <rect x={LT_L-2} y={AMP_TOP} width={LT_W+4} height={AMP_H} rx="8" fill="url(#gAmS)" opacity=".60"/>
+                <rect x={LT_L-2} y={AMP_TOP} width={LT_W+4} height="9" rx="7" fill="#3e6848" fillOpacity=".48"/>
+                <rect x={LT_L-2} y={AMP_BOT-9} width={LT_W+4} height="9" rx="7" fill="#0f1e14" fillOpacity=".55"/>
+                {/* Corner bolts */}
+                {[[LT_L+5,AMP_TOP+7],[LT_R-5,AMP_TOP+7],[LT_L+5,AMP_BOT-7],[LT_R-5,AMP_BOT-7]].map(([bx,by],i)=>(<g key={i}><circle cx={bx} cy={by} r="3.8" fill="#142018" stroke="#3a5c38" strokeWidth="1"/><circle cx={bx} cy={by} r="1.7" fill="#0a1410" stroke="#2a4028" strokeWidth=".4"/><circle cx={bx} cy={by} r="2.8" fill="none" stroke="#203820" strokeWidth=".6" strokeDasharray="1.6,1"/></g>))}
+                {/* LCD — LARGER, less bezel */}
+                <rect x={LT_CX-22} y={AMP_TOP+10} width="44" height="42" rx="5" fill="#0c1c14" stroke="#264030" strokeWidth="1"/>
+                <rect x={LT_CX-20} y={AMP_TOP+12} width="40" height="38" rx="4" fill="url(#gLd)"/>
+                {hasCurrent&&(<rect x={LT_CX-20} y={AMP_TOP+12} width="40" height="38" rx="4" fill="#00e5ff" fillOpacity=".04"/>)}
+                <text x={LT_CX} y={AMP_TOP+38} fontSize="14" fontFamily="'SF Mono',monospace" fontWeight="bold" textAnchor="middle" fill={hasCurrent?"#00e5ff":"#0a2a1a"}>{hasCurrent?`${parseFloat(currPct).toFixed(1)}%`:'---%'}</text>
+                <text x={LT_CX} y={AMP_TOP+46} fontSize="5" fontFamily="'SF Mono',monospace" textAnchor="middle" fill={hasCurrent?"#007a8a":"#061510"}>LEVEL %</text>
+                {/* LED */}
+                <circle cx={LT_CX+18} cy={AMP_TOP+14} r="2.5" fill={hasCurrent?"#00e5ff":"#0a2020"} stroke="#081818" strokeWidth=".4" filter={hasCurrent?"url(#fC)":undefined} className={hasCurrent?"lb":""}/>
+                {/* Model */}
+                <text x={LT_CX-18} y={AMP_TOP+17} fontSize="3.8" fontFamily="'SF Mono',monospace" fill="#265a34" letterSpacing="1">EJX910A</text>
+                {/* Nameplate */}
+                <rect x={LT_CX-18} y={AMP_BOT-15} width="36" height="9" rx="2" fill="#0c1c14" stroke="#1e3020" strokeWidth=".6"/>
+                <text x={LT_CX} y={AMP_BOT-8.5} fontSize="4.5" fontFamily="'SF Mono',monospace" textAnchor="middle" fill="#3a6844" letterSpacing="1.8">YOKOGAWA</text>
+
+                {/* ── COUPLING RING ── */}
+                <rect x={LT_L-2} y={COUP_TOP} width={LT_W+4} height={COUP_H} rx="3.5" fill="url(#gCp)" stroke="#0c1d2c" strokeWidth="1"/>
+                {[2,5,8].map(dy=>(<line key={dy} x1={LT_L-2} y1={COUP_TOP+dy} x2={LT_R+2} y2={COUP_TOP+dy} stroke="#142a3c" strokeWidth=".5" strokeOpacity=".5"/>))}
+                <rect x={LT_L-2} y={COUP_TOP} width={LT_W+4} height="3" rx="2" fill="#4a7888" fillOpacity=".35"/>
+                {[-14,-7,0,7,14].map((dx,i)=>(<circle key={i} cx={LT_CX+dx} cy={COUP_TOP+COUP_H/2} r="1.2" fill="#0c1d2c" stroke="#2a5060" strokeWidth=".4"/>))}
+
+                {/* ── SENSOR CAPSULE (silver/Body) — BOTTOM, with H/L ports ── */}
+                <rect x={LT_L} y={SENS_TOP} width={LT_W} height={SENS_H} rx="6" fill="url(#gSn)" stroke="#585858" strokeWidth="1.5"/>
+                <rect x={LT_L} y={SENS_TOP} width={LT_W} height={SENS_H} rx="6" fill="url(#gSnS)" opacity=".35"/>
+                {[0,1,2,3,4].map(i=>(<rect key={i} x={LT_L} y={SENS_TOP+5+i*10} width={LT_W} height="5" rx="1" fill="#909090" fillOpacity=".14"/>))}
+                <rect x={LT_L} y={SENS_TOP} width={LT_W} height="7" rx="5" fill="#c8c8c8" fillOpacity=".45"/>
+                <rect x={LT_L} y={SENS_BOT-7} width={LT_W} height="7" rx="5" fill="#606060" fillOpacity=".40"/>
                 {/* H/L ports RIGHT */}
                 {[{y:H_PORT_Y,l:'H'},{y:L_PORT_Y,l:'L'}].map(({y,l},i)=>(<g key={`p${i}`}>
-                    <rect x={LT_RIGHT-2} y={y-8} width="18" height="16" rx="3.5" fill="url(#gSn)" stroke="#484848" strokeWidth="1"/>
-                    <rect x={LT_RIGHT-2} y={y-8} width="18" height="16" rx="3.5" fill="url(#gSnS)" opacity=".22"/>
-                    <circle cx={LT_RIGHT+12} cy={y} r="3.8" fill="#222" stroke="#383838" strokeWidth=".7"/><circle cx={LT_RIGHT+12} cy={y} r="2" fill="#111"/>
-                    <text x={LT_RIGHT+4} y={y+3} fontSize="5.5" fontFamily="'SF Mono','Courier New',monospace" fontWeight="bold" fill="#909090" textAnchor="middle">{l}</text>
-                    {[-5.5,5.5].map((dy,j)=>(<circle key={j} cx={LT_RIGHT+14} cy={y+dy} r="1" fill="#383838" stroke="#585858" strokeWidth=".4"/>))}
+                    <rect x={LT_R-2} y={y-7} width="16" height="14" rx="3" fill="url(#gSn)" stroke="#484848" strokeWidth=".9"/>
+                    <rect x={LT_R-2} y={y-7} width="16" height="14" rx="3" fill="url(#gSnS)" opacity=".20"/>
+                    <circle cx={LT_R+10} cy={y} r="3.5" fill="#222" stroke="#383838" strokeWidth=".6"/><circle cx={LT_R+10} cy={y} r="1.8" fill="#111"/>
+                    <text x={LT_R+3} y={y+2.5} fontSize="5" fontFamily="'SF Mono',monospace" fontWeight="bold" fill="#909090" textAnchor="middle">{l}</text>
+                    {[-5,5].map((dy,j)=>(<circle key={j} cx={LT_R+12} cy={y+dy} r=".9" fill="#383838" stroke="#585858" strokeWidth=".3"/>))}
                 </g>))}
-                <rect x={LT_CX-5} y={SENS_BOT} width="10" height="6" rx="2" fill="#a8a8a8" stroke="#606060" strokeWidth=".7"/>
-                <circle cx={LT_CX} cy={SENS_BOT+3} r="2" fill="#505050" stroke="#707070" strokeWidth=".4"/>
+                {/* Drain */}
+                <rect x={LT_CX-4.5} y={SENS_BOT} width="9" height="5" rx="2" fill="#a8a8a8" stroke="#606060" strokeWidth=".6"/>
+                <circle cx={LT_CX} cy={SENS_BOT+2.5} r="1.8" fill="#505050" stroke="#707070" strokeWidth=".4"/>
 
-                {/* COUPLING */}
-                <rect x={LT_LEFT-2} y={COUP_TOP} width={LT_W+4} height={COUP_H} rx="4" fill="url(#gCp)" stroke="#0c1d2c" strokeWidth="1.1"/>
-                {[2,5,8].map(dy=>(<line key={dy} x1={LT_LEFT-2} y1={COUP_TOP+dy} x2={LT_RIGHT+2} y2={COUP_TOP+dy} stroke="#142a3c" strokeWidth=".6" strokeOpacity=".55"/>))}
-                <rect x={LT_LEFT-2} y={COUP_TOP} width={LT_W+4} height="3.5" rx="2.5" fill="#4a7888" fillOpacity=".38"/>
-                {[-16,-8,0,8,16].map((dx,i)=>(<circle key={i} cx={LT_CX+dx} cy={COUP_TOP+COUP_H/2} r="1.3" fill="#0c1d2c" stroke="#2a5060" strokeWidth=".4"/>))}
-
-                {/* AMPLIFIER (green) */}
-                {[0,1,2,3,4,5].map(i=>(<rect key={i} x={LT_LEFT-4} y={AMP_TOP+i*10} width={LT_W+8} height="6" rx="1" fill="#1e3a28" fillOpacity=".42"/>))}
-                <rect x={LT_LEFT-2} y={AMP_TOP} width={LT_W+4} height={AMP_H} rx="8" fill="url(#gAm)" stroke="#284a30" strokeWidth="1.6"/>
-                <rect x={LT_LEFT-2} y={AMP_TOP} width={LT_W+4} height={AMP_H} rx="8" fill="url(#gAmS)" opacity=".62"/>
-                <rect x={LT_LEFT-2} y={AMP_TOP} width={LT_W+4} height="9" rx="7" fill="#3e6848" fillOpacity=".48"/>
-                <rect x={LT_LEFT-2} y={AMP_BOT-9} width={LT_W+4} height="9" rx="7" fill="#0f1e14" fillOpacity=".58"/>
-                {[[LT_LEFT+5,AMP_TOP+7],[LT_RIGHT-5,AMP_TOP+7],[LT_LEFT+5,AMP_BOT-7],[LT_RIGHT-5,AMP_BOT-7]].map(([bx,by],i)=>(<g key={i}><circle cx={bx} cy={by} r="4" fill="#142018" stroke="#3a5c38" strokeWidth="1"/><circle cx={bx} cy={by} r="1.8" fill="#0a1410" stroke="#2a4028" strokeWidth=".4"/><circle cx={bx} cy={by} r="3" fill="none" stroke="#203820" strokeWidth=".7" strokeDasharray="1.8,1.2"/></g>))}
-                {/* LCD */}
-                <rect x={LT_CX-19} y={AMP_TOP+13} width="38" height="32" rx="4.5" fill="#0c1c14" stroke="#264030" strokeWidth="1.1"/>
-                <rect x={LT_CX-16} y={AMP_TOP+16} width="32" height="26" rx="3.5" fill="#060f0a" stroke="#182010" strokeWidth=".7"/>
-                <rect x={LT_CX-14} y={AMP_TOP+18} width="28" height="22" rx="2.5" fill="url(#gLd)"/>
-                {hasCurrent&&(<rect x={LT_CX-14} y={AMP_TOP+18} width="28" height="22" rx="2.5" fill="#00e5ff" fillOpacity=".04"/>)}
-                <text x={LT_CX} y={AMP_TOP+33} fontSize="10" fontFamily="'SF Mono','Courier New',monospace" fontWeight="bold" textAnchor="middle" fill={hasCurrent?"#00e5ff":"#0a2a1a"}>{hasCurrent?`${parseFloat(currPct).toFixed(1)}%`:'---%'}</text>
-                <text x={LT_CX} y={AMP_TOP+39} fontSize="4.5" fontFamily="'SF Mono','Courier New',monospace" textAnchor="middle" fill={hasCurrent?"#007a8a":"#061510"}>LEVEL %</text>
-                <circle cx={LT_CX+15} cy={AMP_TOP+16} r="2.5" fill={hasCurrent?"#00e5ff":"#0a2020"} stroke="#081818" strokeWidth=".4" filter={hasCurrent?"url(#fC)":undefined} className={hasCurrent?"lb":""}/>
-                <text x={LT_CX} y={AMP_TOP+11} fontSize="4.2" fontFamily="'SF Mono','Courier New',monospace" textAnchor="middle" fill="#265a34" letterSpacing="1.2">EJX910A</text>
-                <rect x={LT_CX-19} y={AMP_BOT-13} width="38" height="9" rx="2" fill="#0c1c14" stroke="#1e3020" strokeWidth=".7"/>
-                <text x={LT_CX} y={AMP_BOT-6.5} fontSize="4.8" fontFamily="'SF Mono','Courier New',monospace" textAnchor="middle" fill="#3a6844" letterSpacing="1.8">YOKOGAWA</text>
-
-                {/* CONDUIT */}
-                <rect x={LT_CX-7} y={COND_TOP} width="14" height="14" rx="3.5" fill="#182e20" stroke="#264030" strokeWidth="1"/>
-                <rect x={LT_CX-4.5} y={COND_TOP+12} width="9" height="4" rx="2" fill="#0f1e16" stroke="#1e3028" strokeWidth=".8"/>
-                <circle cx={LT_CX-3} cy={COND_TOP+6} r="1.3" fill="#0c1a10" stroke="#385040" strokeWidth=".4"/>
-                <circle cx={LT_CX+3} cy={COND_TOP+6} r="1.3" fill="#0c1a10" stroke="#385040" strokeWidth=".4"/>
+                {/* ── CONDUIT ── */}
+                <rect x={LT_CX-6} y={COND_TOP} width="12" height="12" rx="3" fill="#182e20" stroke="#264030" strokeWidth=".9"/>
+                <rect x={LT_CX-4} y={COND_TOP+10} width="8" height="4" rx="2" fill="#0f1e16" stroke="#1e3028" strokeWidth=".7"/>
+                <circle cx={LT_CX-2.5} cy={COND_TOP+5} r="1.2" fill="#0c1a10" stroke="#385040" strokeWidth=".3"/>
+                <circle cx={LT_CX+2.5} cy={COND_TOP+5} r="1.2" fill="#0c1a10" stroke="#385040" strokeWidth=".3"/>
             </g>
         </svg>
     );
 }
-
 
 /* ═══════════════════════════════════════════════════════════════
    MAIN COMPONENT
@@ -449,7 +464,7 @@ export default function LevelTransmitter() {
 
             {/* LIVE VIEW */}
             <div className="bg-card rounded-2xl border border-slate-800 shadow-2xl overflow-hidden"
-                 style={{flex:'1 1 auto',minHeight:'200px',display:'flex',flexDirection:'column'}}>
+                 style={{flex:'1 1 auto',minHeight:'180px',display:'flex',flexDirection:'column'}}>
                 <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800/60 flex-shrink-0">
                     <div className="flex items-center gap-2 text-cyan-500">
                         <Droplets className="w-3.5 h-3.5"/>
