@@ -42,7 +42,7 @@ export default function ThermocoupleCalc() {
         T: { materials: { pos: 'Copper', neg: 'Constantan' }, ansi: { jacket: '#2563EB', pos: '#2563EB', neg: '#E53935' }, jis: { jacket: '#92400E', pos: '#E53935', neg: '#F8F9FA' } },
         S: { materials: { pos: 'Pt-10%Rh', neg: 'Platinum' }, ansi: { jacket: '#16A34A', pos: '#27272A', neg: '#E53935' }, jis: { jacket: '#9CA3AF', pos: '#E53935', neg: '#F8F9FA' } },
         R: { materials: { pos: 'Pt-13%Rh', neg: 'Platinum' }, ansi: { jacket: '#16A34A', pos: '#27272A', neg: '#E53935' }, jis: { jacket: '#27272A', pos: '#E53935', neg: '#F8F9FA' } },
-        N: { materials: { pos: 'Nicrosil', neg: 'Nisil' }, ansi: { jacket: '#F97316', pos: '#F97316', neg: '#E53935' }, jis: { jacket: '#16A34A', pos: '#16A34A', neg: '#F8F9FA' } },
+        N: { materials: { pos: 'Nicrosil', neg: 'Nisil' }, ansi: { jacket: '#F97316', pos: '#F97316', neg: '#E53935' }, jis: { jacket: '#FFC0CB', pos: '#FFC0CB', neg: '#F8F9FA' } },
     };
 
     const getContrastYIQ = (hexcolor) => {

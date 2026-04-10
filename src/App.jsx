@@ -11,9 +11,10 @@ import GasketBoltCalc from './components/GasketBoltCalc';
 import TransmitterAlarmFinder from './components/TransmitterAlarmFinder';
 import InstallButton from './components/InstallButton';
 import InstallGuide from './components/InstallGuide';
+import FlowCalc from './components/FlowCalc';
 import UpdateToast, { checkForUpdate } from './components/UpdateToast';
 import { version as appVersion } from '../package.json';
-import { Activity, Database, Thermometer, Gauge, Cpu, Waves, Menu, ChevronDown, Check, Zap, Layers, Cog, ShieldAlert, RefreshCw } from 'lucide-react';
+import { Activity, Database, Thermometer, Gauge, Cpu, Waves, Droplets, Menu, ChevronDown, Check, Zap, Layers, Cog, ShieldAlert, RefreshCw } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -27,6 +28,7 @@ function cn(...inputs) {
 
 const TABS = [
   { id: 'lt', label: 'LT (Level)', icon: Waves, component: LevelTransmitter },
+  { id: 'ft', label: 'FT (Flow)', icon: Droplets, component: FlowCalc },
   { id: 'tc', label: 'Thermocouple', icon: Thermometer, component: ThermocoupleCalc },
   { id: 'rtd', label: 'RTD (Pt100)', icon: Cpu, component: RTDCalc },
   { id: 'valtek', label: 'Valtek Logix', icon: Activity, component: ValtekDiagnosis },
