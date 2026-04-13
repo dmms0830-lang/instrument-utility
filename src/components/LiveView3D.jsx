@@ -94,8 +94,183 @@ function LiquidSurface({ pct, baseY, maxH, radius, color, isBox, boxW, boxD, pos
     </mesh>;
 }
 
+// ── VESSEL DEVIATION OVERLAY ──
+
+/* 현재 LT 링 — 오렌지 */
+function LTRing({ ltPct }) {
+    const ref = useRef();
+    const cur = useRef(ltPct ?? 0);
+    useFrame((_, dt) => {
+        cur.current += ((ltPct ?? 0) - cur.current) * Math.min(dt * 3.5, 1);
+        if (ref.current) ref.current.position.y = LRV_Y + (Math.max(0, Math.min(100, cur.current)) / 100) * MEAS;
+    });
+    if (ltPct == null) return null;
+    return (
+        <group ref={ref} position={[0, LRV_Y, 0]}>
+            {/* Vessel 외벽 밖으로 빼서 빗금 띠/액체에 가려지지 않게, 튜브도 굵게 */}
+            <mesh rotation={[Math.PI / 2, 0, 0]} renderOrder={10}>
+                <torusGeometry args={[V_R + 0.035, 0.022, 12, 64]} />
+                <meshBasicMaterial color="#e0fbff" transparent opacity={0.98} depthWrite={false} depthTest={false} />
+            </mesh>
+            {/* 내부 코어 — 더 밝은 흰빛 */}
+            <mesh rotation={[Math.PI / 2, 0, 0]} renderOrder={11}>
+                <torusGeometry args={[V_R + 0.035, 0.010, 10, 64]} />
+                <meshBasicMaterial color="#ffffff" transparent opacity={1.0} depthWrite={false} depthTest={false} />
+            </mesh>
+        </group>
+    );
+}
+
+/* 목표 링 — 방향에 따라 초록(올림) or 빨강(내림), pulse */
+function TargetLTRing({ lgPct, isUp }) {
+    const ref = useRef();
+    const matRef = useRef();
+    const cur = useRef(lgPct ?? 0);
+    const t = useRef(0);
+    useFrame((_, dt) => {
+        cur.current += ((lgPct ?? 0) - cur.current) * Math.min(dt * 3.5, 1);
+        t.current += dt;
+        if (ref.current) ref.current.position.y = LRV_Y + (Math.max(0, Math.min(100, cur.current)) / 100) * MEAS;
+        if (matRef.current) {
+            matRef.current.opacity = 0.75 + Math.sin(t.current * 3.5) * 0.22;
+        }
+    });
+    if (lgPct == null) return null;
+    const col = isUp ? '#22c55e' : '#ef4444';
+    return (
+        <group ref={ref} position={[0, LRV_Y, 0]}>
+            <mesh rotation={[Math.PI / 2, 0, 0]} renderOrder={10}>
+                <torusGeometry args={[V_R + 0.035, 0.018, 10, 64]} />
+                <meshBasicMaterial ref={matRef} color={col} transparent opacity={0.92} depthWrite={false} depthTest={false} />
+            </mesh>
+        </group>
+    );
+}
+
+/* 편차 구간 — Vessel 외벽을 감싸는 원통형 빗금 띠
+   핵심: CanvasTexture로 45도 빗금 패턴을 그려서 open-cylinder 외벽에 매핑.
+         height=1 기준 cylinder를 scale.y로 편차 높이만큼 늘림.
+         라디우스는 V_R보다 살짝 크게 → 외벽에 감긴 띠로 보임 */
+
+// 빗금 패턴 canvas texture 생성 (색상별 캐시)
+function makeHatchTexture(color) {
+    const size = 128;
+    const canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    // 반투명 배경
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.15;
+    ctx.fillRect(0, 0, size, size);
+    // 45도 빗금
+    ctx.globalAlpha = 0.95;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 10;
+    ctx.lineCap = 'square';
+    for (let i = -size; i < size * 2; i += 22) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i + size, size);
+        ctx.stroke();
+    }
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(6, 2); // 원주 방향 6번 반복 → 어느 각도에서 봐도 빗금 보임
+    tex.needsUpdate = true;
+    return tex;
+}
+
+function DeviationZone({ ltPct, lgPct }) {
+    const bandRef = useRef();
+    const shaftRef = useRef();
+    const headRef = useRef();
+    const matRef = useRef();
+    const ltCur = useRef(ltPct ?? 0);
+    const lgCur = useRef(lgPct ?? 0);
+    const t = useRef(0);
+
+    // 빗금 텍스처 — 색상별로 한 번씩만 생성
+    const hatchRed   = useMemo(() => makeHatchTexture('#ef4444'), []);
+    const hatchGreen = useMemo(() => makeHatchTexture('#22c55e'), []);
+
+    useFrame((_, dt) => {
+        ltCur.current += ((ltPct ?? 0) - ltCur.current) * Math.min(dt * 3.5, 1);
+        lgCur.current += ((lgPct ?? 0) - lgCur.current) * Math.min(dt * 3.5, 1);
+        t.current += dt;
+
+        const lo = Math.min(ltCur.current, lgCur.current);
+        const hi = Math.max(ltCur.current, lgCur.current);
+        const botY = LRV_Y + (Math.max(0, lo) / 100) * MEAS;
+        const topY = LRV_Y + (Math.min(100, hi) / 100) * MEAS;
+        const h = topY - botY;
+        const cy = botY + h / 2;
+        const show = h > 0.04;
+        const isUp = lgCur.current > ltCur.current;
+
+        // 외벽 띠 — position + scale.y
+        const band = bandRef.current;
+        if (band) {
+            band.visible = show;
+            band.position.set(0, cy, 0);
+            band.scale.set(1, Math.max(h, 0.001), 1);
+        }
+        // 색상(빗금 텍스처) 방향 분기
+        if (matRef.current) {
+            const wantTex = isUp ? hatchGreen : hatchRed;
+            if (matRef.current.map !== wantTex) {
+                matRef.current.map = wantTex;
+                matRef.current.color.set(isUp ? '#22c55e' : '#ef4444');
+                matRef.current.needsUpdate = true;
+            }
+        }
+
+        // 화살표 — Vessel 앞쪽(FG_Z 방향)에 부양, bounce
+        const bounce = Math.sin(t.current * 2.8) * 0.06;
+        const arrowCY = cy + (isUp ? bounce : -bounce);
+        if (shaftRef.current) {
+            shaftRef.current.visible = show;
+            shaftRef.current.position.set(0, arrowCY + (isUp ? -0.10 : 0.10), V_R + 0.05);
+        }
+        if (headRef.current) {
+            headRef.current.visible = show;
+            headRef.current.position.set(0, arrowCY + (isUp ? 0.06 : -0.06), V_R + 0.05);
+            headRef.current.rotation.set(isUp ? 0 : Math.PI, 0, 0);
+        }
+    });
+
+    if (ltPct == null || lgPct == null) return null;
+
+    return <>
+        {/* Vessel 외벽을 감싸는 원통형 빗금 띠 — open-ended, 양면 렌더 */}
+        <mesh ref={bandRef} position={[0, LRV_Y, 0]}>
+            <cylinderGeometry args={[V_R + 0.015, V_R + 0.015, 1, 48, 1, true]} />
+            <meshBasicMaterial
+                ref={matRef}
+                map={hatchRed}
+                color="#ef4444"
+                transparent
+                opacity={0.85}
+                side={THREE.DoubleSide}
+                depthWrite={false}
+                alphaTest={0.02}
+            />
+        </mesh>
+        {/* 화살표 shaft — Vessel 앞에 떠 있음 */}
+        <mesh ref={shaftRef}>
+            <cylinderGeometry args={[0.028, 0.028, 0.24, 12]} />
+            <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={1.2} transparent opacity={0.98} depthWrite={false} />
+        </mesh>
+        {/* 화살표 head */}
+        <mesh ref={headRef}>
+            <coneGeometry args={[0.07, 0.16, 12]} />
+            <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={1.2} transparent opacity={0.98} depthWrite={false} />
+        </mesh>
+    </>;
+}
+
 // ── VESSEL ──
-function Vessel({ lgPct }) {
+function Vessel({ lgPct, ltPct }) {
     const liqPct = lgPct > 0 ? (LRV_Y - V_BOT + (lgPct / 100) * MEAS) / V_H * 100 : 0;
     return <group position={[0, 0, BG_Z]}>
         <mesh><cylinderGeometry args={[V_R, V_R, V_H, 32, 1, true]} /><meshStandardMaterial color="#1a3848" roughness={0.35} metalness={0.75} transparent opacity={0.45} side={THREE.DoubleSide} /></mesh>
@@ -106,6 +281,11 @@ function Vessel({ lgPct }) {
         {lgPct > 0 && <>
             <AnimLiquid pct={liqPct} baseY={V_BOT} maxH={V_H} radius={V_R - 0.02} color="#1565c0" opacity={0.30} />
             <LiquidSurface pct={liqPct} baseY={V_BOT} maxH={V_H} radius={V_R - 0.02} color="#42a5f5" />
+        </>}
+        {ltPct != null && lgPct > 0 && <>
+            <DeviationZone ltPct={ltPct} lgPct={lgPct} />
+            <TargetLTRing lgPct={lgPct} isUp={lgPct > ltPct} />
+            <LTRing ltPct={ltPct} />
         </>}
         <mesh position={[0, URV_Y, 0]} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[V_R + 0.01, 0.005, 8, 48]} /><meshStandardMaterial color="#4a90b8" transparent opacity={0.3} /></mesh>
         <mesh position={[0, LRV_Y, 0]} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[V_R + 0.01, 0.005, 8, 48]} /><meshStandardMaterial color="#4a90b8" transparent opacity={0.3} /></mesh>
@@ -218,12 +398,73 @@ function VGLevelLine({ pct }) {
 function VGLight({ pct }) { return null; }
 function VGLiquid({ pct }) { return <VGFillBar pct={pct} />; }
 
+/* 눈금 옆 마커 — LT(오렌지) + 목표(초록/빨강), 숫자와 겹치지 않게 좌측 배치 */
+function LTScaleMarkers({ ltPct, lgPct }) {
+    const ltRef = useRef();
+    const tgtRef = useRef();
+    const tgtMatRef = useRef();
+    const ltCur = useRef(ltPct ?? 0);
+    const lgCur = useRef(lgPct ?? 0);
+    const tick = useRef(0);
+
+    useFrame((_, dt) => {
+        ltCur.current  += ((ltPct ?? 0) - ltCur.current)  * Math.min(dt * 3.5, 1);
+        lgCur.current  += ((lgPct ?? 0) - lgCur.current)  * Math.min(dt * 3.5, 1);
+        tick.current   += dt;
+        if (ltRef.current) {
+            ltRef.current.position.y  = LRV_Y + (Math.max(0, Math.min(100, ltCur.current))  / 100) * MEAS;
+            ltRef.current.visible     = ltPct != null;
+        }
+        if (tgtRef.current) {
+            tgtRef.current.position.y = LRV_Y + (Math.max(0, Math.min(100, lgCur.current)) / 100) * MEAS;
+            tgtRef.current.visible    = lgPct != null && ltPct != null;
+        }
+        if (tgtMatRef.current) {
+            tgtMatRef.current.opacity = 0.75 + Math.sin(tick.current * 3.5) * 0.22;
+        }
+    });
+
+    const isUp  = (lgPct ?? 0) > (ltPct ?? 0);
+    const tgtCol = isUp ? '#22c55e' : '#ef4444';
+    const tgtOut = isUp ? '#001a00' : '#1a0000';
+
+    return <>
+        {/* LT 현재 (흰/시안) — Level Gauge 왼쪽 */}
+        <group ref={ltRef} position={[0, LRV_Y, 0]}>
+            {/* 마커 바 — 두껍게, basic material로 깨짐 방지 */}
+            <mesh position={[0.05, 0, 0.05]}>
+                <boxGeometry args={[0.12, 0.022, 0.025]} />
+                <meshBasicMaterial color="#e0fbff" />
+            </mesh>
+            {/* 라벨 — 마커 왼쪽으로 */}
+            <Text position={[-0.02, 0, 0.08]} fontSize={0.10} color="#e0fbff" anchorX="right" anchorY="middle" font={undefined} outlineWidth={0.004} outlineColor="#002030">LT {Math.round(ltPct ?? 0)}</Text>
+        </group>
+        {/* 목표 (초록/빨강) */}
+        <group ref={tgtRef} position={[0, LRV_Y, 0]}>
+            <mesh position={[0.05, 0, 0.05]}>
+                <boxGeometry args={[0.12, 0.022, 0.025]} />
+                <meshBasicMaterial ref={tgtMatRef} color={tgtCol} transparent opacity={0.95} />
+            </mesh>
+            <Text position={[-0.02, 0, 0.08]} fontSize={0.10} color={tgtCol} anchorX="right" anchorY="middle" font={undefined} outlineWidth={0.004} outlineColor={tgtOut}>{isUp ? '▲' : '▼'}목표 {Math.round(lgPct ?? 0)}</Text>
+        </group>
+    </>;
+}
+
 // ── SCALE MARKS ──
-function ScaleMarks() {
-    return <group position={[LG_X + LG_W / 2 + 0.12, 0, FG_Z + LG_Z_OFFSET]}>
-        {[0, 25, 50, 75, 100].map(p => { const y = LRV_Y + (p / 100) * MEAS; return <group key={p} position={[0, y, 0]}><mesh position={[0.04, 0, 0]}><boxGeometry args={[0.07, 0.010, 0.010]} /><meshStandardMaterial color="#5a9aba" roughness={0.3} metalness={0.7} emissive="#2a5a7a" emissiveIntensity={0.15} /></mesh><Text position={[0.14, 0, 0.02]} fontSize={0.11} color="#6ab0d0" anchorX="left" anchorY="middle" font={undefined} outlineWidth={0.004} outlineColor="#050e18">{p}</Text></group>; })}
-        {Array.from({ length: 21 }, (_, i) => { if ([0, 5, 10, 15, 20].includes(i)) return null; const y = LRV_Y + (i / 20) * MEAS; return <mesh key={i} position={[0.025, y, 0]}><boxGeometry args={[0.035, 0.006, 0.006]} /><meshStandardMaterial color="#1e3d58" roughness={0.3} metalness={0.6} /></mesh>; })}
-    </group>;
+function ScaleMarks({ ltPct, lgPct }) {
+    return <>
+        {/* 0~100 눈금자 — Level Gauge 오른쪽 (기존 위치) */}
+        <group position={[LG_X + LG_W / 2 + 0.12, 0, FG_Z + LG_Z_OFFSET]}>
+            {[0, 25, 50, 75, 100].map(p => { const y = LRV_Y + (p / 100) * MEAS; return <group key={p} position={[0, y, 0]}><mesh position={[0.04, 0, 0]}><boxGeometry args={[0.07, 0.010, 0.010]} /><meshStandardMaterial color="#5a9aba" roughness={0.3} metalness={0.7} emissive="#2a5a7a" emissiveIntensity={0.15} /></mesh><Text position={[0.14, 0, 0.02]} fontSize={0.11} color="#6ab0d0" anchorX="left" anchorY="middle" font={undefined} outlineWidth={0.004} outlineColor="#050e18">{p}</Text></group>; })}
+            {Array.from({ length: 21 }, (_, i) => { if ([0, 5, 10, 15, 20].includes(i)) return null; const y = LRV_Y + (i / 20) * MEAS; return <mesh key={i} position={[0.025, y, 0]}><boxGeometry args={[0.035, 0.006, 0.006]} /><meshStandardMaterial color="#1e3d58" roughness={0.3} metalness={0.6} /></mesh>; })}
+        </group>
+        {/* LT/목표 마커 — Level Gauge 왼쪽 (분리) */}
+        {ltPct != null && (
+            <group position={[LG_X - LG_W / 2 - 0.08, 0, FG_Z + LG_Z_OFFSET]}>
+                <LTScaleMarkers ltPct={ltPct} lgPct={lgPct} />
+            </group>
+        )}
+    </>;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -367,6 +608,7 @@ function Scene({ currPct, targetPct, onLCDProject }) {
     const hasCurr = currPct !== '' && !isNaN(parseFloat(currPct));
     const hasTgt = targetPct !== '' && !isNaN(parseFloat(targetPct));
     const lgP = hasTgt ? Math.min(Math.max(parseFloat(targetPct), 0), 100) : 0;
+    const ltP = hasCurr ? Math.min(Math.max(parseFloat(currPct), 0), 100) : null;
     const dVal = hasCurr ? (Number.isInteger(parseFloat(currPct)) ? String(parseInt(currPct)) : String(parseFloat(currPct))) : null;
 
     const IR = 0.025, PR = 0.055;
@@ -386,10 +628,10 @@ function Scene({ currPct, targetPct, onLCDProject }) {
         <pointLight position={[LT_X, ampCY, FG_Z + 1.0]} intensity={0.5} color="#00e5ff" distance={3} />
         <VGLight pct={lgP} />
 
-        <Vessel lgPct={lgP} />
+        <Vessel lgPct={lgP} ltPct={ltP} />
         <LevelGaugeBody />
         <VGLiquid pct={lgP} />
-        <ScaleMarks />
+        <ScaleMarks ltPct={ltP} lgPct={lgP > 0 ? lgP : null} />
 
         {/* ★ 트랜스미터: PNG PlaneGeometry */}
         <Transmitter />
