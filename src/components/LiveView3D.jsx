@@ -539,17 +539,35 @@ function Transmitter() {
     return <TransmitterPlane />;
 }
 
-// ── CAMERA RIG ──
+// ── CAMERA RIG ── (scene bounding box auto-fit)
 function CameraRig() {
     const { camera, size } = useThree();
     useEffect(() => {
+        if (!size.width || !size.height) return;
         const a = size.width / size.height;
-        if (a < 0.65) { camera.position.set(0.2, 0.8, 9.0); camera.fov = 40; }
-        else if (a < 1.0) { camera.position.set(0.2, 1.0, 8.0); camera.fov = 38; }
-        else if (a < 1.4) { camera.position.set(0.2, 1.0, 7.5); camera.fov = 36; }
-        else { camera.position.set(0.2, 0.8, 7.0); camera.fov = 34; }
-        camera.lookAt(0, -0.2, -0.5); camera.updateProjectionMatrix();
-    }, [camera, size]);
+
+        // Scene world bounding box (측정값 + 여유)
+        // x: Transmitter 왼쪽(-1.72) ~ ScaleMarks 오른쪽(1.62)
+        // y: Vessel 돔/VESSEL 라벨 위쪽(2.0) ~ Vessel 바닥(-1.9)
+        const halfW = 1.85;   // 좌우 여유 포함
+        const halfH = 2.15;   // 상하 여유 포함
+        const cx = -0.05;     // scene 수평 중심
+        const cy = 0.0;
+
+        const fov = 38;
+        const fovRad = (fov * Math.PI) / 180;
+        const tanHalfFov = Math.tan(fovRad / 2);
+
+        // 세로 fit vs 가로 fit 중 더 멀리 필요한 쪽 채택
+        const distForHeight = halfH / tanHalfFov;
+        const distForWidth = halfW / (tanHalfFov * a);
+        const dist = Math.max(distForHeight, distForWidth) * 1.08; // 8% 여유
+
+        camera.position.set(cx, cy + 0.5, dist);
+        camera.fov = fov;
+        camera.lookAt(cx, cy - 0.2, 0);
+        camera.updateProjectionMatrix();
+    }, [camera, size.width, size.height]);
     return null;
 }
 
