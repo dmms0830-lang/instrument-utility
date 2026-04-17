@@ -100,10 +100,6 @@ export default function LevelTransmitter() {
     const [urv, setUrv] = useState('');
     const [currPct, setCurrPct] = useState('');
     const [targetPct, setTargetPct] = useState('');
-    // 지시값 입력 모드: 'pct' (% 기준) | 'mm' (mmH2O 실측값 기준)
-    // 'pct' 모드 → currPct/targetPct 는 백분율
-    // 'mm'  모드 → currPct/targetPct 는 mmH2O 실측값 (상태 변수명은 호환성 유지)
-    const [inputMode, setInputMode] = useState('pct');
     const [activeField, setActiveField] = useState(null);
     const [selection, setSelection] = useState({ start: 0, end: 0 });
     const inputRefs = useRef({ lrv: null, urv: null, curr: null, target: null });
@@ -239,13 +235,11 @@ export default function LevelTransmitter() {
             timestamp: Date.now(),
             oldLrv: parseFloat(lrv),
             oldUrv: parseFloat(urv),
-            // 이력은 항상 % 기준으로 저장 (모드와 무관하게 일관성 유지)
-            currPct: calculation.currPctEquiv,
-            targetPct: calculation.targetPctEquiv,
+            currPct: parseFloat(currPct),
+            targetPct: parseFloat(targetPct),
             newLrv: calculation.newLrv,
             newUrv: calculation.newUrv,
             deltaMmH2O: calculation.deltaMmH2O,
-            inputMode,   // 입력 당시 모드 기록 (디버깅/참조용)
         });
         // 짧은 시각 피드백용 토스트 플래그 (간단히 flash)
         setSaveFlash(true);
@@ -283,32 +277,18 @@ export default function LevelTransmitter() {
 
     const calculation = useMemo(() => {
         const l = parseFloat(lrv), u = parseFloat(urv);
-        const cRaw = parseFloat(currPct), t = parseFloat(targetPct);
-        if (isNaN(l) || isNaN(u) || isNaN(cRaw) || isNaN(t)) return null;
+        const c = parseFloat(currPct), t = parseFloat(targetPct);
+        if (isNaN(l) || isNaN(u) || isNaN(c) || isNaN(t)) return null;
         const span = u - l;
-        if (span === 0) return null; // 0-division 방지
-
-        // LT값을 일단 % 로 환산 (LG는 항상 %로 들어오므로 환산 불필요)
-        //   'pct' 모드 → cRaw 가 이미 %
-        //   'mm'  모드 → cRaw 는 mmH2O → (c_mm - LRV) / span × 100
-        const cPct = inputMode === 'mm' ? ((cRaw - l) / span) * 100 : cRaw;
-
-        // 기존 검증된 % 수식 그대로 적용
-        const newL = (l + span * (cPct / 100)) - span * (t / 100);
-
+        const newL = (l + span * (c / 100)) - span * (t / 100);
         return {
-            newLrv: newL,
-            newUrv: newL + span,
-            inverted: l > u,
-            span,
-            error: (cPct - t) * span / 100,
-            deltaLevel: t - cPct,                    // %p 편차 (음수: LT가 더 읽음)
-            deltaMmH2O: (t - cPct) * span / 100,    // mmH2O 편차
-            // 이력 저장 및 LiveView3D용
-            currPctEquiv: cPct,
-            targetPctEquiv: t,
+            newLrv: newL, newUrv: newL + span,
+            inverted: l > u, span,
+            error: (c - t) * span / 100,
+            deltaLevel: t - c,
+            deltaMmH2O: (t - c) * span / 100
         };
-    }, [lrv, urv, currPct, targetPct, inputMode]);
+    }, [lrv, urv, currPct, targetPct]);
 
     const handleInputFocus = (field, e) => {
         setActiveField(field);
@@ -407,35 +387,17 @@ export default function LevelTransmitter() {
                     <div className="flex items-center gap-1.5 mb-1.5">
                         <span className="text-[10px] font-bold text-slate-600 tracking-widest uppercase">지시값</span>
                         <div className="flex-1 h-px bg-slate-800" />
-                        <span className="text-[10px] text-slate-700 font-mono">LG는 %, LT는 선택</span>
+                        <span className="text-[10px] text-slate-700 font-mono">%</span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                         <div ref={el => fieldWrapperRefs.current.curr = el}
                             style={{ flex: 1 }}
                             className={`flex flex-col px-3 py-2.5 cursor-pointer transition-all rounded-xl border ${activeField === 'curr' ? 'bg-cyan-950/35 border-cyan-600/70 glow-cyan' : currPct !== '' ? 'bg-black/70 border-slate-600/50' : 'bg-black/70 border-slate-600/40 border-dashed'}`}
                             onClick={() => inputRefs.current.curr?.focus()}>
-                            <div className={`text-[10px] font-bold tracking-wide mb-1 flex items-center justify-between gap-1 ${activeField === 'curr' ? 'text-cyan-400' : 'text-slate-600'}`}>
-                                <span className="flex items-center gap-1">
-                                    LT값
-                                    {currPct === '' && activeField !== 'curr' && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(148,163,184,0.5)', display: 'inline-block', flexShrink: 0 }} />}
-                                </span>
-                                {/* LT만 단위 선택 가능 (LG는 항상 %) */}
-                                <select
-                                    value={inputMode}
-                                    onClick={(e) => e.stopPropagation()}
-                                    onChange={(e) => {
-                                        setInputMode(e.target.value);
-                                        setCurrPct(''); // LT값만 초기화 (단위 오해석 방지), LG는 유지
-                                        setActiveField(null);
-                                        if (navigator.vibrate) navigator.vibrate(15);
-                                    }}
-                                    className="text-[10px] font-mono font-bold bg-slate-800 border border-slate-700 text-cyan-300 rounded px-1.5 py-0.5 outline-none focus:border-cyan-500 cursor-pointer touch-manipulation"
-                                    aria-label="LT값 입력 단위"
-                                >
-                                    <option value="pct">%</option>
-                                    <option value="mm">mmH₂O</option>
-                                </select>
-                            </div>
+                            <span className={`text-[10px] font-bold tracking-wide mb-1 flex items-center gap-1 ${activeField === 'curr' ? 'text-cyan-400' : 'text-slate-600'}`}>
+                                LT값
+                                {currPct === '' && activeField !== 'curr' && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(148,163,184,0.5)', display: 'inline-block', flexShrink: 0 }} />}
+                            </span>
                             <input ref={el => inputRefs.current.curr = el} type="text" inputMode="none"
                                 value={currPct} onChange={() => { }} onFocus={e => handleInputFocus('curr', e)} onSelect={handleSelect}
                                 className="w-full bg-transparent font-mono text-xl font-black text-cyan-400 outline-none placeholder:text-slate-700 placeholder:text-sm"
@@ -445,13 +407,9 @@ export default function LevelTransmitter() {
                             style={{ flex: 1 }}
                             className={`flex flex-col px-3 py-2.5 cursor-pointer transition-all rounded-xl border ${activeField === 'target' ? 'bg-green-950/30 border-green-600/70 glow-green' : targetPct !== '' ? 'bg-black/70 border-slate-600/50' : 'bg-black/70 border-slate-600/40 border-dashed'}`}
                             onClick={() => inputRefs.current.target?.focus()}>
-                            <span className={`text-[10px] font-bold tracking-wide mb-1 flex items-center justify-between gap-1 ${activeField === 'target' ? 'text-green-400' : 'text-slate-600'}`}>
-                                <span className="flex items-center gap-1">
-                                    LG 값
-                                    {targetPct === '' && activeField !== 'target' && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(148,163,184,0.5)', display: 'inline-block', flexShrink: 0 }} />}
-                                </span>
-                                {/* LG는 항상 % 고정 — 육안 게이지는 mmH2O 눈금이 없음 */}
-                                <span className="text-[10px] font-mono font-bold text-green-600/70 bg-green-950/30 border border-green-900/40 rounded px-1.5 py-0.5">%</span>
+                            <span className={`text-[10px] font-bold tracking-wide mb-1 flex items-center gap-1 ${activeField === 'target' ? 'text-green-400' : 'text-slate-600'}`}>
+                                LG 값
+                                {targetPct === '' && activeField !== 'target' && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(148,163,184,0.5)', display: 'inline-block', flexShrink: 0 }} />}
                             </span>
                             <input ref={el => inputRefs.current.target = el} type="text" inputMode="none"
                                 value={targetPct} onChange={() => { }} onFocus={e => handleInputFocus('target', e)} onSelect={handleSelect}
@@ -475,11 +433,7 @@ export default function LevelTransmitter() {
                             <div className="w-2 h-2 rounded-full bg-cyan-400"
                                 style={{ boxShadow: hasCurrent ? '0 0 6px #00e5ff' : 'none' }} />
                             <span className="text-[10px] text-slate-500">LT</span>
-                            {hasCurrent && (
-                                <span className="text-[10px] font-mono text-cyan-400 font-bold">
-                                    {parseFloat(currPct).toFixed(1)}{inputMode === 'mm' ? 'mm' : '%'}
-                                </span>
-                            )}
+                            {hasCurrent && <span className="text-[10px] font-mono text-cyan-400 font-bold">{parseFloat(currPct).toFixed(1)}%</span>}
                         </div>
                         <div className="flex items-center gap-1.5">
                             <div className="w-2 h-2 rounded-sm bg-green-400"
@@ -500,10 +454,7 @@ export default function LevelTransmitter() {
                     </div>
                 </div>
                 <div style={{ flex: '1 1 auto', padding: '8px 2px 6px 2px' }}>
-                    <LiveView3D
-                        currPct={inputMode === 'mm' && calculation ? String(calculation.currPctEquiv) : currPct}
-                        targetPct={targetPct}
-                    />
+                    <LiveView3D currPct={currPct} targetPct={targetPct} />
                 </div>
             </div>
 
