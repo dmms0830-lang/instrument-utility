@@ -539,44 +539,33 @@ function Transmitter() {
     return <TransmitterPlane />;
 }
 
-// ── CAMERA RIG ── (scene bounding box auto-fit, 가로/세로 둘 다 안전 fit)
+// ── CAMERA RIG ── (scene bounding box auto-fit)
 function CameraRig() {
     const { camera, size } = useThree();
     useEffect(() => {
         if (!size.width || !size.height) return;
         const a = size.width / size.height;
 
-        // Scene world bounding box — 실제 렌더 요소(라벨/PNG 포함) 기준 + 여유
-        //  x: Transmitter PNG 좌측 ~ ScaleMarks "100" 라벨 우측
-        //  y: Vessel 바닥 ~ "VESSEL" 라벨 위까지
-        const xMin = -2.20;
-        const xMax =  1.95;
-        const yMin = -2.05;
-        const yMax =  2.35;
-        const halfW = (xMax - xMin) / 2;
-        const halfH = (yMax - yMin) / 2;
-        const cx = (xMin + xMax) / 2;
-        const cy = (yMin + yMax) / 2;
+        // Scene world bounding box (측정값 + 여유)
+        // x: Transmitter 왼쪽(-1.72) ~ ScaleMarks 오른쪽(1.62)
+        // y: Vessel 돔/VESSEL 라벨 위쪽(2.0) ~ Vessel 바닥(-1.9)
+        const halfW = 1.85;   // 좌우 여유 포함
+        const halfH = 2.15;   // 상하 여유 포함
+        const cx = -0.05;     // scene 수평 중심
+        const cy = 0.0;
 
         const fov = 38;
         const fovRad = (fov * Math.PI) / 180;
         const tanHalfFov = Math.tan(fovRad / 2);
 
-        // ★ 세로 기준 fit + 가로 안전장치
-        //   - 일반 케이스(컨테이너 가로>=세로): distForHeight 채택 → 좌우 여백 생김
-        //   - narrow 케이스(컨테이너 가로<세로): distForWidth 채택 → 상하 여백 생김
-        //   둘 중 더 먼 거리를 채택하므로 어떤 화면 비율에서도 잘리지 않음
+        // 세로 fit vs 가로 fit 중 더 멀리 필요한 쪽 채택
         const distForHeight = halfH / tanHalfFov;
-        const distForWidth  = halfW / (tanHalfFov * a);
-        const dist = Math.max(distForHeight, distForWidth) * 1.10; // 10% 안전 여유
+        const distForWidth = halfW / (tanHalfFov * a);
+        const dist = Math.max(distForHeight, distForWidth) * 1.08; // 8% 여유
 
-        // ★ 카메라 tilt 제거 — lookAt과 position의 y를 일치
-        //   기존 position(y=cy+0.5)/lookAt(y=cy-0.2) down-tilt 7°가
-        //   vertical fit 계산을 어긋나게 해 위쪽 잘림의 원인이었음.
-        //   tilt 없애도 PerspectiveCamera 원근감은 유지됨.
-        camera.position.set(cx, cy, dist);
+        camera.position.set(cx, cy + 0.5, dist);
         camera.fov = fov;
-        camera.lookAt(cx, cy, 0);
+        camera.lookAt(cx, cy - 0.2, 0);
         camera.updateProjectionMatrix();
     }, [camera, size.width, size.height]);
     return null;

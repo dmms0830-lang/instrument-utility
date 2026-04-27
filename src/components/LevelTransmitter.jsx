@@ -489,8 +489,8 @@ export default function LevelTransmitter() {
                         </div>
                         {calculation && (
                             <div className={`px-2 py-0.5 rounded text-[10px] font-black border ${calculation.deltaLevel > 0 ? 'bg-amber-950/40 border-amber-800/50 text-amber-400'
-                                    : calculation.deltaLevel < 0 ? 'bg-amber-950/40 border-amber-800/50 text-amber-400'
-                                        : 'bg-emerald-950/40 border-emerald-800/50 text-emerald-400'
+                                : calculation.deltaLevel < 0 ? 'bg-amber-950/40 border-amber-800/50 text-amber-400'
+                                    : 'bg-emerald-950/40 border-emerald-800/50 text-emerald-400'
                                 }`}>
                                 {calculation.deltaLevel > 0 ? `▲ +${calculation.deltaLevel.toFixed(1)}%p`
                                     : calculation.deltaLevel < 0 ? `▼ ${calculation.deltaLevel.toFixed(1)}%p`
