@@ -14,6 +14,7 @@ import InstallGuide from './components/InstallGuide';
 import FlowCalc from './components/FlowCalc';
 import ResistorCalc from './components/ResistorCalc';
 import UpdateToast, { checkForUpdate } from './components/UpdateToast';
+import AIChatWidget from './components/AIChatWidget';
 import { version as appVersion } from '../package.json';
 import {
   Activity, Database, Thermometer, Gauge, Cpu, Waves, Droplets,
@@ -283,6 +284,9 @@ function App() {
 
       {/* SW Update Toast */}
       <UpdateToast />
+
+      {/* 우측 하단 떠다니는 AI 챗봇 위젯 */}
+      <AIChatWidget />
 
       {/* Already Latest Toast */}
       {showStatusMessage && (
