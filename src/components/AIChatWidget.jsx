@@ -1,12 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Bot, X, Send, Loader2, Trash2 } from 'lucide-react';
-import {
-  ANTHROPIC_API_KEY,
-  CLAUDE_MODEL,
-  MAX_TOKENS,
-  MAX_HISTORY,
-  SYSTEM_PROMPT,
-} from '../aiConfig';
+import { Bot, X, Send, Loader2, Trash2, Wrench, RotateCw } from 'lucide-react';
+import { AI_BACKEND_URL, MODEL_LABEL, MAX_HISTORY } from '../aiConfig';
 
 /**
  * AIChatWidget — 우측 하단에 동동 떠다니는 AI 채팅 위젯
@@ -23,12 +17,97 @@ const INITIAL_MESSAGE = {
   content: '안녕하세요! 계장·계측 관련이든 뭐든 필요한 걸 물어보세요. 🤖',
 };
 
+/**
+ * 가벼운 마크다운 렌더러 (외부 라이브러리 없이)
+ * - **굵게**, `코드`, 제목(#/##/###), 불릿(- *), 빈 줄/문단 처리
+ * - Claude 가 흔히 쓰는 마크다운 정도만 커버 (표·이미지 등은 미지원)
+ */
+function renderInline(text, keyPrefix) {
+  const parts = [];
+  const regex = /(\*\*[^*]+\*\*|`[^`]+`)/g;
+  let last = 0;
+  let m;
+  let i = 0;
+  while ((m = regex.exec(text)) !== null) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    const tok = m[0];
+    if (tok.startsWith('**')) {
+      parts.push(
+        <strong key={`${keyPrefix}-b${i}`} className="font-bold text-white">
+          {tok.slice(2, -2)}
+        </strong>
+      );
+    } else {
+      parts.push(
+        <code
+          key={`${keyPrefix}-c${i}`}
+          className="px-1 py-0.5 mx-0.5 rounded bg-slate-700/70 text-cyan-300 font-mono text-[12px]"
+        >
+          {tok.slice(1, -1)}
+        </code>
+      );
+    }
+    last = m.index + tok.length;
+    i++;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+}
+
+function MarkdownLite({ text }) {
+  const lines = (text || '').split('\n');
+  const blocks = [];
+  let list = null;
+  const flush = (key) => {
+    if (list) {
+      blocks.push(
+        <ul key={`ul-${key}`} className="list-disc pl-5 space-y-0.5 my-1">
+          {list}
+        </ul>
+      );
+      list = null;
+    }
+  };
+  lines.forEach((line, idx) => {
+    const h = line.match(/^(#{1,3})\s+(.*)$/);
+    const li = line.match(/^\s*[-*]\s+(.*)$/);
+    if (h) {
+      flush(idx);
+      const lv = h[1].length;
+      const cls =
+        lv === 1
+          ? 'text-[15px] font-black mt-2 mb-1 text-white'
+          : lv === 2
+          ? 'text-[14px] font-bold mt-2 mb-0.5 text-cyan-300'
+          : 'text-[13px] font-bold mt-1.5 text-cyan-200';
+      blocks.push(
+        <div key={`h-${idx}`} className={cls}>
+          {renderInline(h[2], `h${idx}`)}
+        </div>
+      );
+    } else if (li) {
+      if (!list) list = [];
+      list.push(<li key={`li-${idx}`}>{renderInline(li[1], `li${idx}`)}</li>);
+    } else if (line.trim() === '') {
+      flush(idx);
+      blocks.push(<div key={`sp-${idx}`} className="h-2" />);
+    } else {
+      flush(idx);
+      blocks.push(<div key={`p-${idx}`}>{renderInline(line, `p${idx}`)}</div>);
+    }
+  });
+  flush('end');
+  return <>{blocks}</>;
+}
+
 export default function AIChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([INITIAL_MESSAGE]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  // 서버(맥미니) 상태: checking(확인중) | online(켜짐) | offline(꺼짐=수리중)
+  const [serverStatus, setServerStatus] = useState('checking');
 
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
@@ -47,6 +126,25 @@ export default function AIChatWidget() {
     }
   }, [isOpen]);
 
+  // 서버(맥미니) 살아있는지 확인 — /health 에 짧게 핑
+  const checkHealth = useCallback(async () => {
+    setServerStatus('checking');
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 6000);
+      const res = await fetch(`${AI_BACKEND_URL}/health`, { signal: ctrl.signal });
+      clearTimeout(timer);
+      setServerStatus(res.ok ? 'online' : 'offline');
+    } catch {
+      setServerStatus('offline');
+    }
+  }, []);
+
+  // 채팅창을 열 때마다 서버 상태 확인
+  useEffect(() => {
+    if (isOpen) checkHealth();
+  }, [isOpen, checkHealth]);
+
   const sendMessage = useCallback(async () => {
     const text = input.trim();
     if (!text || isLoading) return;
@@ -58,33 +156,28 @@ export default function AIChatWidget() {
     setIsLoading(true);
 
     try {
-      // Macro_Project core/claude_translate.py 와 동일한 Anthropic Messages API.
-      // 브라우저 직접 호출이므로 anthropic-dangerous-direct-browser-access 헤더 필요.
+      // 맥미니 프록시 백엔드(server/server.py)로만 요청한다. API 키는 백엔드가 보관.
       const apiMessages = nextMessages
         .slice(-MAX_HISTORY)
         .map((m) => ({ role: m.role, content: m.content }));
 
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch(`${AI_BACKEND_URL}/api/chat`, {
         method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'x-api-key': ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: CLAUDE_MODEL,
-          max_tokens: MAX_TOKENS,
-          system: SYSTEM_PROMPT,
-          messages: apiMessages,
-        }),
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ messages: apiMessages }),
       });
+
+      // 터널은 살아있지만 백엔드가 꺼진 경우(502/503/504) → 수리 중으로 처리
+      if ([502, 503, 504].includes(res.status)) {
+        setServerStatus('offline');
+        return;
+      }
 
       if (!res.ok) {
         let detail = `HTTP ${res.status}`;
         try {
           const errJson = await res.json();
-          detail = errJson?.error?.message || detail;
+          detail = errJson?.error || detail;
         } catch {
           /* ignore */
         }
@@ -92,14 +185,22 @@ export default function AIChatWidget() {
       }
 
       const data = await res.json();
-      const reply =
-        data?.content?.map((c) => c.text).filter(Boolean).join('\n').trim() ||
-        '(빈 응답이 돌아왔습니다)';
+      const reply = (data?.reply || '').trim() || '(빈 응답이 돌아왔습니다)';
 
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+      setServerStatus('online');
     } catch (err) {
       console.error('[AIChat] error:', err);
-      setError(err.message || '요청 중 오류가 발생했습니다');
+      // 연결 자체가 안 되면(서버 꺼짐) 빨간 에러 대신 "수리 중" 화면
+      const isOffline =
+        err.name === 'TypeError' ||
+        err.name === 'AbortError' ||
+        /Failed to fetch|NetworkError|Load failed/i.test(err.message || '');
+      if (isOffline) {
+        setServerStatus('offline');
+      } else {
+        setError(err.message || '요청 중 오류가 발생했습니다');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -147,7 +248,20 @@ export default function AIChatWidget() {
               </div>
               <div className="min-w-0">
                 <div className="text-sm font-bold text-white leading-tight">AI 어시스턴트</div>
-                <div className="text-[10px] text-cyan-400/80 font-mono truncate">{CLAUDE_MODEL}</div>
+                <div className="text-[10px] font-mono truncate flex items-center gap-1.5">
+                  <span
+                    className={`inline-block w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                      serverStatus === 'online'
+                        ? 'bg-lime-400'
+                        : serverStatus === 'offline'
+                        ? 'bg-amber-400'
+                        : 'bg-slate-500 animate-pulse'
+                    }`}
+                  />
+                  <span className={serverStatus === 'offline' ? 'text-amber-400/90' : 'text-cyan-400/80'}>
+                    {serverStatus === 'offline' ? '점검 중' : serverStatus === 'checking' ? '연결 확인 중…' : MODEL_LABEL}
+                  </span>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
@@ -177,13 +291,13 @@ export default function AIChatWidget() {
                 className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-[13.5px] leading-relaxed whitespace-pre-wrap break-words ${
+                  className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-[13.5px] leading-relaxed break-words ${
                     m.role === 'user'
-                      ? 'bg-blue-600 text-white rounded-br-md'
+                      ? 'bg-blue-600 text-white rounded-br-md whitespace-pre-wrap'
                       : 'bg-slate-800 text-slate-100 border border-slate-700 rounded-bl-md'
                   }`}
                 >
-                  {m.content}
+                  {m.role === 'user' ? m.content : <MarkdownLite text={m.content} />}
                 </div>
               </div>
             ))}
@@ -197,10 +311,31 @@ export default function AIChatWidget() {
               </div>
             )}
 
-            {error && (
+            {error && serverStatus !== 'offline' && (
               <div className="flex justify-start">
                 <div className="bg-red-950/60 border border-red-500/40 text-red-300 px-3.5 py-2.5 rounded-2xl text-[12.5px] max-w-[90%] break-words">
                   ⚠️ {error}
+                </div>
+              </div>
+            )}
+
+            {/* 서버 꺼짐 → 수리 중 안내 */}
+            {serverStatus === 'offline' && (
+              <div className="flex justify-center pt-3">
+                <div className="text-center bg-slate-800/80 border border-amber-500/30 rounded-2xl px-5 py-5 max-w-[92%]">
+                  <Wrench className="w-8 h-8 text-amber-400 mx-auto mb-2.5" />
+                  <div className="text-[14px] font-bold text-amber-300 mb-1.5">AI 점검 중입니다</div>
+                  <div className="text-[12.5px] text-slate-400 leading-relaxed">
+                    서버가 잠시 꺼져 있어요.
+                    <br />
+                    곧 다시 찾아뵙겠습니다 🙏
+                  </div>
+                  <button
+                    onClick={checkHealth}
+                    className="mt-3.5 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-cyan-400 hover:text-cyan-300 transition-colors"
+                  >
+                    <RotateCw className="w-3.5 h-3.5" /> 다시 확인
+                  </button>
                 </div>
               </div>
             )}
@@ -215,12 +350,13 @@ export default function AIChatWidget() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={1}
-                placeholder="질문을 입력하세요…"
-                className="flex-1 resize-none max-h-28 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-[14px] text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                disabled={serverStatus === 'offline'}
+                placeholder={serverStatus === 'offline' ? '점검 중입니다…' : '질문을 입력하세요…'}
+                className="flex-1 resize-none max-h-28 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-[14px] text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 transition-colors disabled:opacity-50"
               />
               <button
                 onClick={sendMessage}
-                disabled={isLoading || !input.trim()}
+                disabled={isLoading || !input.trim() || serverStatus === 'offline'}
                 className="w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 disabled:opacity-40 disabled:hover:translate-y-0 touch-manipulation"
                 aria-label="전송"
               >

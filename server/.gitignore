@@ -1,0 +1,7 @@
+.env
+knowledge.md
+__pycache__/
+*.pyc
+*.log
+venv/
+.venv/
