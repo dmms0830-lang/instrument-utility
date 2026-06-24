@@ -285,7 +285,7 @@ function App() {
       {/* SW Update Toast */}
       <UpdateToast />
 
-      {/* 우측 하단 떠다니는 AI 챗봇 위젯 */}
+      {/* 우측 하단 떠다니는 AI  챗봇 위젯 */}
       <AIChatWidget />
 
       {/* Already Latest Toast */}
