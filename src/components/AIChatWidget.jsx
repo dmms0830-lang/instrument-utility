@@ -19,8 +19,9 @@ const INITIAL_MESSAGE = {
 
 /**
  * 가벼운 마크다운 렌더러 (외부 라이브러리 없이)
- * - **굵게**, `코드`, 제목(#/##/###), 불릿(- *), 빈 줄/문단 처리
- * - Claude 가 흔히 쓰는 마크다운 정도만 커버 (표·이미지 등은 미지원)
+ * - **굵게**, `코드`, 제목(#/##/###), 불릿(- *), 번호목록(1. 2.),
+ *   표(| a | b |), 구분선(---), 빈 줄/문단 처리
+ * - Claude 가 흔히 쓰는 마크다운 대부분 커버 (이미지 제외)
  */
 function renderInline(text, keyPrefix) {
   const parts = [];
@@ -54,25 +55,105 @@ function renderInline(text, keyPrefix) {
   return parts;
 }
 
+// 표 한 줄을 셀 배열로 분리 ( | a | b | → ['a','b'] )
+function splitTableRow(line) {
+  return line
+    .trim()
+    .replace(/^\|/, '')
+    .replace(/\|$/, '')
+    .split('|')
+    .map((c) => c.trim());
+}
+
+// 구분선 행인지 ( |---|:--:|---:| )
+function isTableSeparator(line) {
+  return line.includes('|') && line.includes('-') && /^[\s|:-]+$/.test(line.trim());
+}
+
 function MarkdownLite({ text }) {
   const lines = (text || '').split('\n');
   const blocks = [];
   let list = null;
+  let listOrdered = false;
+
   const flush = (key) => {
     if (list) {
+      const Tag = listOrdered ? 'ol' : 'ul';
       blocks.push(
-        <ul key={`ul-${key}`} className="list-disc pl-5 space-y-0.5 my-1">
+        <Tag
+          key={`list-${key}`}
+          className={`${listOrdered ? 'list-decimal' : 'list-disc'} pl-5 space-y-0.5 my-1`}
+        >
           {list}
-        </ul>
+        </Tag>
       );
       list = null;
     }
   };
-  lines.forEach((line, idx) => {
+
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // 표: 현재 줄에 | 가 있고 다음 줄이 구분선이면 표로 처리
+    if (line.includes('|') && i + 1 < lines.length && isTableSeparator(lines[i + 1])) {
+      flush(i);
+      const header = splitTableRow(line);
+      i += 2; // 헤더 + 구분선 건너뜀
+      const rows = [];
+      while (i < lines.length && lines[i].includes('|') && lines[i].trim() !== '') {
+        rows.push(splitTableRow(lines[i]));
+        i += 1;
+      }
+      blocks.push(
+        <div key={`tb-${i}`} className="my-2 overflow-x-auto">
+          <table className="text-[12px] border-collapse">
+            <thead>
+              <tr>
+                {header.map((c, ci) => (
+                  <th
+                    key={ci}
+                    className="border border-slate-600 bg-slate-700/60 px-2 py-1 text-left font-bold text-slate-100 whitespace-nowrap"
+                  >
+                    {renderInline(c, `th-${i}-${ci}`)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r, ri) => (
+                <tr key={ri}>
+                  {r.map((c, ci) => (
+                    <td
+                      key={ci}
+                      className="border border-slate-700 px-2 py-1 align-top text-slate-200"
+                    >
+                      {renderInline(c, `td-${i}-${ri}-${ci}`)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+      continue;
+    }
+
+    // 구분선 (--- *** ___)
+    if (/^\s*([-*_])\1{2,}\s*$/.test(line)) {
+      flush(i);
+      blocks.push(<hr key={`hr-${i}`} className="my-2.5 border-slate-700" />);
+      i += 1;
+      continue;
+    }
+
     const h = line.match(/^(#{1,3})\s+(.*)$/);
-    const li = line.match(/^\s*[-*]\s+(.*)$/);
+    const ol = line.match(/^\s*(\d+)\.\s+(.*)$/);
+    const ul = line.match(/^\s*[-*]\s+(.*)$/);
+
     if (h) {
-      flush(idx);
+      flush(i);
       const lv = h[1].length;
       const cls =
         lv === 1
@@ -81,21 +162,29 @@ function MarkdownLite({ text }) {
           ? 'text-[14px] font-bold mt-2 mb-0.5 text-cyan-300'
           : 'text-[13px] font-bold mt-1.5 text-cyan-200';
       blocks.push(
-        <div key={`h-${idx}`} className={cls}>
-          {renderInline(h[2], `h${idx}`)}
+        <div key={`h-${i}`} className={cls}>
+          {renderInline(h[2], `h${i}`)}
         </div>
       );
-    } else if (li) {
-      if (!list) list = [];
-      list.push(<li key={`li-${idx}`}>{renderInline(li[1], `li${idx}`)}</li>);
+    } else if (ol || ul) {
+      const ordered = Boolean(ol);
+      // 목록 종류가 바뀌면 기존 목록을 먼저 닫는다
+      if (list && listOrdered !== ordered) flush(i);
+      if (!list) {
+        list = [];
+        listOrdered = ordered;
+      }
+      const content = ordered ? ol[2] : ul[1];
+      list.push(<li key={`li-${i}`}>{renderInline(content, `li${i}`)}</li>);
     } else if (line.trim() === '') {
-      flush(idx);
-      blocks.push(<div key={`sp-${idx}`} className="h-2" />);
+      flush(i);
+      blocks.push(<div key={`sp-${i}`} className="h-2" />);
     } else {
-      flush(idx);
-      blocks.push(<div key={`p-${idx}`}>{renderInline(line, `p${idx}`)}</div>);
+      flush(i);
+      blocks.push(<div key={`p-${i}`}>{renderInline(line, `p${i}`)}</div>);
     }
-  });
+    i += 1;
+  }
   flush('end');
   return <>{blocks}</>;
 }
@@ -238,7 +327,7 @@ export default function AIChatWidget() {
       {/* ── 채팅창 (열렸을 때) ── */}
       {isOpen && (
         <div
-          className="aichat-pop fixed z-[1000] bottom-24 right-4 sm:right-6 w-[calc(100vw-2rem)] sm:w-96 max-w-[420px] h-[70vh] max-h-[560px] flex flex-col rounded-2xl overflow-hidden bg-slate-900/95 backdrop-blur-xl border border-slate-700 shadow-2xl shadow-black/50"
+          className="aichat-pop fixed z-[1000] left-2 right-2 top-3 bottom-24 sm:left-auto sm:right-6 sm:top-4 sm:bottom-24 sm:w-[460px] sm:max-w-[calc(100vw-3rem)] flex flex-col rounded-2xl overflow-hidden bg-slate-900/95 backdrop-blur-xl border border-slate-700 shadow-2xl shadow-black/50"
         >
           {/* 헤더 */}
           <div className="flex items-center justify-between px-4 h-14 flex-shrink-0 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 border-b border-slate-700">
