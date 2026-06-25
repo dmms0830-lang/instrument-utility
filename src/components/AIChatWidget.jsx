@@ -1,6 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Bot, X, Send, Loader2, Trash2, Wrench, RotateCw } from 'lucide-react';
+import { Bot, X, Send, Loader2, Trash2, Wrench, RotateCw, Copy, Check, ClipboardList } from 'lucide-react';
 import { AI_BACKEND_URL, MODEL_LABEL, MAX_HISTORY } from '../aiConfig';
+
+// "계장설비팀 전달" 버튼이 보내는 지시문
+const HANDOFF_PROMPT =
+  '지금까지의 상황을 계장설비팀에게 전달할 수 있도록, 상황설명 축약 메시지를 작성하시오. ' +
+  '핵심만 간결하게 한국어로: ① 계기 태그/위치 ② 증상 ③ 의심 원인 ④ 현재 조치/상태 ⑤ 계장팀 요청사항. ' +
+  '복사해서 바로 보낼 수 있게 군더더기 없이 작성.';
 
 /**
  * AIChatWidget — 우측 하단에 동동 떠다니는 AI 채팅 위젯
@@ -94,6 +100,12 @@ function MarkdownLite({ text }) {
   let i = 0;
   while (i < lines.length) {
     const line = lines[i];
+
+    // 코드펜스 마커(```)는 무시 — AI가 답변을 코드블록으로 감싸도 표·목록이 깨지지 않게
+    if (/^\s*```/.test(line)) {
+      i += 1;
+      continue;
+    }
 
     // 표: 현재 줄에 | 가 있고 다음 줄이 구분선이면 표로 처리
     if (line.includes('|') && i + 1 < lines.length && isTableSeparator(lines[i + 1])) {
@@ -197,6 +209,8 @@ export default function AIChatWidget() {
   const [error, setError] = useState(null);
   // 서버(맥미니) 상태: checking(확인중) | online(켜짐) | offline(꺼짐=수리중)
   const [serverStatus, setServerStatus] = useState('checking');
+  // 복사 완료 표시할 메시지 인덱스
+  const [copiedIndex, setCopiedIndex] = useState(null);
 
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
@@ -234,14 +248,38 @@ export default function AIChatWidget() {
     if (isOpen) checkHealth();
   }, [isOpen, checkHealth]);
 
-  const sendMessage = useCallback(async () => {
-    const text = input.trim();
-    if (!text || isLoading) return;
+  // 클립보드 복사 (계장팀 전달용 등)
+  const handleCopy = useCallback(async (text, idx) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+      } catch {
+        /* ignore */
+      }
+      document.body.removeChild(ta);
+    }
+    setCopiedIndex(idx);
+    setTimeout(() => setCopiedIndex(null), 1500);
+  }, []);
+
+  const sendMessage = useCallback(async (overrideText) => {
+    // 버튼 클릭 등으로 텍스트를 직접 넘기면 그걸, 아니면 입력창 값을 사용
+    const fromInput = typeof overrideText !== 'string';
+    const text = (fromInput ? input : overrideText).trim();
+    if (!text || isLoading || serverStatus === 'offline') return;
 
     setError(null);
     const nextMessages = [...messages, { role: 'user', content: text }];
     setMessages(nextMessages);
-    setInput('');
+    if (fromInput) setInput('');
     setIsLoading(true);
 
     try {
@@ -293,7 +331,7 @@ export default function AIChatWidget() {
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, messages]);
+  }, [input, isLoading, messages, serverStatus]);
 
   const handleKeyDown = (e) => {
     // Enter 전송, Shift+Enter 줄바꿈
@@ -377,10 +415,10 @@ export default function AIChatWidget() {
             {messages.map((m, i) => (
               <div
                 key={i}
-                className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}
               >
                 <div
-                  className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-[13.5px] leading-relaxed break-words ${
+                  className={`max-w-[88%] px-3.5 py-2.5 rounded-2xl text-[13.5px] leading-relaxed break-words ${
                     m.role === 'user'
                       ? 'bg-blue-600 text-white rounded-br-md whitespace-pre-wrap'
                       : 'bg-slate-800 text-slate-100 border border-slate-700 rounded-bl-md'
@@ -388,6 +426,23 @@ export default function AIChatWidget() {
                 >
                   {m.role === 'user' ? m.content : <MarkdownLite text={m.content} />}
                 </div>
+                {/* AI 답변엔 복사 버튼 (계장팀 전달 메시지 등을 바로 복붙) */}
+                {m.role !== 'user' && i !== 0 && (
+                  <button
+                    onClick={() => handleCopy(m.content, i)}
+                    className="mt-1 ml-1 flex items-center gap-1 text-[11.5px] font-medium text-slate-400 hover:text-cyan-300 transition-colors"
+                  >
+                    {copiedIndex === i ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-lime-400" /> 복사됨
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" /> 복사
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             ))}
 
@@ -432,6 +487,14 @@ export default function AIChatWidget() {
 
           {/* 입력 영역 */}
           <div className="flex-shrink-0 p-2.5 border-t border-slate-700 bg-slate-900/80">
+            {/* 계장설비팀 전달용 메시지 작성 버튼 */}
+            <button
+              onClick={() => sendMessage(HANDOFF_PROMPT)}
+              disabled={isLoading || serverStatus === 'offline'}
+              className="w-full mb-2 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[12.5px] font-bold transition-colors hover:bg-amber-500/25 active:scale-[0.99] disabled:opacity-40 touch-manipulation"
+            >
+              <ClipboardList className="w-4 h-4" /> 계장설비팀 전달용 메시지 작성
+            </button>
             <div className="flex items-end gap-2">
               <textarea
                 ref={inputRef}
@@ -444,7 +507,7 @@ export default function AIChatWidget() {
                 className="flex-1 resize-none max-h-28 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-[14px] text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 transition-colors disabled:opacity-50"
               />
               <button
-                onClick={sendMessage}
+                onClick={() => sendMessage()}
                 disabled={isLoading || !input.trim() || serverStatus === 'offline'}
                 className="w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 disabled:opacity-40 disabled:hover:translate-y-0 touch-manipulation"
                 aria-label="전송"
