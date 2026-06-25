@@ -21,9 +21,11 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 # ── .env 로드 (있으면) ─────────────────────────────────────
+# override=True: 셸 환경(.zshrc 등)에 낡은 ANTHROPIC_API_KEY 가 export 돼 있어도
+# 항상 .env 값이 우선하도록 강제한다. (이게 없으면 환경변수의 죽은 키를 써서 401 발생)
 try:
     from dotenv import load_dotenv
-    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"), override=True)
 except ImportError:
     pass
 
