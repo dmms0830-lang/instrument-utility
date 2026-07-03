@@ -44,15 +44,17 @@ public class BatteryTestActivity extends BaseTestActivity {
             sb.append("종류: ").append(tech == null ? "-" : tech).append("\n");
             sb.append("장착 여부: ").append(present ? "장착됨" : "미장착!").append("\n\n");
 
-            BatteryManager bm = (BatteryManager) getSystemService(BATTERY_SERVICE);
-            if (bm != null) {
-                int uA = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW);
-                if (uA != Integer.MIN_VALUE && uA != 0) {
-                    sb.append(String.format(Locale.KOREA, "순간 전류: %.1f mA\n", uA / 1000.0));
-                }
-                int chargeUAh = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER);
-                if (chargeUAh != Integer.MIN_VALUE && chargeUAh > 0) {
-                    sb.append(String.format(Locale.KOREA, "현재 충전량: %.0f mAh\n", chargeUAh / 1000.0));
+            if (android.os.Build.VERSION.SDK_INT >= 21) { // BatteryManager.getIntProperty는 API 21+
+                BatteryManager bm = (BatteryManager) getSystemService(BATTERY_SERVICE);
+                if (bm != null) {
+                    int uA = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW);
+                    if (uA != Integer.MIN_VALUE && uA != 0) {
+                        sb.append(String.format(Locale.KOREA, "순간 전류: %.1f mA\n", uA / 1000.0));
+                    }
+                    int chargeUAh = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER);
+                    if (chargeUAh != Integer.MIN_VALUE && chargeUAh > 0) {
+                        sb.append(String.format(Locale.KOREA, "현재 충전량: %.0f mAh\n", chargeUAh / 1000.0));
+                    }
                 }
             }
 

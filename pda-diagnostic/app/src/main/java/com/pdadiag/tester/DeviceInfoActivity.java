@@ -58,7 +58,11 @@ public class DeviceInfoActivity extends BaseTestActivity {
 
         sb.append("■ 하드웨어\n");
         sb.append("CPU 코어: ").append(Runtime.getRuntime().availableProcessors()).append("개\n");
-        sb.append("ABI: ").append(Arrays.toString(Build.SUPPORTED_ABIS)).append("\n");
+        if (Build.VERSION.SDK_INT >= 21) {
+            sb.append("ABI: ").append(Arrays.toString(Build.SUPPORTED_ABIS)).append("\n");
+        } else {
+            sb.append("ABI: ").append(Build.CPU_ABI).append("\n");
+        }
 
         ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
         ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
@@ -67,8 +71,16 @@ public class DeviceInfoActivity extends BaseTestActivity {
                 mi.totalMem / 1073741824.0, mi.availMem / 1073741824.0));
 
         StatFs fs = new StatFs(Environment.getDataDirectory().getPath());
+        long totalB, availB;
+        if (Build.VERSION.SDK_INT >= 18) {
+            totalB = fs.getTotalBytes();
+            availB = fs.getAvailableBytes();
+        } else {
+            totalB = (long) fs.getBlockCount() * fs.getBlockSize();
+            availB = (long) fs.getAvailableBlocks() * fs.getBlockSize();
+        }
         sb.append(String.format(Locale.KOREA, "저장소: 전체 %.2f GB / 여유 %.2f GB\n",
-                fs.getTotalBytes() / 1073741824.0, fs.getAvailableBytes() / 1073741824.0));
+                totalB / 1073741824.0, availB / 1073741824.0));
 
         DisplayMetrics dm = getResources().getDisplayMetrics();
         sb.append("해상도: ").append(dm.widthPixels).append(" x ").append(dm.heightPixels)

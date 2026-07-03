@@ -8,10 +8,10 @@ android {
 
     defaultConfig {
         applicationId "com.pdadiag.tester"
-        minSdk 22          // PM80 (Android 5.1/6.0) 지원
+        minSdk 16          // Android 4.1+ — 구형 PDA(4.x)까지 설치 가능
         targetSdk 28       // PM85 (Android 8.1/9) 최적화
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1"
     }
 
     signingConfigs {

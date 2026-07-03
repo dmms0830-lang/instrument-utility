@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 구형 기기(Android 4.x)용 Holo 테마 — values-v21에서 Material로 대체됨 -->
+<resources>
+    <style name="AppTheme" parent="@android:style/Theme.Holo.Light.DarkActionBar" />
+    <style name="AppTheme.Fullscreen" parent="@android:style/Theme.Holo.NoActionBar.Fullscreen" />
+    <style name="AppTheme.NoActionBar" parent="@android:style/Theme.Holo.NoActionBar" />
+</resources>
