@@ -1,0 +1,56 @@
+name: Build PDA Diagnostic APK
+
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'pda-diagnostic/**'
+      - '.github/workflows/build-pda-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build release APK
+        run: gradle -p pda-diagnostic assembleRelease --no-daemon
+
+      - name: Collect APK
+        run: cp pda-diagnostic/app/build/outputs/apk/release/app-release.apk pda-diagnostic.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pda-diagnostic-apk
+          path: pda-diagnostic.apk
+
+      - name: Publish to latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: pda-diagnostic-latest
+          name: 'PDA 진단 앱 (PM80/PM85) — 최신 빌드'
+          prerelease: true
+          files: pda-diagnostic.apk
+          body: |
+            PM80/PM85 중고 PDA 점검용 진단 앱 최신 빌드입니다.
+            push마다 자동 갱신됩니다.
+
+            **설치:** APK를 PDA에 복사 → 설정에서 '출처를 알 수 없는 앱' 허용 → 설치
+            자세한 사용법은 `pda-diagnostic/README.md` 참고.

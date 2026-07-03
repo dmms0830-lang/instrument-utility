@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <!-- 모든 하드웨어는 선택 사항 — 옵션 미장착 기기에도 설치 가능해야 함 -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+    <uses-feature android:name="android.hardware.nfc" android:required="false" />
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
+    <uses-feature android:name="android.hardware.wifi" android:required="false" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
+
+    <application
+        android:label="PDA 진단"
+        android:icon="@drawable/ic_launcher"
+        android:allowBackup="false"
+        android:theme="@android:style/Theme.Material.Light.DarkActionBar">
+
+        <activity android:name=".MainActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".DeviceInfoActivity" android:exported="false" android:label="기기 정보" />
+        <activity android:name=".DisplayTestActivity" android:exported="false" android:label="디스플레이 테스트"
+            android:theme="@android:style/Theme.Material.NoActionBar.Fullscreen" />
+        <activity android:name=".TouchTestActivity" android:exported="false" android:label="터치 테스트"
+            android:theme="@android:style/Theme.Material.NoActionBar.Fullscreen" />
+        <activity android:name=".KeyTestActivity" android:exported="false" android:label="물리 버튼 테스트" />
+        <activity android:name=".ScannerTestActivity" android:exported="false" android:label="바코드 스캐너 테스트"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity android:name=".BatteryTestActivity" android:exported="false" android:label="배터리 상태" />
+        <activity android:name=".WifiTestActivity" android:exported="false" android:label="Wi-Fi 테스트" />
+        <activity android:name=".BluetoothTestActivity" android:exported="false" android:label="블루투스 테스트" />
+        <activity android:name=".GpsTestActivity" android:exported="false" android:label="GPS 테스트" />
+        <activity android:name=".CameraTestActivity" android:exported="false" android:label="카메라 테스트"
+            android:theme="@android:style/Theme.Material.NoActionBar" />
+        <activity android:name=".AudioTestActivity" android:exported="false" android:label="스피커/마이크 테스트" />
+        <activity android:name=".VibrationTestActivity" android:exported="false" android:label="진동 테스트" />
+        <activity android:name=".SensorTestActivity" android:exported="false" android:label="센서 테스트" />
+        <activity android:name=".NfcTestActivity" android:exported="false" android:label="NFC 테스트"
+            android:launchMode="singleTop" />
+        <activity android:name=".PerfTestActivity" android:exported="false" android:label="성능 벤치마크" />
+    </application>
+</manifest>
