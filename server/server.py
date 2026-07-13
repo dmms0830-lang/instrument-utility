@@ -17,7 +17,7 @@ server.py — instrument-utility AI 프록시 백엔드 (맥미니용)
 
 import os
 import anthropic
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
 
 # ── .env 로드 (있으면) ─────────────────────────────────────
@@ -84,11 +84,7 @@ def health():
     return jsonify({"ok": True, "model": MODEL})
 
 
-@app.post("/api/chat")
-def chat():
-    data = request.get_json(force=True, silent=True) or {}
-    raw = data.get("messages", [])
-
+def _sanitize_messages(raw):
     # 안전하게 정제: user/assistant 역할 + 비어있지 않은 content 만 통과
     messages = []
     for m in raw:
@@ -96,6 +92,46 @@ def chat():
         content = m.get("content")
         if role in ("user", "assistant") and isinstance(content, str) and content.strip():
             messages.append({"role": role, "content": content})
+    return messages
+
+
+@app.post("/api/chat/stream")
+def chat_stream():
+    """토큰이 생성되는 대로 실시간(텍스트 스트리밍)으로 흘려보낸다 → ChatGPT/Claude식 타이핑 효과."""
+    data = request.get_json(force=True, silent=True) or {}
+    messages = _sanitize_messages(data.get("messages", []))
+    if not messages:
+        return jsonify({"error": "messages 가 비어있습니다."}), 400
+
+    def generate():
+        try:
+            with client.messages.stream(
+                model=MODEL,
+                max_tokens=MAX_TOKENS,
+                system=SYSTEM_BLOCKS,
+                messages=messages,
+            ) as stream:
+                for text in stream.text_stream:
+                    if text:
+                        yield text
+        except anthropic.APIStatusError as e:
+            # 스트림 시작 후엔 상태코드를 못 바꾸므로 본문에 에러를 흘려보낸다
+            yield f"\n\n⚠️ (오류) Anthropic: {getattr(e, 'message', str(e))}"
+        except Exception as e:
+            yield f"\n\n⚠️ (오류) 서버: {e}"
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype="text/plain; charset=utf-8",
+        # 프록시/터널이 버퍼링해서 스트리밍이 뭉치지 않도록
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@app.post("/api/chat")
+def chat():
+    data = request.get_json(force=True, silent=True) or {}
+    messages = _sanitize_messages(data.get("messages", []))
 
     if not messages:
         return jsonify({"error": "messages 가 비어있습니다."}), 400

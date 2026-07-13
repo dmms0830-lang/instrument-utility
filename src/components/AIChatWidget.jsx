@@ -288,7 +288,7 @@ export default function AIChatWidget() {
         .slice(-MAX_HISTORY)
         .map((m) => ({ role: m.role, content: m.content }));
 
-      const res = await fetch(`${AI_BACKEND_URL}/api/chat`, {
+      const res = await fetch(`${AI_BACKEND_URL}/api/chat/stream`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ messages: apiMessages }),
@@ -311,11 +311,48 @@ export default function AIChatWidget() {
         throw new Error(detail);
       }
 
-      const data = await res.json();
-      const reply = (data?.reply || '').trim() || '(빈 응답이 돌아왔습니다)';
-
-      setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
       setServerStatus('online');
+
+      // ── 스트리밍 수신: 토큰이 오는 대로 마지막 assistant 메시지에 실시간으로 이어붙인다 ──
+      const setLastAssistant = (text) =>
+        setMessages((prev) => {
+          const copy = prev.slice();
+          for (let i = copy.length - 1; i >= 0; i--) {
+            if (copy[i].role === 'assistant') {
+              copy[i] = { ...copy[i], content: text };
+              break;
+            }
+          }
+          return copy;
+        });
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = '';
+      let started = false;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        if (!chunk) continue;
+        acc += chunk;
+        if (!started) {
+          started = true;
+          setIsLoading(false); // 첫 토큰 도착 → '생각 중' 종료, 타이핑 시작
+          setMessages((prev) => [...prev, { role: 'assistant', content: acc }]);
+        } else {
+          setLastAssistant(acc);
+        }
+      }
+      // 멀티바이트(한글) 잔여 바이트 flush
+      const tail = decoder.decode();
+      if (tail) {
+        acc += tail;
+        if (started) setLastAssistant(acc);
+      }
+      if (!started) {
+        setMessages((prev) => [...prev, { role: 'assistant', content: '(빈 응답이 돌아왔습니다)' }]);
+      }
     } catch (err) {
       console.error('[AIChat] error:', err);
       // 연결 자체가 안 되면(서버 꺼짐) 빨간 에러 대신 "수리 중" 화면
