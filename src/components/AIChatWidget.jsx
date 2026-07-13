@@ -365,7 +365,7 @@ export default function AIChatWidget() {
       {/* ── 채팅창 (열렸을 때) ── */}
       {isOpen && (
         <div
-          className="aichat-pop fixed z-[1000] left-2 right-2 top-3 bottom-24 sm:left-auto sm:right-6 sm:top-4 sm:bottom-24 sm:w-[460px] sm:max-w-[calc(100vw-3rem)] flex flex-col rounded-2xl overflow-hidden bg-slate-900/95 backdrop-blur-xl border border-slate-700 shadow-2xl shadow-black/50"
+          className="aichat-pop fixed z-[1000] inset-0 sm:inset-4 w-auto flex flex-col rounded-none sm:rounded-2xl overflow-hidden bg-slate-900/95 backdrop-blur-xl border-0 sm:border border-slate-700 shadow-2xl shadow-black/50"
         >
           {/* 헤더 */}
           <div className="flex items-center justify-between px-4 h-14 flex-shrink-0 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 border-b border-slate-700">
@@ -523,22 +523,18 @@ export default function AIChatWidget() {
         </div>
       )}
 
-      {/* ── 떠다니는 토글 버튼 ── */}
-      <button
-        onClick={() => setIsOpen((v) => !v)}
-        className={`aichat-float fixed z-[1001] bottom-5 right-4 sm:right-6 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl shadow-cyan-900/40 transition-colors touch-manipulation ${
-          isOpen
-            ? 'bg-slate-700 hover:bg-slate-600'
-            : 'bg-gradient-to-br from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500'
-        }`}
-        aria-label={isOpen ? 'AI 채팅 닫기' : 'AI 채팅 열기'}
-      >
-        {isOpen ? (
-          <X className="w-6 h-6 text-white" />
-        ) : (
+      {/* ── 떠다니는 토글 버튼 (열기 전용) ──
+          전체화면 채팅에서는 이 버튼이 입력창의 [전송]과 겹치므로,
+          채팅이 열려 있을 땐 숨긴다. 닫기는 헤더의 X로 처리. */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="aichat-float fixed z-[1001] bottom-5 right-4 sm:right-6 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl shadow-cyan-900/40 transition-colors touch-manipulation bg-gradient-to-br from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500"
+          aria-label="AI 채팅 열기"
+        >
           <Bot className="w-7 h-7 text-white" />
-        )}
-      </button>
+        </button>
+      )}
     </>
   );
 }
