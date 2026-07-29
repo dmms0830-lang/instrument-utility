@@ -5,3 +5,7 @@ __pycache__/
 *.log
 venv/
 .venv/
+
+# 정비이력 DB(데이터) — 회사정보라 깃 제외
+maintenance.db
+_upload_tmp.xlsx

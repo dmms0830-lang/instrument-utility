@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>정비이력 DB 관리</title>
+<style>
+:root{ --ink:#000; --paper:#fff; --face:#dcdcdc; --face2:#cfcfcf; --hi:#fff; --lo:#808080; }
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; color:var(--ink);
+  font-family:"Geneva","Chicago","Charcoal","Lucida Grande","Tahoma",sans-serif;
+  background-color:#b7b7b7;
+  background-image:
+    linear-gradient(45deg,#9a9a9a 25%,transparent 25%,transparent 75%,#9a9a9a 75%),
+    linear-gradient(45deg,#9a9a9a 25%,transparent 25%,transparent 75%,#9a9a9a 75%);
+  background-size:4px 4px; background-position:0 0,2px 2px;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility; font-size:14px; line-height:1.4;
+  padding:22px 14px 40px;
+}
+.window{ max-width:1120px; margin:0 auto; background:var(--paper);
+  border:1px solid var(--ink); box-shadow:4px 4px 0 rgba(0,0,0,.5); }
+.titlebar{ height:28px; border-bottom:1px solid var(--ink); position:relative;
+  display:flex; align-items:center; justify-content:center;
+  background:repeating-linear-gradient(to bottom,#000 0,#000 1px,#fff 1px,#fff 2px); }
+.title{ background:var(--paper); padding:2px 18px; font-size:16px; font-weight:bold; letter-spacing:.5px; }
+.closebox{ position:absolute; left:9px; top:8px; width:12px; height:12px; background:var(--paper); border:1px solid var(--ink); }
+.zoombox{ position:absolute; right:9px; top:8px; width:12px; height:12px; background:var(--paper); border:1px solid var(--ink); }
+.zoombox::before{ content:""; position:absolute; inset:1px; border:1px solid var(--ink); border-bottom:none; border-right:none; }
+.content{ padding:12px 14px 16px; }
+.hdr{ display:flex; justify-content:space-between; align-items:center; margin:2px 2px 12px; }
+.stat{ font-size:13px; font-weight:bold; padding:5px 10px; background:var(--face); border:1px solid var(--ink);
+  box-shadow:inset 1px 1px 0 var(--hi), inset -1px -1px 0 var(--lo); }
+.tabs{ display:flex; gap:4px; padding-left:4px; flex-wrap:wrap; }
+.tab{ font-family:inherit; font-weight:bold; font-size:13px; padding:6px 16px; background:var(--face2); color:var(--ink);
+  border:1px solid var(--ink); border-bottom:none; border-radius:8px 8px 0 0;
+  box-shadow:inset 1px 1px 0 var(--hi); cursor:pointer; position:relative; top:1px; }
+.tab.active{ background:var(--paper); padding-bottom:7px; }
+.frame{ border:1px solid var(--ink); background:var(--paper); padding:14px;
+  box-shadow:inset 1px 1px 0 var(--hi), inset -1px -1px 0 #b0b0b0; }
+.panel{ display:none } .panel.active{ display:block }
+.btn{ font-family:inherit; font-weight:bold; font-size:13px; padding:5px 16px; background:var(--face); color:var(--ink);
+  border:1px solid var(--ink); border-radius:10px; box-shadow:inset 1px 1px 0 var(--hi), inset -1px -1px 0 var(--lo); cursor:pointer; }
+.btn:active{ box-shadow:inset -1px -1px 0 var(--hi), inset 1px 1px 0 var(--lo); background:var(--face2); }
+.btn.default{ outline:2px solid var(--ink); outline-offset:1px; }
+.btn:disabled{ opacity:.4; cursor:default; box-shadow:inset 1px 1px 0 var(--hi), inset -1px -1px 0 var(--lo); }
+input[type=text]{ font-family:inherit; font-size:14px; padding:6px 9px; width:100%; max-width:440px;
+  background:var(--paper); color:var(--ink); border:1px solid var(--ink); box-shadow:inset 1px 1px 0 var(--lo); }
+input[type=file]{ font-family:inherit; font-size:12px; }
+select{ font-family:inherit; font-size:13px; padding:5px 8px; border:1px solid #000; background:#fff; box-shadow:inset 1px 1px 0 var(--lo); }
+.tablewrap{ overflow:auto; margin-top:12px; border:1px solid var(--ink); max-height:64vh;
+  box-shadow:inset 1px 1px 0 var(--lo); background:var(--paper); }
+table{ border-collapse:collapse; width:100%; font-size:13.5px; min-width:760px; }
+th,td{ border:1px solid #000; padding:7px 11px; text-align:left; vertical-align:top; color:#000; }
+th{ background:var(--face2); font-weight:bold; position:sticky; top:0; white-space:nowrap; border-bottom:2px solid #000; }
+tr:nth-child(even) td{ background:#eef0f2; }
+.tag,.date{ font-family:"Monaco","Courier New",monospace; white-space:nowrap; } .tag{ font-weight:bold; }
+.msg{ margin-top:12px; font-size:13px; font-weight:bold; } .ok{ color:#006400 } .err{ color:#8b0000 }
+.hint{ color:#333; font-weight:normal; padding:22px; text-align:center; font-size:13.5px; }
+.drop{ border:2px dashed var(--ink); background:var(--face); padding:22px; text-align:center; font-size:13px; margin-bottom:14px; box-shadow:inset 1px 1px 0 var(--hi); }
+small{ color:#333; font-size:12px }
+.row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.pager{ display:flex; justify-content:center; align-items:center; gap:16px; margin-top:12px; font-family:"Monaco","Courier New",monospace; font-weight:bold; font-size:13px; }
+#w-all,#w-master{ max-height:none; }
+input[type=number]{ font-family:inherit; font-size:13px; padding:5px 7px; border:1px solid #000;
+  background:#fff; box-shadow:inset 1px 1px 0 var(--lo); }
+label{ font-size:12.5px; white-space:nowrap; }
+.cards{ display:flex; gap:10px; flex-wrap:wrap; margin:14px 0; }
+.card{ border:1px solid #000; background:var(--face); padding:8px 14px; min-width:118px; box-shadow:inset 1px 1px 0 var(--hi), inset -1px -1px 0 var(--lo); }
+.card small{ display:block; font-size:11px; color:#333; margin-bottom:3px; } .card b{ font-size:20px; font-family:"Monaco","Courier New",monospace; }
+.sec{ font-weight:bold; font-size:14px; margin:18px 0 8px; border-bottom:2px solid #000; padding-bottom:3px; }
+.bar-row{ display:flex; align-items:center; gap:8px; margin:5px 0; font-size:12.5px; }
+.bl{ width:135px; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; }
+.bt{ flex:1; height:17px; border:1px solid #000; background:#fff; box-shadow:inset 1px 1px 0 var(--lo); position:relative; }
+.bf{ position:absolute; left:0; top:0; bottom:0; background:#000; }
+.bc{ width:38px; font-family:"Monaco","Courier New",monospace; font-weight:bold; flex-shrink:0; }
+.insight{ border:1px solid #000; background:#f4f4ee; padding:11px 13px; margin:14px 0; font-size:13.5px; line-height:1.55; box-shadow:inset 1px 1px 0 var(--hi); }
+.modal-bg{ position:fixed; inset:0; background:rgba(0,0,0,.35); display:flex; align-items:flex-start; justify-content:center; padding-top:12vh; z-index:100; }
+.mwin{ width:min(540px,92vw); background:var(--paper); border:1px solid var(--ink); box-shadow:5px 5px 0 rgba(0,0,0,.5); }
+</style></head>
+<body>
+<div class="window">
+  <div class="titlebar">
+    <span class="closebox"></span>
+    <span class="title">🖥 정비이력 데이터베이스 관리 시스템</span>
+    <span class="zoombox"></span>
+  </div>
+  <div class="content">
+    <div class="hdr">
+      <div class="stat" id="stat">불러오는 중…</div>
+      <button class="btn default" onclick="openUpload()">⬆ DB 업로드</button>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-p="search">🔍 검색</button>
+      <button class="tab" data-p="all">📋 전체보기</button>
+      <button class="tab" data-p="analysis">📊 분석</button>
+      <button class="tab" data-p="master">🗂 설비마스터</button>
+      <button class="tab" data-p="bad">🔥 다고장 설비</button>
+    </div>
+    <div class="frame">
+      <!-- 검색 -->
+      <div class="panel active" id="p-search">
+        <div class="row">
+          <input type="text" id="q" placeholder="설비태그 또는 키워드 (예: E19-UV-002, Close 불량, FCC)">
+          <button class="btn default" onclick="doSearch()">검색</button>
+        </div>
+        <div class="msg" id="s-msg"></div>
+        <div class="tablewrap"><table id="t-search"><thead></thead><tbody><tr><td class="hint">검색어를 입력하세요 (예: E19-UV-002)</td></tr></tbody></table></div>
+      </div>
+      <!-- 전체보기 -->
+      <div class="panel" id="p-all">
+        <div class="row"><button class="btn" onclick="loadAll()">새로고침</button><small>10건씩 · 최신순</small></div>
+        <div class="tablewrap" id="w-all"><table id="t-all"><thead></thead><tbody></tbody></table></div>
+        <div class="pager">
+          <button class="btn" id="prev" onclick="prevPage()">◀ 이전</button>
+          <span id="pageinfo">–</span>
+          <button class="btn" id="next" onclick="nextPage()">다음 ▶</button>
+        </div>
+      </div>
+      <!-- 분석 -->
+      <div class="panel" id="p-analysis">
+        <div class="row">
+          <span>분석 설비: <b id="asel">(선택 안 됨)</b></span>
+          <button class="btn" onclick="openEqSearch()">🔍 설비 검색</button>
+          <button class="btn default" onclick="loadAnalysis()">분석</button>
+        </div>
+        <div id="eqbox" style="display:none; margin-top:10px; border:1px solid #000; padding:10px; box-shadow:inset 1px 1px 0 var(--lo);">
+          <div class="row">
+            <input type="text" id="eq-q" placeholder="설비태그·설비명 검색 (예: E19, 촉매, FCC)">
+            <button class="btn" onclick="doEqSearch()">검색</button>
+          </div>
+          <div class="tablewrap" style="max-height:34vh"><table id="t-eq"><thead></thead><tbody></tbody></table></div>
+        </div>
+        <div id="aout"><div class="hint">[🔍 설비 검색]으로 설비를 선택한 뒤 [분석]을 누르세요.</div></div>
+      </div>
+      <!-- 설비마스터 -->
+      <div class="panel" id="p-master">
+        <div class="row">
+          <input type="text" id="m-q" placeholder="설비태그·설비명·위치 검색 (예: E19, FCC, LEVEL)">
+          <button class="btn default" onclick="loadMaster()">검색</button>
+          <small>20개씩 · 오더에서 자동 추출·중복제거</small>
+        </div>
+        <div class="tablewrap" id="w-master"><table id="t-master"><thead></thead><tbody></tbody></table></div>
+        <div class="pager">
+          <button class="btn" id="m-prev" onclick="mPrev()">◀ 이전</button>
+          <span id="m-pageinfo">–</span>
+          <button class="btn" id="m-next" onclick="mNext()">다음 ▶</button>
+        </div>
+      </div>
+      <!-- 다고장 설비 -->
+      <div class="panel" id="p-bad">
+        <div class="row" style="gap:14px">
+          <label><b>최소 고장건수</b> <input type="number" id="b-min" value="5" min="1" style="width:66px"></label>
+          <label><b>기간</b>
+            <select id="b-years">
+              <option value="0">전체</option><option value="1">최근 1년</option>
+              <option value="2">최근 2년</option><option value="3">최근 3년</option>
+              <option value="5">최근 5년</option><option value="10">최근 10년</option>
+            </select>
+          </label>
+          <label><b>고장유형</b> <select id="b-cat"><option value="">전체</option></select></label>
+          <input type="text" id="b-loc" placeholder="공정·위치·설비명 (예: E1900, FCC)" style="max-width:250px">
+          <button class="btn default" onclick="loadBad()">추출</button>
+          <button class="btn" onclick="copyTags()">📋 태그 복사</button>
+        </div>
+        <div class="msg" id="b-msg"></div>
+        <div class="tablewrap"><table id="t-bad"><thead></thead><tbody><tr><td class="hint">조건을 정하고 [추출]을 누르세요.</td></tr></tbody></table></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DB 업로드 모달 -->
+<div id="modal" class="modal-bg" style="display:none">
+  <div class="mwin">
+    <div class="titlebar"><span class="closebox" onclick="closeUpload()"></span><span class="title">DB 업로드</span></div>
+    <div style="padding:16px 18px">
+      <div class="drop">정비오더 엑셀(.xlsx)을 선택해 업로드<br><small>같은 오더번호는 자동 갱신(중복 방지)</small></div>
+      <div class="row">
+        <input type="file" id="file" accept=".xlsx">
+        <button class="btn default" onclick="doUpload()">업로드</button>
+        <button class="btn" onclick="closeUpload()">닫기</button>
+      </div>
+      <div class="msg" id="u-msg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function esc(s){return (s==null?"":String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+// ── 정비이력 표 (검색·전체보기 공용) ──
+const COLS=[["notif_req_date","날짜","date"],["tag_raw","설비태그","tag"],
+["order_desc","오더내역(증상)",""],["order_type","유형",""],["progress","진행",""],
+["equip_name","설비명칭",""],["order_no","오더번호",""],["vendor","협력사",""]];
+function render(tbl,recs,emptyMsg){
+  const th=tbl.querySelector('thead'),tb=tbl.querySelector('tbody');
+  th.innerHTML='<tr>'+COLS.map(c=>'<th>'+c[1]+'</th>').join('')+'</tr>';
+  if(!recs.length){tb.innerHTML='<tr><td class="hint" colspan="'+COLS.length+'">'+(emptyMsg||'데이터 없음')+'</td></tr>';return}
+  tb.innerHTML=recs.map(r=>'<tr>'+COLS.map(c=>'<td class="'+c[2]+'">'+esc(r[c[0]])+'</td>').join('')+'</tr>').join('');
+}
+async function stats(){try{const s=await(await fetch('/db/stats')).json();document.getElementById('stat').textContent='총 '+s.total+'건 · 설비 '+s.tags+'개'}catch(e){}}
+// ── 검색 ──
+async function doSearch(){const q=document.getElementById('q').value.trim();if(!q)return;const d=await(await fetch('/db/search?q='+encodeURIComponent(q))).json();document.getElementById('s-msg').textContent=d.records.length+'건 검색됨';render(document.getElementById('t-search'),d.records,'검색 결과 없음')}
+// ── 전체보기(페이지네이션) ──
+let allRecords=[], apage=0; const PAGE_SIZE=10;
+async function loadAll(){const d=await(await fetch('/db/records?limit=3000')).json();allRecords=d.records;apage=0;renderPage();stats()}
+function renderPage(){
+  const total=allRecords.length, pages=Math.max(1,Math.ceil(total/PAGE_SIZE));
+  if(apage>=pages)apage=pages-1; if(apage<0)apage=0;
+  render(document.getElementById('t-all'),allRecords.slice(apage*PAGE_SIZE,apage*PAGE_SIZE+PAGE_SIZE),'데이터 없음');
+  document.getElementById('pageinfo').textContent=(total?apage+1:0)+' / '+pages+'  ('+total+'건)';
+  document.getElementById('prev').disabled=apage<=0;
+  document.getElementById('next').disabled=apage>=pages-1;
+}
+function prevPage(){if(apage>0){apage--;renderPage()}}
+function nextPage(){const pages=Math.ceil(allRecords.length/PAGE_SIZE);if(apage<pages-1){apage++;renderPage()}}
+// ── DB 업로드(모달) ──
+function openUpload(){document.getElementById('modal').style.display='flex';document.getElementById('u-msg').textContent=''}
+function closeUpload(){document.getElementById('modal').style.display='none'}
+async function doUpload(){
+  const f=document.getElementById('file').files[0],m=document.getElementById('u-msg');
+  if(!f){m.innerHTML='<span class="err">파일을 선택하세요.</span>';return}
+  m.textContent='업로드 중…';
+  const fd=new FormData();fd.append('file',f);
+  try{
+    const res=await fetch('/db/upload',{method:'POST',body:fd}),d=await res.json();
+    if(!res.ok){m.innerHTML='<span class="err">'+esc(d.error||'오류')+'</span>';return}
+    m.innerHTML='<span class="ok">✅ 완료 — 추가 '+d.added+'건, 갱신 '+d.updated+'건'+(d.skipped?', 건너뜀 '+d.skipped+'건':'')+' (전체 '+d.total+'건)</span>';
+    stats(); allLoaded=false; masterLoaded=false; badLoaded=false;
+  }catch(e){m.innerHTML='<span class="err">업로드 실패: '+esc(e.message)+'</span>'}
+}
+// ── 설비마스터 ──
+function renderMaster(recs){
+  const t=document.getElementById('t-master');
+  t.querySelector('thead').innerHTML='<tr><th>설비태그</th><th>설비명</th><th>위치</th><th>정비건수</th><th>최초</th><th>최근</th></tr>';
+  t.querySelector('tbody').innerHTML=recs.length?recs.map(r=>'<tr><td class="tag">'+esc(r.tag)+'</td><td>'+esc(r.equip_name)+'</td><td>'+esc(r.loc)+'</td><td>'+r.count+'</td><td class="date">'+esc(r.first)+'</td><td class="date">'+esc(r.last)+'</td></tr>').join(''):'<tr><td class="hint" colspan="6">데이터 없음</td></tr>';
+}
+let masterRecs=[], mpage=0; const MPAGE_SIZE=20;
+async function loadMaster(){
+  const q=document.getElementById('m-q').value.trim();
+  const d=await(await fetch('/db/equipment?q='+encodeURIComponent(q))).json();
+  masterRecs=d.equipment; mpage=0; renderMasterPage();
+}
+function renderMasterPage(){
+  const total=masterRecs.length, pages=Math.max(1,Math.ceil(total/MPAGE_SIZE));
+  if(mpage>=pages)mpage=pages-1; if(mpage<0)mpage=0;
+  renderMaster(masterRecs.slice(mpage*MPAGE_SIZE,mpage*MPAGE_SIZE+MPAGE_SIZE));
+  document.getElementById('m-pageinfo').textContent=(total?mpage+1:0)+' / '+pages+'  ('+total+'개)';
+  document.getElementById('m-prev').disabled=mpage<=0;
+  document.getElementById('m-next').disabled=mpage>=pages-1;
+}
+function mPrev(){if(mpage>0){mpage--;renderMasterPage()}}
+function mNext(){const p=Math.ceil(masterRecs.length/MPAGE_SIZE);if(mpage<p-1){mpage++;renderMasterPage()}}
+// ── 다고장 설비 추출 ──
+let badRecs=[];
+async function loadCats(){
+  const d=await(await fetch('/db/categories')).json();
+  document.getElementById('b-cat').innerHTML='<option value="">전체</option>'+d.categories.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
+}
+function renderBad(recs){
+  const t=document.getElementById('t-bad');
+  t.querySelector('thead').innerHTML='<tr><th>순위</th><th>설비태그</th><th>설비명</th><th>위치</th><th>고장건수</th><th>평균주기</th><th>최근고장</th><th>주요유형</th></tr>';
+  t.querySelector('tbody').innerHTML=recs.length?recs.map((r,i)=>'<tr><td><b>'+(i+1)+'</b></td><td class="tag">'+esc(r.tag)+'</td><td>'+esc(r.equip)+'</td><td>'+esc(r.loc)+'</td><td><b>'+r.failures+'</b></td><td>'+(r.mtbf_months?r.mtbf_months+'개월':'-')+'</td><td class="date">'+esc(r.last)+'</td><td>'+esc(r.top_cat)+'</td></tr>').join(''):'<tr><td class="hint" colspan="8">조건에 맞는 설비 없음</td></tr>';
+}
+async function loadBad(){
+  const p=new URLSearchParams({min_failures:document.getElementById('b-min').value||5,
+    years:document.getElementById('b-years').value,
+    category:document.getElementById('b-cat').value,
+    loc:document.getElementById('b-loc').value.trim()});
+  document.getElementById('b-msg').textContent='추출 중…';
+  const d=await(await fetch('/db/badactors?'+p.toString())).json();
+  badRecs=d.equipment;
+  document.getElementById('b-msg').textContent='조건 충족 설비 '+badRecs.length+'개 (고장건수 순)';
+  renderBad(badRecs);
+}
+function copyTags(){
+  const m=document.getElementById('b-msg');
+  if(!badRecs.length){m.textContent='먼저 [추출]을 누르세요.';return}
+  const txt=badRecs.map(r=>r.tag).join('\n');
+  navigator.clipboard.writeText(txt).then(()=>{m.innerHTML='<span class="ok">✅ 태그 '+badRecs.length+'개 복사됨</span>'},()=>{m.innerHTML='<span class="err">복사 실패</span>'});
+}
+// ── 분석: 설비 검색·선택 ──
+let selTag='';
+function openEqSearch(){document.getElementById('eqbox').style.display='block';document.getElementById('eq-q').focus();doEqSearch()}
+function renderEq(recs){
+  const t=document.getElementById('t-eq');
+  t.querySelector('thead').innerHTML='<tr><th style="width:52px">선택</th><th>설비태그</th><th>설비명</th><th>건수</th><th>기간</th></tr>';
+  t.querySelector('tbody').innerHTML=recs.length?recs.map(r=>'<tr><td style="text-align:center"><input type="checkbox" data-tag="'+esc(r.tag)+'" data-name="'+esc(r.equip_name)+'" onclick="pickEq(this)"'+(r.tag===selTag?' checked':'')+'></td><td class="tag">'+esc(r.tag)+'</td><td>'+esc(r.equip_name)+'</td><td>'+r.count+'</td><td class="date">'+esc(r.first)+' ~ '+esc(r.last)+'</td></tr>').join(''):'<tr><td class="hint" colspan="5">설비 없음</td></tr>';
+}
+async function doEqSearch(){const q=document.getElementById('eq-q').value.trim();const d=await(await fetch('/db/equipment?q='+encodeURIComponent(q))).json();renderEq(d.equipment)}
+function pickEq(cb){
+  document.querySelectorAll('#t-eq input[type=checkbox]').forEach(x=>{if(x!==cb)x.checked=false});
+  if(cb.checked){selTag=cb.dataset.tag;document.getElementById('asel').textContent=cb.dataset.tag+(cb.dataset.name?(' — '+cb.dataset.name):'')}
+  else{selTag='';document.getElementById('asel').textContent='(선택 안 됨)'}
+}
+function bars(data){
+  if(!data.length)return '<div class="hint">데이터 없음</div>';
+  const max=Math.max.apply(null,data.map(d=>d[1]));
+  return data.map(d=>'<div class="bar-row"><span class="bl" title="'+esc(d[0])+'">'+esc(d[0])+'</span><span class="bt"><span class="bf" style="width:'+(max?Math.round(d[1]/max*100):0)+'%"></span></span><span class="bc">'+d[1]+'</span></div>').join('');
+}
+async function loadAnalysis(){
+  const out=document.getElementById('aout');
+  if(!selTag){
+    const d=await(await fetch('/db/equipment')).json();
+    if(d.equipment.length===1){selTag=d.equipment[0].tag;document.getElementById('asel').textContent=selTag+' — '+d.equipment[0].equip_name}
+    else{out.innerHTML='<div class="hint">먼저 [🔍 설비 검색]으로 설비를 선택하세요.</div>';return}
+  }
+  out.innerHTML='<div class="hint">분석 중…</div>';
+  const a=await(await fetch('/db/analysis?tag='+encodeURIComponent(selTag))).json();
+  let h='<div class="cards">';
+  h+='<div class="card"><small>설비</small><b style="font-size:14px">'+esc(a.tag)+'</b></div>';
+  h+='<div class="card"><small>총 정비</small><b>'+a.total+'</b></div>';
+  h+='<div class="card"><small>실제 고장</small><b>'+a.failures+'</b></div>';
+  h+='<div class="card"><small>평균 고장주기</small><b>'+(a.mtbf_months?a.mtbf_months+'<span style="font-size:12px">개월</span>':'-')+'</b></div>';
+  h+='<div class="card"><small>다음 고장 예상</small><b style="font-size:16px">'+(a.next_pred||'-')+'</b></div>';
+  h+='</div>';
+  h+='<div class="insight">💡 '+esc(a.insight)+'</div>';
+  h+='<div class="sec">고장 유형별</div>'+bars(a.categories||[]);
+  h+='<div class="sec">연도별 추세</div>'+bars((a.years||[]).map(y=>[String(y[0]),y[1]]));
+  out.innerHTML=h;
+}
+// ── 탭 전환 ──
+document.getElementById('q').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch()});
+document.getElementById('eq-q').addEventListener('keydown',e=>{if(e.key==='Enter')doEqSearch()});
+document.getElementById('m-q').addEventListener('keydown',e=>{if(e.key==='Enter')loadMaster()});
+document.getElementById('b-loc').addEventListener('keydown',e=>{if(e.key==='Enter')loadBad()});
+let allLoaded=false, masterLoaded=false, badLoaded=false;
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');document.getElementById('p-'+t.dataset.p).classList.add('active');
+  if(t.dataset.p==='all'&&!allLoaded){allLoaded=true;loadAll()}
+  if(t.dataset.p==='search')document.getElementById('q').focus();
+  if(t.dataset.p==='master'&&!masterLoaded){masterLoaded=true;loadMaster()}
+  if(t.dataset.p==='bad'&&!badLoaded){badLoaded=true;loadCats().then(loadBad)}
+});
+stats();
+document.getElementById('q').focus();
+</script>
+</body></html>
