@@ -16,10 +16,11 @@ import ResistorCalc from './components/ResistorCalc';
 import UpdateToast, { checkForUpdate } from './components/UpdateToast';
 import AIChatWidget from './components/AIChatWidget';
 import { version as appVersion } from '../package.json';
+import { useTheme } from './theme';
 import {
   Activity, Database, Thermometer, Gauge, Cpu, Waves, Droplets,
   Menu, ChevronDown, Check, Zap, Layers, Cog, ShieldAlert, RefreshCw,
-  CircuitBoard, Radio, Stethoscope, BookOpen, Wrench
+  CircuitBoard, Radio, Stethoscope, BookOpen, Wrench, Sun, Moon
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -91,6 +92,7 @@ function App() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showStatusMessage, setShowStatusMessage] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const { theme, toggleTheme } = useTheme();
 
   const handleManualRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -126,31 +128,31 @@ function App() {
   };
 
   return (
-    <div className="h-screen bg-slate-950 text-white font-sans selection:bg-blue-500/30 overflow-hidden flex flex-col">
+    <div className="h-screen bg-surface text-ink font-sans selection:bg-blue-soft overflow-hidden flex flex-col">
       {/* Header */}
-      <header className="h-14 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 flex items-center justify-between px-4 shadow-xl flex-shrink-0 z-50 relative gap-2">
+      <header className="h-14 bg-panel/80 backdrop-blur-md border-b border-line-soft flex items-center justify-between px-4 shadow-xl flex-shrink-0 z-50 relative gap-2">
         {/* Left: Menu Dropdown Trigger */}
         <div className="flex items-center h-full flex-shrink-0">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className={cn(
               "flex items-center gap-2 h-10 px-3 sm:px-4 rounded-xl transition-all duration-200",
-              "bg-slate-800 border border-slate-700 shadow-lg",
-              "hover:bg-slate-700 hover:border-cyan-500 hover:-translate-y-0.5",
+              "bg-elev border border-line shadow-lg",
+              "hover:bg-elev2 hover:border-cyan-line hover:-translate-y-0.5",
               "active:scale-95 active:translate-y-0 touch-manipulation shrink-0",
-              isMenuOpen && "bg-slate-700 border-cyan-500"
+              isMenuOpen && "bg-elev2 border-cyan-line"
             )}
           >
-            <Menu className="w-[18px] h-[18px] sm:w-5 sm:h-5 text-cyan-400" />
+            <Menu className="w-[18px] h-[18px] sm:w-5 sm:h-5 text-cyan-ink" />
             <div className="flex items-center gap-2">
               {/* 현재 활성 탭 라벨을 메뉴 버튼에 표시 — 공간 활용 + 현재 위치 상기 */}
-              <span className="text-xs sm:text-sm font-bold tracking-tight text-white truncate max-w-[100px] sm:max-w-none">
+              <span className="text-xs sm:text-sm font-bold tracking-tight text-ink truncate max-w-[100px] sm:max-w-none">
                 {activeTabData?.label ?? '메뉴'}
               </span>
             </div>
             <ChevronDown className={cn(
-              "w-4 h-4 sm:w-5 sm:h-5 text-slate-400 transition-all duration-300",
-              isMenuOpen ? "rotate-180 text-cyan-400" : ""
+              "w-4 h-4 sm:w-5 sm:h-5 text-ink2 transition-all duration-300",
+              isMenuOpen ? "rotate-180 text-cyan-ink" : ""
             )} />
           </button>
         </div>
@@ -163,21 +165,37 @@ function App() {
             setDeferredPrompt={setDeferredPrompt}
             className={cn(
               "flex items-center justify-center gap-1.5 h-10 px-3 sm:px-4 rounded-xl transition-all duration-200 touch-manipulation shrink-0",
-              "bg-slate-800 border border-lime-500/50 text-lime-400 shadow-lg font-bold text-xs sm:text-sm whitespace-nowrap",
-              "hover:bg-lime-500 hover:text-slate-950 hover:border-lime-500 hover:-translate-y-0.5",
+              "bg-elev border border-lime-line text-lime-ink shadow-lg font-bold text-xs sm:text-sm whitespace-nowrap",
+              "hover:bg-lime-fill hover:text-lime-on hover:border-lime-line hover:-translate-y-0.5",
               "active:scale-95 active:translate-y-0"
             )}
           />
+
+          <button
+            onClick={toggleTheme}
+            className={cn(
+              "flex shrink-0 items-center justify-center h-10 w-10 rounded-xl transition-all duration-200 touch-manipulation",
+              "bg-elev border border-line text-amber-ink shadow-lg",
+              "hover:bg-elev2 hover:border-amber-line hover:-translate-y-0.5",
+              "active:scale-95 active:translate-y-0"
+            )}
+            aria-label={theme === 'dark' ? '밝은 화면으로 전환' : '어두운 화면으로 전환'}
+            title={theme === 'dark' ? '밝은 화면(햇빛)' : '어두운 화면(야간)'}
+          >
+            {theme === 'dark'
+              ? <Sun className="w-[18px] h-[18px]" />
+              : <Moon className="w-[18px] h-[18px]" />}
+          </button>
 
           <button
             onClick={handleManualRefresh}
             disabled={isRefreshing}
             className={cn(
               "flex shrink-0 items-center justify-center gap-1.5 h-10 px-3 rounded-xl transition-all duration-200 touch-manipulation",
-              "bg-slate-800 border border-slate-700 text-lime-400 shadow-lg font-bold text-xs sm:text-sm whitespace-nowrap",
-              "hover:bg-slate-700 hover:border-lime-500/50 hover:-translate-y-0.5",
+              "bg-elev border border-line text-lime-ink shadow-lg font-bold text-xs sm:text-sm whitespace-nowrap",
+              "hover:bg-elev2 hover:border-lime-line hover:-translate-y-0.5",
               "active:scale-95 active:translate-y-0",
-              isRefreshing && "border-lime-500/50 opacity-80"
+              isRefreshing && "border-lime-line opacity-80"
             )}
             aria-label="업데이트"
           >
@@ -193,7 +211,7 @@ function App() {
             <img
               src="/pic/HDO_new.png"
               alt="HD현대오일뱅크"
-              className="h-full w-auto object-contain max-w-full object-right"
+              className="brand-logo h-full w-auto object-contain max-w-full object-right"
             />
           </button>
         </div>
@@ -203,21 +221,21 @@ function App() {
           <>
             {/* Backdrop */}
             <div
-              className="fixed inset-0 top-14 bg-black/60 backdrop-blur-sm z-40 animate-in fade-in duration-200"
+              className="fixed inset-0 top-14 bg-well backdrop-blur-sm z-40 animate-in fade-in duration-200"
               onClick={() => setIsMenuOpen(false)}
             />
 
             {/* Dropdown Panel */}
-            <div className="absolute top-full left-0 w-full md:w-96 max-h-[calc(100vh-4rem)] overflow-y-auto bg-slate-900/95 backdrop-blur-xl border-b border-r border-slate-800 rounded-br-2xl shadow-2xl z-50 animate-in slide-in-from-top-4 duration-300 origin-top">
+            <div className="absolute top-full left-0 w-full md:w-96 max-h-[calc(100vh-4rem)] overflow-y-auto bg-panel/95 backdrop-blur-xl border-b border-r border-line-soft rounded-br-2xl shadow-2xl z-50 animate-in slide-in-from-top-4 duration-300 origin-top">
               <nav className="p-2 flex flex-col gap-3">
                 {MENU_GROUPS.map((group) => {
                   const GroupIcon = group.groupIcon;
                   return (
                     <div key={group.group} className="flex flex-col gap-0.5">
                       {/* Group Header (non-clickable) */}
-                      <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-800/60 mb-1">
-                        <GroupIcon className="w-3.5 h-3.5 text-slate-500" />
-                        <span className="text-[11px] font-black uppercase tracking-[0.15em] text-slate-500">
+                      <div className="flex items-center gap-2 px-3 py-2 border-b border-line-soft/60 mb-1">
+                        <GroupIcon className="w-3.5 h-3.5 text-ink3" />
+                        <span className="text-[11px] font-black uppercase tracking-[0.15em] text-ink3">
                           {group.group}
                         </span>
                       </div>
@@ -233,28 +251,28 @@ function App() {
                             className={cn(
                               "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all active:scale-[0.98] touch-manipulation text-left w-full",
                               isActive
-                                ? "bg-blue-600/20 text-blue-400 border border-blue-500/30 shadow-lg shadow-blue-900/20"
-                                : "text-slate-400 hover:bg-white/5 hover:text-white border border-transparent"
+                                ? "bg-blue-soft text-blue-ink border border-blue-line shadow-lg shadow-shade"
+                                : "text-ink2 hover:bg-hover hover:text-ink border border-transparent"
                             )}
                           >
                             <ItemIcon className={cn(
                               "w-5 h-5 flex-shrink-0",
-                              isActive ? "text-blue-400" : "text-slate-500"
+                              isActive ? "text-blue-ink" : "text-ink3"
                             )} />
                             <div className="flex-1 min-w-0">
                               <div className={cn(
                                 "font-bold text-[15px] leading-tight truncate",
-                                isActive ? "text-blue-400" : "text-slate-200"
+                                isActive ? "text-blue-ink" : "text-ink"
                               )}>
                                 {tab.label}
                               </div>
                               {tab.sub && (
-                                <div className="text-[11px] text-slate-500 font-mono truncate mt-0.5">
+                                <div className="text-[11px] text-ink3 font-mono truncate mt-0.5">
                                   {tab.sub}
                                 </div>
                               )}
                             </div>
-                            {isActive && <Check className="w-4 h-4 text-blue-400 flex-shrink-0" />}
+                            {isActive && <Check className="w-4 h-4 text-blue-ink flex-shrink-0" />}
                           </button>
                         );
                       })}
@@ -291,7 +309,7 @@ function App() {
       {/* Already Latest Toast */}
       {showStatusMessage && (
         <div className="fixed bottom-20 left-4 right-4 z-[998] flex justify-center animate-in slide-in-from-bottom-4 fade-in duration-300">
-          <div className="bg-slate-800 text-lime-400 border border-lime-500/30 rounded-xl px-4 py-3 shadow-lg flex items-center gap-2">
+          <div className="bg-elev text-lime-ink border border-lime-line rounded-xl px-4 py-3 shadow-lg flex items-center gap-2">
             <Check className="w-4 h-4" />
             <span className="text-sm font-medium">이미 최신 버전(v{appVersion})을 사용 중입니다</span>
           </div>

@@ -2,6 +2,28 @@ import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Text, PerspectiveCamera, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
+import { useIsDark } from '../theme';
+
+/* ══════════════════════════════════════════════════════════════
+   3D 테마 — 캔버스 안은 CSS가 닿지 않으므로 값을 직접 넘긴다.
+   라이트: 흰 배경 위라 라벨은 어둡게 + 흰 외곽선, 조명은 밝게.
+══════════════════════════════════════════════════════════════ */
+const T3D = {
+    dark: {
+        label: '#6ab0d0', labelOut: '#050e18',
+        dim: '#4a90b8', dimOut: '#000000', dimOp: 0.45, vesselOp: 0.4,
+        ltFill: '#e0fbff', ltOut: '#002030',
+        tgtOutUp: '#001a00', tgtOutDn: '#1a0000',
+        ambI: 0.55, ambC: '#c0d4e8', keyI: 1.1, fillI: 0.35, rimI: 0.25, hemiI: 0,
+    },
+    light: {
+        label: '#123a52', labelOut: '#ffffff',
+        dim: '#123a52', dimOut: '#ffffff', dimOp: 0.95, vesselOp: 0.95,
+        ltFill: '#08293a', ltOut: '#ffffff',
+        tgtOutUp: '#ffffff', tgtOutDn: '#ffffff',
+        ambI: 1.05, ambC: '#ffffff', keyI: 1.35, fillI: 0.5, rimI: 0.35, hemiI: 0.7,
+    },
+};
 
 const BG_Z = -2.5, FG_Z = 1.0;
 const LG_Z_OFFSET = 1.6; // Level Gauge 추가 전진량
@@ -270,7 +292,7 @@ function DeviationZone({ ltPct, lgPct }) {
 }
 
 // ── VESSEL ──
-function Vessel({ lgPct, ltPct }) {
+function Vessel({ lgPct, ltPct, t }) {
     const liqPct = lgPct > 0 ? (LRV_Y - V_BOT + (lgPct / 100) * MEAS) / V_H * 100 : 0;
     return <group position={[0, 0, BG_Z]}>
         <mesh><cylinderGeometry args={[V_R, V_R, V_H, 32, 1, true]} /><meshStandardMaterial color="#1a3848" roughness={0.35} metalness={0.75} transparent opacity={0.45} side={THREE.DoubleSide} /></mesh>
@@ -289,7 +311,7 @@ function Vessel({ lgPct, ltPct }) {
         </>}
         <mesh position={[0, URV_Y, 0]} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[V_R + 0.01, 0.005, 8, 48]} /><meshStandardMaterial color="#4a90b8" transparent opacity={0.3} /></mesh>
         <mesh position={[0, LRV_Y, 0]} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[V_R + 0.01, 0.005, 8, 48]} /><meshStandardMaterial color="#4a90b8" transparent opacity={0.3} /></mesh>
-        <Text position={[0, V_BOT + V_H + 0.3, 0]} fontSize={0.10} color="#4a80a8" anchorX="center" anchorY="middle" font={undefined} outlineWidth={0.002} outlineColor="#000" fillOpacity={0.4}>VESSEL</Text>
+        <Text position={[0, V_BOT + V_H + 0.3, 0]} fontSize={0.10} color={t.dim} anchorX="center" anchorY="middle" font={undefined} outlineWidth={0.002} outlineColor={t.dimOut} fillOpacity={t.vesselOp}>VESSEL</Text>
     </group>;
 }
 
@@ -399,7 +421,7 @@ function VGLight({ pct }) { return null; }
 function VGLiquid({ pct }) { return <VGFillBar pct={pct} />; }
 
 /* 눈금 옆 마커 — LT(오렌지) + 목표(초록/빨강), 숫자와 겹치지 않게 좌측 배치 */
-function LTScaleMarkers({ ltPct, lgPct }) {
+function LTScaleMarkers({ ltPct, lgPct, t }) {
     const ltRef = useRef();
     const tgtRef = useRef();
     const tgtMatRef = useRef();
@@ -426,7 +448,7 @@ function LTScaleMarkers({ ltPct, lgPct }) {
 
     const isUp  = (lgPct ?? 0) > (ltPct ?? 0);
     const tgtCol = isUp ? '#22c55e' : '#ef4444';
-    const tgtOut = isUp ? '#001a00' : '#1a0000';
+    const tgtOut = isUp ? t.tgtOutUp : t.tgtOutDn;
 
     return <>
         {/* LT 현재 (흰/시안) — Level Gauge 왼쪽 */}
@@ -434,10 +456,10 @@ function LTScaleMarkers({ ltPct, lgPct }) {
             {/* 마커 바 — 두껍게, basic material로 깨짐 방지 */}
             <mesh position={[0.05, 0, 0.05]}>
                 <boxGeometry args={[0.12, 0.022, 0.025]} />
-                <meshBasicMaterial color="#e0fbff" />
+                <meshBasicMaterial color={t.ltFill} />
             </mesh>
             {/* 라벨 — 마커 왼쪽으로 */}
-            <Text position={[-0.02, 0, 0.08]} fontSize={0.10} color="#e0fbff" anchorX="right" anchorY="middle" font={undefined} outlineWidth={0.004} outlineColor="#002030">LT {Math.round(ltPct ?? 0)}</Text>
+            <Text position={[-0.02, 0, 0.08]} fontSize={0.10} color={t.ltFill} anchorX="right" anchorY="middle" font={undefined} outlineWidth={0.004} outlineColor={t.ltOut}>LT {Math.round(ltPct ?? 0)}</Text>
         </group>
         {/* 목표 (초록/빨강) */}
         <group ref={tgtRef} position={[0, LRV_Y, 0]}>
@@ -451,17 +473,17 @@ function LTScaleMarkers({ ltPct, lgPct }) {
 }
 
 // ── SCALE MARKS ──
-function ScaleMarks({ ltPct, lgPct }) {
+function ScaleMarks({ ltPct, lgPct, t }) {
     return <>
         {/* 0~100 눈금자 — Level Gauge 오른쪽 (기존 위치) */}
         <group position={[LG_X + LG_W / 2 + 0.12, 0, FG_Z + LG_Z_OFFSET]}>
-            {[0, 25, 50, 75, 100].map(p => { const y = LRV_Y + (p / 100) * MEAS; return <group key={p} position={[0, y, 0]}><mesh position={[0.04, 0, 0]}><boxGeometry args={[0.07, 0.010, 0.010]} /><meshStandardMaterial color="#5a9aba" roughness={0.3} metalness={0.7} emissive="#2a5a7a" emissiveIntensity={0.15} /></mesh><Text position={[0.14, 0, 0.02]} fontSize={0.11} color="#6ab0d0" anchorX="left" anchorY="middle" font={undefined} outlineWidth={0.004} outlineColor="#050e18">{p}</Text></group>; })}
+            {[0, 25, 50, 75, 100].map(p => { const y = LRV_Y + (p / 100) * MEAS; return <group key={p} position={[0, y, 0]}><mesh position={[0.04, 0, 0]}><boxGeometry args={[0.07, 0.010, 0.010]} /><meshStandardMaterial color="#5a9aba" roughness={0.3} metalness={0.7} emissive="#2a5a7a" emissiveIntensity={0.15} /></mesh><Text position={[0.14, 0, 0.02]} fontSize={0.11} color={t.label} anchorX="left" anchorY="middle" font={undefined} outlineWidth={0.004} outlineColor={t.labelOut}>{p}</Text></group>; })}
             {Array.from({ length: 21 }, (_, i) => { if ([0, 5, 10, 15, 20].includes(i)) return null; const y = LRV_Y + (i / 20) * MEAS; return <mesh key={i} position={[0.025, y, 0]}><boxGeometry args={[0.035, 0.006, 0.006]} /><meshStandardMaterial color="#1e3d58" roughness={0.3} metalness={0.6} /></mesh>; })}
         </group>
         {/* LT/목표 마커 — Level Gauge 왼쪽 (분리) */}
         {ltPct != null && (
             <group position={[LG_X - LG_W / 2 - 0.08, 0, FG_Z + LG_Z_OFFSET]}>
-                <LTScaleMarkers ltPct={ltPct} lgPct={lgPct} />
+                <LTScaleMarkers ltPct={ltPct} lgPct={lgPct} t={t} />
             </group>
         )}
     </>;
@@ -633,7 +655,7 @@ function LCDOverlay({ displayValue, hasValue, screenPos }) {
 /* ══════════════════════════════════════════════════════════════
    SCENE
 ══════════════════════════════════════════════════════════════ */
-function Scene({ currPct, targetPct, onLCDProject }) {
+function Scene({ currPct, targetPct, onLCDProject, t }) {
     const hasCurr = currPct !== '' && !isNaN(parseFloat(currPct));
     const hasTgt = targetPct !== '' && !isNaN(parseFloat(targetPct));
     const lgP = hasTgt ? Math.min(Math.max(parseFloat(targetPct), 0), 100) : 0;
@@ -650,17 +672,18 @@ function Scene({ currPct, targetPct, onLCDProject }) {
     return <>
         <PerspectiveCamera makeDefault position={[0.2, 1.0, 8.0]} fov={38} />
         <CameraRig />
-        <ambientLight intensity={0.55} color="#c0d4e8" />
-        <directionalLight position={[3, 5, 8]} intensity={1.1} />
-        <directionalLight position={[-4, 3, 6]} intensity={0.35} color="#90c0e0" />
-        <directionalLight position={[0, -1, 5]} intensity={0.25} color="#5a8aa0" />
+        <ambientLight intensity={t.ambI} color={t.ambC} />
+        {t.hemiI > 0 && <hemisphereLight args={['#ffffff', '#c8d2e0', t.hemiI]} />}
+        <directionalLight position={[3, 5, 8]} intensity={t.keyI} />
+        <directionalLight position={[-4, 3, 6]} intensity={t.fillI} color="#90c0e0" />
+        <directionalLight position={[0, -1, 5]} intensity={t.rimI} color="#5a8aa0" />
         <pointLight position={[LT_X, ampCY, FG_Z + 1.0]} intensity={0.5} color="#00e5ff" distance={3} />
         <VGLight pct={lgP} />
 
-        <Vessel lgPct={lgP} ltPct={ltP} />
+        <Vessel lgPct={lgP} ltPct={ltP} t={t} />
         <LevelGaugeBody />
         <VGLiquid pct={lgP} />
-        <ScaleMarks ltPct={ltP} lgPct={lgP > 0 ? lgP : null} />
+        <ScaleMarks ltPct={ltP} lgPct={lgP > 0 ? lgP : null} t={t} />
 
         {/* ★ 트랜스미터: PNG PlaneGeometry */}
         <Transmitter />
@@ -676,8 +699,8 @@ function Scene({ currPct, targetPct, onLCDProject }) {
         <Pipe from={lP1} to={lP2} radius={IR} color="#5a8a9a" emissive="#2a4a5a" emI={0.1} />
         <Pipe from={lP2} to={lP3} radius={IR} color="#5a8a9a" emissive="#2a4a5a" emI={0.1} />
         <Elbow position={lP1} r={IR * 1.4} /><Elbow position={lP2} r={IR * 1.4} />
-        <Text position={[PORT_TIP_X - 0.12, (H_PORT_Y + URV_Y) / 2, (FG_Z + BG_Z) / 2]} fontSize={0.09} color="#6ab0d0" anchorX="center" anchorY="middle" font={undefined} outlineWidth={0.003} outlineColor="#050e18">H</Text>
-        <Text position={[PORT_TIP_X - 0.12, (L_PORT_Y + LRV_Y) / 2, (FG_Z + BG_Z) / 2]} fontSize={0.09} color="#6ab0d0" anchorX="center" anchorY="middle" font={undefined} outlineWidth={0.003} outlineColor="#050e18">L</Text>
+        <Text position={[PORT_TIP_X - 0.12, (H_PORT_Y + URV_Y) / 2, (FG_Z + BG_Z) / 2]} fontSize={0.09} color={t.label} anchorX="center" anchorY="middle" font={undefined} outlineWidth={0.003} outlineColor={t.labelOut}>H</Text>
+        <Text position={[PORT_TIP_X - 0.12, (L_PORT_Y + LRV_Y) / 2, (FG_Z + BG_Z) / 2]} fontSize={0.09} color={t.label} anchorX="center" anchorY="middle" font={undefined} outlineWidth={0.003} outlineColor={t.labelOut}>L</Text>
         <Pipe from={uP0} to={uP1} radius={PR} color="#4a6a78" emissive="#1a3040" emI={0.08} />
         <Pipe from={uP1} to={uP2} radius={PR} color="#4a6a78" emissive="#1a3040" emI={0.08} />
         <Elbow position={uP1} r={PR * 1.3} />
@@ -689,8 +712,8 @@ function Scene({ currPct, targetPct, onLCDProject }) {
         <Flange position={[PORT_TIP_X + 0.02, L_PORT_Y, FG_Z]} rotation={[0, 0, Math.PI / 2]} r={0.06} />
         <Flange position={[lgConnX - 0.02, URV_Y, FG_Z + LG_Z_OFFSET]} rotation={[0, 0, Math.PI / 2]} r={0.08} />
         <Flange position={[lgConnX - 0.02, LRV_Y, FG_Z + LG_Z_OFFSET]} rotation={[0, 0, Math.PI / 2]} r={0.08} />
-        <Text position={[V_R - 0.1, URV_Y + 0.12, BG_Z + V_R]} fontSize={0.07} color="#4a90b8" anchorX="end" anchorY="bottom" font={undefined} outlineWidth={0.002} outlineColor="#000" fillOpacity={0.45}>URV</Text>
-        <Text position={[V_R - 0.1, LRV_Y - 0.06, BG_Z + V_R]} fontSize={0.07} color="#4a90b8" anchorX="end" anchorY="top" font={undefined} outlineWidth={0.002} outlineColor="#000" fillOpacity={0.45}>LRV</Text>
+        <Text position={[V_R - 0.1, URV_Y + 0.12, BG_Z + V_R]} fontSize={0.07} color={t.dim} anchorX="end" anchorY="bottom" font={undefined} outlineWidth={0.002} outlineColor={t.dimOut} fillOpacity={t.dimOp}>URV</Text>
+        <Text position={[V_R - 0.1, LRV_Y - 0.06, BG_Z + V_R]} fontSize={0.07} color={t.dim} anchorX="end" anchorY="top" font={undefined} outlineWidth={0.002} outlineColor={t.dimOut} fillOpacity={t.dimOp}>LRV</Text>
     </>;
 }
 
@@ -698,6 +721,8 @@ function Scene({ currPct, targetPct, onLCDProject }) {
    EXPORT — Canvas + LCD HTML 오버레이 wrapper
 ══════════════════════════════════════════════════════════════ */
 export default function LiveView3D({ currPct, targetPct }) {
+    const isDark = useIsDark();
+    const t = isDark ? T3D.dark : T3D.light;
     const [lcdPos, setLcdPos] = useState(null);
     const canvasRef = useRef(null);
 
@@ -728,6 +753,7 @@ export default function LiveView3D({ currPct, targetPct }) {
                     currPct={currPct}
                     targetPct={targetPct}
                     onLCDProject={handleLCDProject}
+                    t={t}
                 />
             </Canvas>
 

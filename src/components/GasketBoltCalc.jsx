@@ -278,24 +278,24 @@ export default function GasketBoltCalc() {
         <div className="flex flex-col gap-3 h-full">
             {/* Header */}
             <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-orange-500/20 rounded-xl flex items-center justify-center">
-                    <Cog className="w-5 h-5 text-orange-400" />
+                <div className="w-10 h-10 bg-orange-soft rounded-xl flex items-center justify-center">
+                    <Cog className="w-5 h-5 text-orange-ink" />
                 </div>
                 <div>
-                    <h2 className="text-lg font-bold text-white">가스켓 & 볼트 조회</h2>
-                    <p className="text-xs text-slate-500">Gasket & Bolt Material Lookup</p>
+                    <h2 className="text-lg font-bold text-ink">가스켓 & 볼트 조회</h2>
+                    <p className="text-xs text-ink3">Gasket & Bolt Material Lookup</p>
                 </div>
             </div>
 
             {/* Tab Bar */}
-            <div className="flex rounded-xl overflow-hidden border border-slate-700 bg-slate-900/50">
+            <div className="flex rounded-xl overflow-hidden border border-line bg-panel/50">
                 {TABS.map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         className={`flex-1 py-2.5 text-sm font-bold transition-all ${activeTab === tab.id
-                            ? 'bg-orange-500/20 text-orange-400 border-b-2 border-orange-400'
-                            : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'
+                            ? 'bg-orange-soft text-orange-ink border-b-2 border-orange-line'
+                            : 'text-ink3 hover:text-ink2 hover:bg-elev/50'
                             }`}
                     >
                         {tab.label}
@@ -309,37 +309,37 @@ export default function GasketBoltCalc() {
             {activeTab === 'calc' && (
                 <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
                     {/* Input Section */}
-                    <div className="bg-slate-900/50 rounded-2xl p-4 shadow-xl border border-slate-800">
+                    <div className="bg-panel/50 rounded-2xl p-4 shadow-xl border border-line-soft">
                         <div className="flex flex-col gap-3">
                             <div>
-                                <label className="block text-xs text-slate-400 font-bold mb-1">플랜지 사이즈 (inch)</label>
+                                <label className="block text-xs text-ink2 font-bold mb-1">플랜지 사이즈 (inch)</label>
                                 <select value={flangeSize} onChange={e => handleFlangeSizeChange(e.target.value)}
-                                    className="w-full h-12 bg-black rounded-xl px-3 font-mono text-base font-bold text-cyan-400 border border-slate-700 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 outline-none transition-all appearance-none cursor-pointer">
+                                    className="w-full h-12 bg-field rounded-xl px-3 font-mono text-base font-bold text-cyan-ink border border-line focus:border-orange-line focus:ring-2 focus:ring-orange-line outline-none transition-all appearance-none cursor-pointer">
                                     <option value="">사이즈 선택...</option>
                                     {FLANGE_SIZES.map(s => <option key={s} value={s}>{s}"</option>)}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs text-slate-400 font-bold mb-1">레이팅 (lb)</label>
+                                <label className="block text-xs text-ink2 font-bold mb-1">레이팅 (lb)</label>
                                 <select value={rating} onChange={e => setRating(e.target.value)} disabled={!flangeSize}
-                                    className="w-full h-12 bg-black rounded-xl px-3 font-mono text-base font-bold text-green-400 border border-slate-700 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 outline-none transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                                    className="w-full h-12 bg-field rounded-xl px-3 font-mono text-base font-bold text-green-ink border border-line focus:border-orange-line focus:ring-2 focus:ring-orange-line outline-none transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                                     <option value="">레이팅 선택...</option>
                                     {availableRatings.map(r => <option key={r} value={r}>{r}#</option>)}
                                 </select>
                             </div>
                             {/* Flushing Ring */}
-                            <div className="pt-3 border-t border-slate-800">
+                            <div className="pt-3 border-t border-line-soft">
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input type="checkbox" checked={isFlushingRing} onChange={e => setIsFlushingRing(e.target.checked)}
-                                        className="w-5 h-5 rounded accent-lime-400 cursor-pointer" />
-                                    <span className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">플러싱 링 적용</span>
+                                        className="w-5 h-5 rounded accent-lime-ink cursor-pointer" />
+                                    <span className="text-sm text-ink2 group-hover:text-ink2 transition-colors">플러싱 링 적용</span>
                                 </label>
                                 {isFlushingRing && (
                                     <div className="mt-2">
-                                        <label className="block text-xs text-slate-500 font-bold mb-1">링 두께 (mm)</label>
+                                        <label className="block text-xs text-ink3 font-bold mb-1">링 두께 (mm)</label>
                                         <input type="number" value={ringThickness || ''} onChange={e => setRingThickness(parseFloat(e.target.value) || 0)}
                                             placeholder="두께 입력..."
-                                            className="w-full h-10 bg-green-900/20 rounded-lg px-3 font-mono text-base font-bold text-lime-400 border border-green-800 focus:border-lime-500 focus:ring-2 focus:ring-lime-500/30 outline-none transition-all placeholder-slate-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                                            className="w-full h-10 bg-green-soft rounded-lg px-3 font-mono text-base font-bold text-lime-ink border border-green-line focus:border-lime-line focus:ring-2 focus:ring-lime-line outline-none transition-all placeholder-ink3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
                                     </div>
                                 )}
                             </div>
@@ -353,11 +353,11 @@ export default function GasketBoltCalc() {
                             <div className="grid grid-cols-2 gap-3">
                                 {/* GASKET CODE */}
                                 <button onClick={() => copyToClipboard(flangeResult.gasket)}
-                                    className="bg-slate-900/50 rounded-xl p-4 border border-slate-800 hover:border-orange-500/50 hover:bg-slate-800/50 transition-all active:scale-95 text-left">
-                                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">GASKET CODE</p>
-                                    <p className="text-xl font-mono font-bold text-orange-400">{flangeResult.gasket}</p>
-                                    {isFlushingRing && <p className="text-xs text-lime-400 font-bold mt-1">× 2 EA</p>}
-                                    <p className="text-[9px] text-slate-600 mt-1">탭하여 복사</p>
+                                    className="bg-panel/50 rounded-xl p-4 border border-line-soft hover:border-orange-line hover:bg-elev/50 transition-all active:scale-95 text-left">
+                                    <p className="text-xs text-ink3 uppercase tracking-wider mb-1">GASKET CODE</p>
+                                    <p className="text-xl font-mono font-bold text-orange-ink">{flangeResult.gasket}</p>
+                                    {isFlushingRing && <p className="text-xs text-lime-ink font-bold mt-1">× 2 EA</p>}
+                                    <p className="text-[9px] text-ink4 mt-1">탭하여 복사</p>
                                 </button>
 
                                 {/* BOLT/NUT CODE */}
@@ -366,21 +366,21 @@ export default function GasketBoltCalc() {
                                     const displayCode = rec?.code || flangeResult.bolt;
                                     return (
                                         <button onClick={() => copyToClipboard(displayCode)}
-                                            className={`bg-slate-900/50 rounded-xl p-4 border ${rec ? 'border-lime-800/60' : 'border-slate-800'} hover:border-orange-500/50 hover:bg-slate-800/50 transition-all active:scale-95 text-left`}>
-                                            <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">BOLT/NUT CODE</p>
+                                            className={`bg-panel/50 rounded-xl p-4 border ${rec ? 'border-lime-line' : 'border-line-soft'} hover:border-orange-line hover:bg-elev/50 transition-all active:scale-95 text-left`}>
+                                            <p className="text-xs text-ink3 uppercase tracking-wider mb-1">BOLT/NUT CODE</p>
                                             {rec ? (
                                                 <>
-                                                    <p className="text-xs font-mono text-slate-500 line-through">{flangeResult.bolt}</p>
+                                                    <p className="text-xs font-mono text-ink3 line-through">{flangeResult.bolt}</p>
                                                     {rec.code ? (
-                                                        <p className="text-lg font-mono font-bold text-lime-400 mt-0.5">➜ {rec.code}</p>
+                                                        <p className="text-lg font-mono font-bold text-lime-ink mt-0.5">➜ {rec.code}</p>
                                                     ) : (
-                                                        <p className="text-sm font-bold text-amber-400 mt-0.5">⚠ 창고 재고 확인 필요</p>
+                                                        <p className="text-sm font-bold text-amber-ink mt-0.5">⚠ 창고 재고 확인 필요</p>
                                                     )}
                                                 </>
                                             ) : (
-                                                <p className="text-xl font-mono font-bold text-orange-400">{flangeResult.bolt}</p>
+                                                <p className="text-xl font-mono font-bold text-orange-ink">{flangeResult.bolt}</p>
                                             )}
-                                            <p className="text-[9px] text-slate-600 mt-1">탭하여 복사</p>
+                                            <p className="text-[9px] text-ink4 mt-1">탭하여 복사</p>
                                         </button>
                                     );
                                 })()}
@@ -396,7 +396,7 @@ export default function GasketBoltCalc() {
                                                 setBoltLength('');
                                                 setActiveTab('bolt');
                                             }}
-                                            className="col-span-2 w-full py-3 mt-1 bg-lime-500 text-black font-bold text-sm rounded-lg animate-pulse hover:bg-lime-400 active:scale-95 transition-all shadow-lg shadow-lime-500/25"
+                                            className="col-span-2 w-full py-3 mt-1 bg-lime-fill text-lime-on font-bold text-sm rounded-lg animate-pulse hover:bg-lime-fill active:scale-95 transition-all shadow-lg shadow-shade"
                                         >
                                             🔍 유사 볼트 직접 찾기
                                         </button>
@@ -406,32 +406,32 @@ export default function GasketBoltCalc() {
 
                             {/* ROW 2: Bolt Details */}
                             <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-800">
-                                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">BOLT QTY</p>
-                                    <p className="text-2xl font-bold text-cyan-400">{flangeResult.qty}<span className="text-base text-slate-500 ml-1">EA</span></p>
+                                <div className="bg-panel/50 rounded-xl p-4 border border-line-soft">
+                                    <p className="text-xs text-ink3 uppercase tracking-wider mb-1">BOLT QTY</p>
+                                    <p className="text-2xl font-bold text-cyan-ink">{flangeResult.qty}<span className="text-base text-ink3 ml-1">EA</span></p>
                                 </div>
-                                <div className={`bg-slate-900/50 rounded-xl p-4 border ${isFlushingRing && getRecommendedBolt(flangeResult.spec) ? 'border-lime-800/60' : 'border-slate-800'}`}>
-                                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">BOLT SPEC</p>
+                                <div className={`bg-panel/50 rounded-xl p-4 border ${isFlushingRing && getRecommendedBolt(flangeResult.spec) ? 'border-lime-line' : 'border-line-soft'}`}>
+                                    <p className="text-xs text-ink3 uppercase tracking-wider mb-1">BOLT SPEC</p>
                                     {(() => {
                                         const rec = getRecommendedBolt(flangeResult.spec);
                                         if (rec) {
                                             return (
                                                 <>
-                                                    <p className="text-xs font-mono text-slate-500 line-through">{rec.diameter} × {rec.original} mm</p>
-                                                    <p className="text-lg font-bold font-mono text-lime-400 mt-0.5">
-                                                        ➜ {rec.diameter}<span className="text-slate-500 text-xs ml-1">inch</span>
-                                                        <span className="text-slate-600 mx-1">×</span>
-                                                        {rec.recommended}<span className="text-slate-500 text-xs ml-1">mm</span>
+                                                    <p className="text-xs font-mono text-ink3 line-through">{rec.diameter} × {rec.original} mm</p>
+                                                    <p className="text-lg font-bold font-mono text-lime-ink mt-0.5">
+                                                        ➜ {rec.diameter}<span className="text-ink3 text-xs ml-1">inch</span>
+                                                        <span className="text-ink4 mx-1">×</span>
+                                                        {rec.recommended}<span className="text-ink3 text-xs ml-1">mm</span>
                                                     </p>
                                                 </>
                                             );
                                         }
                                         const bs = formatBoltSize(flangeResult.spec);
                                         return (
-                                            <p className="text-lg font-bold font-mono text-cyan-400">
-                                                {bs.diameter}<span className="text-slate-500 text-xs ml-1">inch</span>
-                                                <span className="text-slate-600 mx-1">×</span>
-                                                {bs.length}<span className="text-slate-500 text-xs ml-1">mm</span>
+                                            <p className="text-lg font-bold font-mono text-cyan-ink">
+                                                {bs.diameter}<span className="text-ink3 text-xs ml-1">inch</span>
+                                                <span className="text-ink4 mx-1">×</span>
+                                                {bs.length}<span className="text-ink3 text-xs ml-1">mm</span>
                                             </p>
                                         );
                                     })()}
@@ -439,20 +439,20 @@ export default function GasketBoltCalc() {
                             </div>
 
                             {/* ROW 3: Tool Size */}
-                            <div className="bg-slate-800/50 rounded-xl py-2 px-4 border border-slate-800 text-center">
-                                <span className="text-sm text-slate-500">TOOL SIZE: </span>
-                                <span className="text-sm font-bold text-cyan-400 font-mono">{formatToolSize(flangeResult.tool).value}</span>
-                                <span className={`text-sm ml-1 ${formatToolSize(flangeResult.tool).unit === 'inch' ? 'text-orange-400' : 'text-slate-400'}`}>
+                            <div className="bg-elev/50 rounded-xl py-2 px-4 border border-line-soft text-center">
+                                <span className="text-sm text-ink3">TOOL SIZE: </span>
+                                <span className="text-sm font-bold text-cyan-ink font-mono">{formatToolSize(flangeResult.tool).value}</span>
+                                <span className={`text-sm ml-1 ${formatToolSize(flangeResult.tool).unit === 'inch' ? 'text-orange-ink' : 'text-ink2'}`}>
                                     {formatToolSize(flangeResult.tool).unit}
                                 </span>
-                                {formatToolSize(flangeResult.tool).unit === 'inch' && <span className="text-orange-400 text-xs ml-2">(특수)</span>}
+                                {formatToolSize(flangeResult.tool).unit === 'inch' && <span className="text-orange-ink text-xs ml-2">(특수)</span>}
                             </div>
                         </div>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-slate-600">
+                        <div className="flex-1 flex flex-col items-center justify-center text-ink4">
                             <Search className="w-16 h-16 mb-4 opacity-30" />
                             <p className="text-sm font-bold">사이즈와 레이팅을 선택하세요</p>
-                            <p className="text-xs text-slate-500 mt-1">Select flange size and rating</p>
+                            <p className="text-xs text-ink3 mt-1">Select flange size and rating</p>
                         </div>
                     )}
                 </div>
@@ -463,20 +463,20 @@ export default function GasketBoltCalc() {
             {/* ════════════════════════════════════════════ */}
             {activeTab === 'bolt' && (
                 <div className="flex flex-col gap-3 flex-1">
-                    <div className="bg-slate-900/50 rounded-2xl p-4 shadow-xl border border-slate-800">
+                    <div className="bg-panel/50 rounded-2xl p-4 shadow-xl border border-line-soft">
                         <div className="flex flex-col gap-3">
                             <div>
-                                <label className="block text-xs text-slate-400 font-bold mb-1">볼트 직경 (inch)</label>
+                                <label className="block text-xs text-ink2 font-bold mb-1">볼트 직경 (inch)</label>
                                 <select value={boltDiameter} onChange={e => handleBoltDiameterChange(e.target.value)}
-                                    className="w-full h-12 bg-black rounded-xl px-3 font-mono text-base font-bold text-cyan-400 border border-slate-700 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 outline-none transition-all appearance-none cursor-pointer">
+                                    className="w-full h-12 bg-field rounded-xl px-3 font-mono text-base font-bold text-cyan-ink border border-line focus:border-orange-line focus:ring-2 focus:ring-orange-line outline-none transition-all appearance-none cursor-pointer">
                                     <option value="">직경 선택...</option>
                                     {BOLT_DIAMETERS.map(d => <option key={d} value={d}>{d}"</option>)}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs text-slate-400 font-bold mb-1">볼트 길이 (mm)</label>
+                                <label className="block text-xs text-ink2 font-bold mb-1">볼트 길이 (mm)</label>
                                 <select value={boltLength} onChange={e => setBoltLength(e.target.value)} disabled={!boltDiameter}
-                                    className="w-full h-12 bg-black rounded-xl px-3 font-mono text-base font-bold text-green-400 border border-slate-700 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 outline-none transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                                    className="w-full h-12 bg-field rounded-xl px-3 font-mono text-base font-bold text-green-ink border border-line focus:border-orange-line focus:ring-2 focus:ring-orange-line outline-none transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                                     <option value="">길이 선택...</option>
                                     {availableLengths.map(l => <option key={l} value={l}>{l} mm</option>)}
                                 </select>
@@ -486,17 +486,17 @@ export default function GasketBoltCalc() {
 
                     {boltResult ? (
                         <button onClick={() => copyToClipboard(boltResult)}
-                            className="bg-slate-900/50 rounded-2xl p-6 border border-slate-800 hover:border-orange-500/50 hover:bg-slate-800/50 transition-all active:scale-95 text-center">
-                            <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">BOLT/NUT CODE</p>
-                            <p className="text-3xl font-mono font-black text-orange-400">{boltResult}</p>
-                            <p className="text-sm text-slate-500 font-mono mt-2">{boltDiameter}" × {boltLength} mm</p>
-                            <p className="text-[10px] text-slate-600 mt-3">탭하여 복사</p>
+                            className="bg-panel/50 rounded-2xl p-6 border border-line-soft hover:border-orange-line hover:bg-elev/50 transition-all active:scale-95 text-center">
+                            <p className="text-xs text-ink3 uppercase tracking-wider mb-2">BOLT/NUT CODE</p>
+                            <p className="text-3xl font-mono font-black text-orange-ink">{boltResult}</p>
+                            <p className="text-sm text-ink3 font-mono mt-2">{boltDiameter}" × {boltLength} mm</p>
+                            <p className="text-[10px] text-ink4 mt-3">탭하여 복사</p>
                         </button>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-slate-600">
+                        <div className="flex-1 flex flex-col items-center justify-center text-ink4">
                             <Search className="w-16 h-16 mb-4 opacity-30" />
                             <p className="text-sm font-bold">직경과 길이를 선택하세요</p>
-                            <p className="text-xs text-slate-500 mt-1">Select bolt diameter and length</p>
+                            <p className="text-xs text-ink3 mt-1">Select bolt diameter and length</p>
                         </div>
                     )}
                 </div>
@@ -507,20 +507,20 @@ export default function GasketBoltCalc() {
             {/* ════════════════════════════════════════════ */}
             {activeTab === 'gasket' && (
                 <div className="flex flex-col gap-3 flex-1">
-                    <div className="bg-slate-900/50 rounded-2xl p-4 shadow-xl border border-slate-800">
+                    <div className="bg-panel/50 rounded-2xl p-4 shadow-xl border border-line-soft">
                         <div className="flex flex-col gap-3">
                             <div>
-                                <label className="block text-xs text-slate-400 font-bold mb-1">가스켓 사이즈 (inch)</label>
+                                <label className="block text-xs text-ink2 font-bold mb-1">가스켓 사이즈 (inch)</label>
                                 <select value={gasketSize} onChange={e => handleGasketSizeChange(e.target.value)}
-                                    className="w-full h-12 bg-black rounded-xl px-3 font-mono text-base font-bold text-cyan-400 border border-slate-700 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 outline-none transition-all appearance-none cursor-pointer">
+                                    className="w-full h-12 bg-field rounded-xl px-3 font-mono text-base font-bold text-cyan-ink border border-line focus:border-orange-line focus:ring-2 focus:ring-orange-line outline-none transition-all appearance-none cursor-pointer">
                                     <option value="">사이즈 선택...</option>
                                     {FLANGE_SIZES.map(s => <option key={s} value={s}>{s}"</option>)}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs text-slate-400 font-bold mb-1">레이팅 (lb)</label>
+                                <label className="block text-xs text-ink2 font-bold mb-1">레이팅 (lb)</label>
                                 <select value={gasketRating} onChange={e => setGasketRating(e.target.value)} disabled={!gasketSize}
-                                    className="w-full h-12 bg-black rounded-xl px-3 font-mono text-base font-bold text-green-400 border border-slate-700 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 outline-none transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                                    className="w-full h-12 bg-field rounded-xl px-3 font-mono text-base font-bold text-green-ink border border-line focus:border-orange-line focus:ring-2 focus:ring-orange-line outline-none transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                                     <option value="">레이팅 선택...</option>
                                     {gasketRatings.map(r => <option key={r} value={r}>{r}#</option>)}
                                 </select>
@@ -530,17 +530,17 @@ export default function GasketBoltCalc() {
 
                     {gasketResult ? (
                         <button onClick={() => copyToClipboard(gasketResult)}
-                            className="bg-slate-900/50 rounded-2xl p-6 border border-slate-800 hover:border-orange-500/50 hover:bg-slate-800/50 transition-all active:scale-95 text-center">
-                            <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">GASKET CODE</p>
-                            <p className="text-3xl font-mono font-black text-orange-400">{gasketResult}</p>
-                            <p className="text-sm text-slate-500 font-mono mt-2">{gasketSize}" / {gasketRating}#</p>
-                            <p className="text-[10px] text-slate-600 mt-3">탭하여 복사</p>
+                            className="bg-panel/50 rounded-2xl p-6 border border-line-soft hover:border-orange-line hover:bg-elev/50 transition-all active:scale-95 text-center">
+                            <p className="text-xs text-ink3 uppercase tracking-wider mb-2">GASKET CODE</p>
+                            <p className="text-3xl font-mono font-black text-orange-ink">{gasketResult}</p>
+                            <p className="text-sm text-ink3 font-mono mt-2">{gasketSize}" / {gasketRating}#</p>
+                            <p className="text-[10px] text-ink4 mt-3">탭하여 복사</p>
                         </button>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-slate-600">
+                        <div className="flex-1 flex flex-col items-center justify-center text-ink4">
                             <Search className="w-16 h-16 mb-4 opacity-30" />
                             <p className="text-sm font-bold">사이즈와 레이팅을 선택하세요</p>
-                            <p className="text-xs text-slate-500 mt-1">Select gasket size and rating</p>
+                            <p className="text-xs text-ink3 mt-1">Select gasket size and rating</p>
                         </div>
                     )}
                 </div>

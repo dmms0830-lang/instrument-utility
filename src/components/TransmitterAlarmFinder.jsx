@@ -82,60 +82,60 @@ const AZBIL_ALARMS = [
 // ── Brand Themes ──
 const THEMES = {
     yokogawa: {
-        selectedBorder: 'border-lime-500',
-        selectedShadow: 'shadow-lime-900/30',
-        dropdownFocus: 'focus:border-lime-500',
-        actionBg: 'bg-emerald-950/40',
-        actionBorder: 'border-emerald-800/30',
-        actionIcon: 'text-lime-400',
-        actionLabel: 'text-lime-500',
-        actionText: 'text-lime-400',
-        codeColor: 'text-lime-400',
+        selectedBorder: 'border-lime-line',
+        selectedShadow: 'shadow-shade',
+        dropdownFocus: 'focus:border-lime-line',
+        actionBg: 'bg-emerald-soft',
+        actionBorder: 'border-emerald-line',
+        actionIcon: 'text-lime-ink',
+        actionLabel: 'text-lime-ink',
+        actionText: 'text-lime-ink',
+        codeColor: 'text-lime-ink',
         chevronColor: '%2384cc16',
         categoryBadge: {
-            'Failure': 'bg-red-950/60 text-red-400 border-red-800/40',
-            'Function Check': 'bg-amber-950/60 text-amber-400 border-amber-800/40',
-            'Out of Specification': 'bg-sky-950/60 text-sky-400 border-sky-800/40',
-            'Maintenance Required': 'bg-purple-950/60 text-purple-400 border-purple-800/40',
-            'Operation': 'bg-lime-950/60 text-lime-400 border-lime-800/40',
+            'Failure': 'bg-red-soft text-red-ink border-red-line',
+            'Function Check': 'bg-amber-soft text-amber-ink border-amber-line',
+            'Out of Specification': 'bg-sky-soft text-sky-ink border-sky-line',
+            'Maintenance Required': 'bg-purple-soft text-purple-ink border-purple-line',
+            'Operation': 'bg-lime-soft text-lime-ink border-lime-line',
         },
     },
     emerson: {
-        selectedBorder: 'border-blue-500',
-        selectedShadow: 'shadow-blue-900/30',
-        dropdownFocus: 'focus:border-blue-500',
-        actionBg: 'bg-blue-950/40',
-        actionBorder: 'border-blue-800/30',
-        actionIcon: 'text-blue-400',
-        actionLabel: 'text-blue-400',
-        actionText: 'text-blue-300',
-        codeColor: 'text-blue-400',
+        selectedBorder: 'border-blue-line',
+        selectedShadow: 'shadow-shade',
+        dropdownFocus: 'focus:border-blue-line',
+        actionBg: 'bg-blue-soft',
+        actionBorder: 'border-blue-line',
+        actionIcon: 'text-blue-ink',
+        actionLabel: 'text-blue-ink',
+        actionText: 'text-blue-ink',
+        codeColor: 'text-blue-ink',
         chevronColor: '%2360a5fa',
         categoryBadge: {
-            'Failure': 'bg-red-950/60 text-red-400 border-red-800/40',
-            'Function Check': 'bg-amber-950/60 text-amber-400 border-amber-800/40',
-            'Out of Specification': 'bg-cyan-950/60 text-cyan-400 border-cyan-800/40',
-            'Maintenance Required': 'bg-blue-950/60 text-blue-400 border-blue-800/40',
-            'Operation': 'bg-sky-950/60 text-sky-300 border-sky-800/40',
+            'Failure': 'bg-red-soft text-red-ink border-red-line',
+            'Function Check': 'bg-amber-soft text-amber-ink border-amber-line',
+            'Out of Specification': 'bg-cyan-soft text-cyan-ink border-cyan-line',
+            'Maintenance Required': 'bg-blue-soft text-blue-ink border-blue-line',
+            'Operation': 'bg-sky-soft text-sky-ink border-sky-line',
         },
     },
     azbil: {
-        selectedBorder: 'border-red-700',
-        selectedShadow: 'shadow-red-900/40',
-        dropdownFocus: 'focus:border-red-600',
-        actionBg: 'bg-red-950/40',
-        actionBorder: 'border-red-900/50',
-        actionIcon: 'text-red-400',
-        actionLabel: 'text-red-500',
-        actionText: 'text-red-300',
-        codeColor: 'text-red-400',
+        selectedBorder: 'border-red-line',
+        selectedShadow: 'shadow-shade',
+        dropdownFocus: 'focus:border-red-line',
+        actionBg: 'bg-red-soft',
+        actionBorder: 'border-red-line',
+        actionIcon: 'text-red-ink',
+        actionLabel: 'text-red-ink',
+        actionText: 'text-red-ink',
+        codeColor: 'text-red-ink',
         chevronColor: '%23f87171',
         categoryBadge: {
-            'Failure': 'bg-red-950/80 text-red-400 border-red-800/60',
-            'Function Check': 'bg-orange-950/60 text-orange-400 border-orange-800/40',
-            'Out of Specification': 'bg-rose-950/60 text-rose-400 border-rose-800/40',
-            'Maintenance Required': 'bg-red-950/60 text-red-500 border-red-900/60',
-            'Operation': 'bg-pink-950/60 text-pink-400 border-pink-800/40',
+            'Failure': 'bg-red-soft text-red-ink border-red-line',
+            'Function Check': 'bg-orange-soft text-orange-ink border-orange-line',
+            'Out of Specification': 'bg-rose-soft text-rose-ink border-rose-line',
+            'Maintenance Required': 'bg-red-soft text-red-ink border-red-line',
+            'Operation': 'bg-pink-soft text-pink-ink border-pink-line',
         },
     },
 };
@@ -184,11 +184,11 @@ export default function TransmitterAlarmFinder() {
     };
 
     const badgeClass = (cat) =>
-        `inline-block text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${theme.categoryBadge[cat] || 'bg-slate-800 text-slate-400 border-slate-700'}`;
+        `inline-block text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${theme.categoryBadge[cat] || 'bg-elev text-ink2 border-line'}`;
 
     return (
         <div className="h-full w-full flex flex-col px-4 py-4 min-h-0">
-            <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-lg w-full flex flex-col overflow-hidden flex-1">
+            <div className="bg-panel rounded-2xl border border-line-soft shadow-lg w-full flex flex-col overflow-hidden flex-1">
 
                 {/* ── STEP 1: Brand Image Buttons (원본 유지) ── */}
                 <div className="px-5 pt-5 pb-3">
@@ -202,7 +202,7 @@ export default function TransmitterAlarmFinder() {
                                     active:scale-[0.97] touch-manipulation
                                     ${brand === b.key
                                         ? `border-4 ${THEMES[b.key].selectedBorder} shadow-xl ${THEMES[b.key].selectedShadow} opacity-100`
-                                        : 'border-2 border-slate-700 opacity-50 hover:opacity-80 hover:border-slate-500'
+                                        : 'border-2 border-line opacity-50 hover:opacity-80 hover:border-line'
                                     }
                                 `}
                             >
@@ -222,14 +222,14 @@ export default function TransmitterAlarmFinder() {
                         <select
                             value={selectedId}
                             onChange={(e) => setSelectedId(e.target.value)}
-                            className={`w-full h-12 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono text-base px-4 pr-10 outline-none cursor-pointer appearance-none ${theme.dropdownFocus} transition-colors duration-200 hover:bg-slate-700`}
+                            className={`w-full h-12 bg-elev border border-line rounded-xl text-ink font-mono text-base px-4 pr-10 outline-none cursor-pointer appearance-none ${theme.dropdownFocus} transition-colors duration-200 hover:bg-elev2`}
                             style={chevronStyle}
                         >
-                            <option value="" className="bg-slate-900">— 알람 코드를 선택하세요 —</option>
+                            <option value="" className="bg-panel">— 알람 코드를 선택하세요 —</option>
                             {Object.entries(grouped).map(([cat, items]) => (
-                                <optgroup key={cat} label={`▸ ${CATEGORY_KO[cat]}`} className="bg-slate-900">
+                                <optgroup key={cat} label={`▸ ${CATEGORY_KO[cat]}`} className="bg-panel">
                                     {items.map(a => (
-                                        <option key={a.id} value={a.id} className="bg-slate-900">
+                                        <option key={a.id} value={a.id} className="bg-panel">
                                             {a.id} — {a.name}
                                         </option>
                                     ))}
@@ -237,7 +237,7 @@ export default function TransmitterAlarmFinder() {
                             ))}
                         </select>
                     ) : (
-                        <div className="w-full h-12 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-slate-500 font-mono text-lg">
+                        <div className="w-full h-12 bg-elev border border-line rounded-xl flex items-center justify-center text-ink3 font-mono text-lg">
                             데이터 준비 중
                         </div>
                     )}
@@ -246,7 +246,7 @@ export default function TransmitterAlarmFinder() {
                 {/* ── STEP 3: Result View ── */}
                 <div className="px-5 pb-5 flex-1 overflow-y-auto">
                     {!selected ? (
-                        <div className="flex flex-col items-center justify-center py-16 text-slate-600">
+                        <div className="flex flex-col items-center justify-center py-16 text-ink4">
                             <p className="text-lg font-bold">알람 코드를 선택하세요</p>
                             <p className="text-sm mt-1">브랜드를 선택 후 드롭다운에서 코드를 지정하면 상세 정보가 표시됩니다.</p>
                         </div>
@@ -262,26 +262,26 @@ export default function TransmitterAlarmFinder() {
                                 </div>
                                 <span className={`font-mono text-2xl font-bold ${theme.codeColor}`}>
                                     {selected.id}
-                                    <span className="text-slate-500 font-normal mx-2">—</span>
-                                    <span className="text-slate-200">{selected.name}</span>
+                                    <span className="text-ink3 font-normal mx-2">—</span>
+                                    <span className="text-ink">{selected.name}</span>
                                 </span>
                             </div>
 
                             {/* Cause */}
                             <div className="flex gap-3 items-start">
-                                <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                                <AlertTriangle className="w-5 h-5 text-amber-ink mt-0.5 flex-shrink-0" />
                                 <div className="flex flex-col gap-1">
-                                    <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">발생 원인</span>
-                                    <p className="text-base text-slate-300 leading-relaxed break-words">{selected.cause}</p>
+                                    <span className="text-xs text-ink3 font-bold uppercase tracking-wider">발생 원인</span>
+                                    <p className="text-base text-ink2 leading-relaxed break-words">{selected.cause}</p>
                                 </div>
                             </div>
 
                             {/* Output */}
                             <div className="flex gap-3 items-start">
-                                <Info className="w-5 h-5 text-slate-400 mt-0.5 flex-shrink-0" />
+                                <Info className="w-5 h-5 text-ink2 mt-0.5 flex-shrink-0" />
                                 <div className="flex flex-col gap-1">
-                                    <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">에러 시 출력</span>
-                                    <p className="text-base text-slate-400 leading-relaxed break-words">{selected.output}</p>
+                                    <span className="text-xs text-ink3 font-bold uppercase tracking-wider">에러 시 출력</span>
+                                    <p className="text-base text-ink2 leading-relaxed break-words">{selected.output}</p>
                                 </div>
                             </div>
 

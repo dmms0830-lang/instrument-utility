@@ -135,15 +135,16 @@ export default function LoopTest() {
 
     // 모드별 액센트 토큰
     const isLinear = mode === 'linear';
-    const accentBgSolid = isLinear ? 'bg-blue-500' : 'bg-purple-500';
-    const accentBgHover = isLinear ? 'hover:bg-blue-400' : 'hover:bg-purple-400';
-    const accentText = isLinear ? 'text-blue-400' : 'text-purple-400';
-    const accentBorderFocus = isLinear ? 'focus-within:border-blue-500' : 'focus-within:border-purple-500';
-    const accentRingFocus = isLinear ? 'focus-within:ring-blue-500/50' : 'focus-within:ring-purple-500/50';
+    const accentBgSolid = isLinear ? 'bg-blue-fill' : 'bg-purple-fill';
+    const accentBgHover = isLinear ? 'hover:bg-blue-fill' : 'hover:bg-purple-fill';
+    const accentText = isLinear ? 'text-blue-ink' : 'text-purple-ink';
+    const accentTextOn = isLinear ? 'text-blue-on' : 'text-purple-on';
+    const accentBorderFocus = isLinear ? 'focus-within:border-blue-line' : 'focus-within:border-purple-line';
+    const accentRingFocus = isLinear ? 'focus-within:ring-blue-line' : 'focus-within:ring-purple-line';
     const accentShadow = isLinear ? 'shadow-[0_0_15px_rgba(59,130,246,0.25)]' : 'shadow-[0_0_15px_rgba(168,85,247,0.25)]';
     const accentIconBg = isLinear
-        ? 'bg-blue-600/20 border-blue-700/50 text-blue-300 hover:bg-blue-600/30'
-        : 'bg-purple-600/20 border-purple-700/50 text-purple-300 hover:bg-purple-600/30';
+        ? 'bg-blue-soft border-blue-line text-blue-ink hover:bg-blue-soft'
+        : 'bg-purple-soft border-purple-line text-purple-ink hover:bg-purple-soft';
 
     return (
         <div className="flex flex-col gap-1.5 h-full relative">
@@ -152,8 +153,8 @@ export default function LoopTest() {
                 <button
                     onClick={() => handleModeChange('linear')}
                     className={`py-2.5 rounded-2xl font-bold text-sm transition-all active:scale-[0.98] touch-manipulation flex items-center justify-center ${mode === 'linear'
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50 ring-2 ring-blue-400'
-                        : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        ? 'bg-blue-fill text-blue-on shadow-lg shadow-shade ring-2 ring-blue-line'
+                        : 'bg-elev text-ink2 hover:bg-elev2'
                         }`}
                 >
                     <BarChart3 className="w-4 h-4 mr-1.5" />
@@ -162,8 +163,8 @@ export default function LoopTest() {
                 <button
                     onClick={() => handleModeChange('sqrt')}
                     className={`py-2.5 rounded-2xl font-bold text-sm transition-all active:scale-[0.98] touch-manipulation flex items-center justify-center ${mode === 'sqrt'
-                        ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/50 ring-2 ring-purple-400'
-                        : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        ? 'bg-purple-fill text-purple-on shadow-lg shadow-shade ring-2 ring-purple-line'
+                        : 'bg-elev text-ink2 hover:bg-elev2'
                         }`}
                 >
                     <Activity className="w-4 h-4 mr-1.5" />
@@ -172,7 +173,7 @@ export default function LoopTest() {
             </div>
 
             {/* Input Card: mA / % + 계산기 아이콘 + Quick Buttons */}
-            <div className="bg-card rounded-2xl border border-slate-800 p-2 shadow-xl">
+            <div className="bg-card rounded-2xl border border-line-soft p-2 shadow-xl">
                 <div className="flex gap-2 mb-2">
                     {/* mA Input */}
                     <div className="flex-1">
@@ -184,10 +185,10 @@ export default function LoopTest() {
                                 onChange={(e) => handleMAChange(e.target.value)}
                                 onFocus={(e) => handleFocus('ma', e)}
                                 onBlur={() => setActiveField(null)}
-                                className={`w-full h-12 bg-black rounded-xl px-2 pr-9 font-mono text-lg font-bold text-center outline-none transition-all text-white ${activeField === 'ma' ? 'border-2 border-cyan-500' : 'border border-slate-700'
+                                className={`w-full h-12 bg-field rounded-xl px-2 pr-9 font-mono text-lg font-bold text-center outline-none transition-all text-ink ${activeField === 'ma' ? 'border-2 border-cyan-line' : 'border border-line'
                                     }`}
                             />
-                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-bold">mA</span>
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-ink3 text-xs font-bold">mA</span>
                         </div>
                     </div>
                     {/* % Input */}
@@ -200,10 +201,10 @@ export default function LoopTest() {
                                 onChange={(e) => handlePctChange(e.target.value)}
                                 onFocus={(e) => handleFocus('pct', e)}
                                 onBlur={() => setActiveField(null)}
-                                className={`w-full h-12 bg-black rounded-xl px-2 pr-7 font-mono text-lg font-bold text-center text-yellow-400 outline-none transition-all ${activeField === 'pct' ? 'border-2 border-yellow-500' : 'border border-slate-700'
+                                className={`w-full h-12 bg-field rounded-xl px-2 pr-7 font-mono text-lg font-bold text-center text-yellow-ink outline-none transition-all ${activeField === 'pct' ? 'border-2 border-yellow-line' : 'border border-line'
                                     }`}
                             />
-                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-bold">%</span>
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-ink3 text-sm font-bold">%</span>
                         </div>
                     </div>
                     {/* 계산기 버튼 */}
@@ -223,8 +224,8 @@ export default function LoopTest() {
                             key={val}
                             onClick={() => handleQuickSet(val)}
                             className={`py-2 rounded-xl font-bold text-sm transition-all active:scale-95 touch-manipulation ${Math.round(parseFloat(pct)) === val
-                                ? mode === 'linear' ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'
-                                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                                ? mode === 'linear' ? 'bg-blue-fill text-blue-on' : 'bg-purple-fill text-purple-on'
+                                : 'bg-elev text-ink2 hover:bg-elev2'
                                 }`}
                         >
                             {val}%
@@ -234,40 +235,40 @@ export default function LoopTest() {
             </div>
 
             {/* DCS Faceplate */}
-            <div className="bg-card rounded-2xl border border-slate-800 p-2 shadow-xl flex-1 min-h-0">
-                <div className="flex items-center gap-1 mb-1 text-emerald-400">
+            <div className="bg-card rounded-2xl border border-line-soft p-2 shadow-xl flex-1 min-h-0">
+                <div className="flex items-center gap-1 mb-1 text-emerald-ink">
                     <Cpu className="w-3 h-3" />
                     <span className="text-[9px] font-bold tracking-wider uppercase">DCS Faceplate</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 h-[calc(100%-20px)]">
                     {/* LEFT: Vertical Gauge */}
-                    <div className="relative bg-slate-950 rounded-xl border border-slate-700 overflow-hidden shadow-inner">
+                    <div className="relative bg-surface rounded-xl border border-line overflow-hidden shadow-inner">
                         {[0, 25, 50, 75, 100].map((mark) => (
                             <div
                                 key={mark}
                                 className="absolute left-0 right-0 flex items-center pointer-events-none"
                                 style={{ bottom: `${mark}%` }}
                             >
-                                <div className="w-3 h-px bg-slate-600" />
-                                <span className="text-[9px] text-slate-500 font-mono ml-1">{mark}</span>
+                                <div className="w-3 h-px bg-elev2" />
+                                <span className="text-[9px] text-ink3 font-mono ml-1">{mark}</span>
                             </div>
                         ))}
 
                         <div
-                            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-emerald-600 via-emerald-500 to-teal-400 transition-all duration-300 ease-out"
+                            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-emerald-fill via-emerald-fill to-teal-fill transition-all duration-300 ease-out"
                             style={{ height: `${gaugeHeight}%` }}
                         >
-                            <div className="absolute top-0 left-0 right-0 h-1 bg-white/40" />
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-hover" />
                         </div>
 
                         <div
-                            className="absolute left-0 right-0 h-1 bg-white shadow-[0_0_12px_rgba(255,255,255,1)] transition-all duration-300 z-10"
+                            className="absolute left-0 right-0 h-1 bg-panel shadow-[0_0_12px_rgba(255,255,255,1)] transition-all duration-300 z-10"
                             style={{ bottom: `calc(${gaugeHeight}% - 2px)` }}
                         />
 
                         <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="font-mono text-4xl sm:text-5xl font-black text-white drop-shadow-[0_0_15px_rgba(0,0,0,0.9)] tracking-tight">
+                            <span className="font-mono text-4xl sm:text-5xl font-black text-ink value-halo tracking-tight">
                                 {parseFloat(pct).toFixed(0)}
                             </span>
                         </div>
@@ -275,28 +276,28 @@ export default function LoopTest() {
 
                     {/* RIGHT: Triple Data Block */}
                     <div className="flex flex-col gap-1">
-                        <div className="flex-1 bg-black/60 rounded-xl border border-emerald-900/50 flex flex-col items-center justify-center p-1 shadow-lg">
-                            <span className="text-[9px] text-slate-500 font-bold tracking-wider">PV</span>
-                            <span className="font-mono text-3xl sm:text-4xl font-black text-emerald-400 drop-shadow-[0_0_10px_rgba(34,197,94,0.6)] leading-none">
+                        <div className="flex-1 bg-well rounded-xl border border-emerald-line flex flex-col items-center justify-center p-1 shadow-lg">
+                            <span className="text-[9px] text-ink3 font-bold tracking-wider">PV</span>
+                            <span className="font-mono text-3xl sm:text-4xl font-black text-emerald-ink value-glow leading-none">
                                 {parseFloat(pct).toFixed(1)}
                             </span>
-                            <span className="text-[10px] text-slate-600">%</span>
+                            <span className="text-[10px] text-ink4">%</span>
                         </div>
 
-                        <div className="flex-1 bg-black/60 rounded-xl border border-cyan-900/50 flex flex-col items-center justify-center p-1 shadow-lg">
-                            <span className="text-[9px] text-slate-500 font-bold tracking-wider">SIGNAL</span>
-                            <span className="font-mono text-2xl sm:text-3xl font-black text-cyan-400 leading-none">
+                        <div className="flex-1 bg-well rounded-xl border border-cyan-line flex flex-col items-center justify-center p-1 shadow-lg">
+                            <span className="text-[9px] text-ink3 font-bold tracking-wider">SIGNAL</span>
+                            <span className="font-mono text-2xl sm:text-3xl font-black text-cyan-ink leading-none">
                                 {parseFloat(mA).toFixed(2)}
                             </span>
-                            <span className="text-[10px] text-slate-600">mA</span>
+                            <span className="text-[10px] text-ink4">mA</span>
                         </div>
 
-                        <div className="flex-1 bg-black/60 rounded-xl border border-orange-900/50 flex flex-col items-center justify-center p-1 shadow-lg">
-                            <span className="text-[9px] text-slate-500 font-bold tracking-wider">TMR</span>
-                            <span className="font-mono text-2xl sm:text-3xl font-black text-orange-400 leading-none">
+                        <div className="flex-1 bg-well rounded-xl border border-orange-line flex flex-col items-center justify-center p-1 shadow-lg">
+                            <span className="text-[9px] text-ink3 font-bold tracking-wider">TMR</span>
+                            <span className="font-mono text-2xl sm:text-3xl font-black text-orange-ink leading-none">
                                 {tmrValue}
                             </span>
-                            <span className="text-[10px] text-slate-600">819-4095</span>
+                            <span className="text-[10px] text-ink4">819-4095</span>
                         </div>
                     </div>
                 </div>
@@ -305,7 +306,7 @@ export default function LoopTest() {
             {/* Reset Button */}
             <button
                 onClick={handleReset}
-                className="py-2.5 bg-red-950/40 border border-red-900/40 text-red-400 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all touch-manipulation hover:bg-red-900/60"
+                className="py-2.5 bg-red-soft border border-red-line text-red-ink rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all touch-manipulation hover:bg-red-soft"
             >
                 <RotateCcw className="w-4 h-4" />
                 초기화
@@ -314,11 +315,11 @@ export default function LoopTest() {
             {/* ===== Calculator Modal ===== */}
             {calcOpen && (
                 <div
-                    className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm rounded-2xl"
+                    className="absolute inset-0 z-50 flex items-center justify-center bg-well backdrop-blur-sm rounded-2xl"
                     onClick={closeCalculator}
                 >
                     <div
-                        className={`w-[92%] max-w-sm bg-slate-900 rounded-2xl border border-slate-700 ${accentShadow} p-3 flex flex-col gap-2.5`}
+                        className={`w-[92%] max-w-sm bg-panel rounded-2xl border border-line ${accentShadow} p-3 flex flex-col gap-2.5`}
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
@@ -328,13 +329,13 @@ export default function LoopTest() {
                                 <span className={`text-sm font-black ${accentText}`}>
                                     공정값 → mA 계산기
                                 </span>
-                                <span className="text-[10px] text-slate-500 font-bold ml-1">
+                                <span className="text-[10px] text-ink3 font-bold ml-1">
                                     [{isLinear ? 'Linear' : 'Square Root'}]
                                 </span>
                             </div>
                             <button
                                 onClick={closeCalculator}
-                                className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all active:scale-90"
+                                className="p-1 text-ink2 hover:text-ink hover:bg-elev rounded-lg transition-all active:scale-90"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -342,65 +343,65 @@ export default function LoopTest() {
 
                         {/* LRV / URV */}
                         <div className="flex gap-2">
-                            <div className={`flex-1 rounded-xl bg-slate-800 border border-slate-700 flex flex-col p-2 ${accentBorderFocus} focus-within:ring-1 ${accentRingFocus} transition-all`}>
-                                <span className="text-[10px] text-slate-400 font-bold px-1 mb-0.5">LRV</span>
+                            <div className={`flex-1 rounded-xl bg-elev border border-line flex flex-col p-2 ${accentBorderFocus} focus-within:ring-1 ${accentRingFocus} transition-all`}>
+                                <span className="text-[10px] text-ink2 font-bold px-1 mb-0.5">LRV</span>
                                 <input
                                     type="number"
                                     placeholder="0"
                                     value={calcLrv}
                                     onChange={(e) => setCalcLrv(e.target.value)}
-                                    className={`w-full bg-transparent ${accentText} text-base font-bold px-1 outline-none placeholder:text-slate-600`}
+                                    className={`w-full bg-transparent ${accentText} text-base font-bold px-1 outline-none placeholder:text-ink4`}
                                 />
                             </div>
-                            <div className={`flex-1 rounded-xl bg-slate-800 border border-slate-700 flex flex-col p-2 ${accentBorderFocus} focus-within:ring-1 ${accentRingFocus} transition-all`}>
-                                <span className="text-[10px] text-slate-400 font-bold px-1 mb-0.5">URV</span>
+                            <div className={`flex-1 rounded-xl bg-elev border border-line flex flex-col p-2 ${accentBorderFocus} focus-within:ring-1 ${accentRingFocus} transition-all`}>
+                                <span className="text-[10px] text-ink2 font-bold px-1 mb-0.5">URV</span>
                                 <input
                                     type="number"
                                     placeholder="100"
                                     value={calcUrv}
                                     onChange={(e) => setCalcUrv(e.target.value)}
-                                    className={`w-full bg-transparent ${accentText} text-base font-bold px-1 outline-none placeholder:text-slate-600`}
+                                    className={`w-full bg-transparent ${accentText} text-base font-bold px-1 outline-none placeholder:text-ink4`}
                                 />
                             </div>
                         </div>
 
                         {/* Target */}
-                        <div className={`rounded-xl bg-slate-800 border border-slate-700 flex flex-col p-2 ${accentBorderFocus} focus-within:ring-1 ${accentRingFocus} transition-all`}>
-                            <span className="text-[10px] text-slate-400 font-bold px-1 mb-0.5">Target (공정값)</span>
+                        <div className={`rounded-xl bg-elev border border-line flex flex-col p-2 ${accentBorderFocus} focus-within:ring-1 ${accentRingFocus} transition-all`}>
+                            <span className="text-[10px] text-ink2 font-bold px-1 mb-0.5">Target (공정값)</span>
                             <input
                                 type="number"
                                 placeholder="원하는 공정값 입력"
                                 value={calcTarget}
                                 onChange={(e) => setCalcTarget(e.target.value)}
-                                className={`w-full bg-transparent ${accentText} text-base font-bold px-1 outline-none placeholder:text-slate-600`}
+                                className={`w-full bg-transparent ${accentText} text-base font-bold px-1 outline-none placeholder:text-ink4`}
                             />
                         </div>
 
                         {/* Result Display */}
-                        <div className="bg-slate-950 rounded-xl border border-slate-700 p-3 min-h-[60px] flex items-center justify-center">
+                        <div className="bg-surface rounded-xl border border-line p-3 min-h-[60px] flex items-center justify-center">
                             {calcResult === 'error' ? (
-                                <span className="text-red-400 text-sm font-bold">입력값을 확인해주세요</span>
+                                <span className="text-red-ink text-sm font-bold">입력값을 확인해주세요</span>
                             ) : calcResult ? (
                                 <div className="flex items-center justify-between w-full">
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] text-slate-500 font-bold tracking-wider">결과</span>
+                                        <span className="text-[10px] text-ink3 font-bold tracking-wider">결과</span>
                                         <div className="flex items-baseline gap-1">
                                             <span className={`font-mono text-2xl font-black ${accentText}`}>
                                                 {calcResult}
                                             </span>
-                                            <span className="text-slate-500 text-xs font-bold">mA</span>
+                                            <span className="text-ink3 text-xs font-bold">mA</span>
                                         </div>
                                     </div>
                                     <button
                                         onClick={handleCopyMa}
-                                        className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-all active:scale-90"
+                                        className="p-2 text-ink2 hover:text-ink bg-elev hover:bg-elev2 rounded-lg transition-all active:scale-90"
                                         title="복사"
                                     >
-                                        {isCopied ? <Check className="w-4 h-4 text-lime-400" /> : <Copy className="w-4 h-4" />}
+                                        {isCopied ? <Check className="w-4 h-4 text-lime-ink" /> : <Copy className="w-4 h-4" />}
                                     </button>
                                 </div>
                             ) : (
-                                <span className="text-slate-600 text-xs font-bold">[계산] 버튼을 눌러주세요</span>
+                                <span className="text-ink4 text-xs font-bold">[계산] 버튼을 눌러주세요</span>
                             )}
                         </div>
 
@@ -408,14 +409,14 @@ export default function LoopTest() {
                         <div className="grid grid-cols-3 gap-2">
                             <button
                                 onClick={handleResetCalc}
-                                className="py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-1"
+                                className="py-2.5 bg-elev hover:bg-elev2 text-ink2 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-1"
                             >
                                 <RotateCcw className="w-3.5 h-3.5" />
                                 초기화
                             </button>
                             <button
                                 onClick={handleCalculateMa}
-                                className={`py-2.5 ${accentBgSolid} ${accentBgHover} text-white rounded-xl text-sm font-black transition-all active:scale-95`}
+                                className={`py-2.5 ${accentBgSolid} ${accentBgHover} ${accentTextOn} rounded-xl text-sm font-black transition-all active:scale-95`}
                             >
                                 계산
                             </button>
@@ -423,8 +424,8 @@ export default function LoopTest() {
                                 onClick={handleApplyMa}
                                 disabled={!calcResult || calcResult === 'error'}
                                 className={`py-2.5 rounded-xl text-sm font-black transition-all active:scale-95 ${calcResult && calcResult !== 'error'
-                                    ? 'bg-lime-500 hover:bg-lime-400 text-slate-950'
-                                    : 'bg-slate-800 text-slate-600 cursor-not-allowed'
+                                    ? 'bg-lime-fill hover:bg-lime-fill text-lime-on'
+                                    : 'bg-elev text-ink4 cursor-not-allowed'
                                     }`}
                             >
                                 적용하기

@@ -190,16 +190,16 @@ function solveExactBore(D_m, D_mm, rho_fc, mu_Pas, dp_Pa, qm_kgs, p1_Pa, kappa, 
    ═══════════════════════════════════════════════════════════ */
 
 const Section = ({ icon, title, isOpen, onToggle, children }) => (
-  <div className="bg-slate-800/60 border border-slate-700/60 rounded-xl overflow-hidden">
+  <div className="bg-elev/60 border border-line/60 rounded-xl overflow-hidden">
     <button
       type="button"
       onClick={onToggle}
-      className="w-full flex items-center justify-between px-4 py-3 text-left active:bg-slate-700/40 transition-colors touch-manipulation"
+      className="w-full flex items-center justify-between px-4 py-3 text-left active:bg-elev2/40 transition-colors touch-manipulation"
     >
-      <span className="flex items-center gap-2 text-sm font-bold text-slate-200">
+      <span className="flex items-center gap-2 text-sm font-bold text-ink">
         <span className="text-base">{icon}</span>{title}
       </span>
-      <ChevronDown className={cn("w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0", isOpen && "rotate-180")} />
+      <ChevronDown className={cn("w-4 h-4 text-ink2 transition-transform duration-200 shrink-0", isOpen && "rotate-180")} />
     </button>
     {isOpen && <div className="px-4 pb-4 pt-1 flex flex-col gap-3">{children}</div>}
   </div>
@@ -207,9 +207,9 @@ const Section = ({ icon, title, isOpen, onToggle, children }) => (
 
 const Field = ({ label, children, hint }) => (
   <div className="flex flex-col gap-1">
-    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">{label}</label>
+    <label className="text-[11px] font-bold text-ink2 uppercase tracking-wide">{label}</label>
     {children}
-    {hint && <span className="text-[10px] text-slate-500">{hint}</span>}
+    {hint && <span className="text-[10px] text-ink3">{hint}</span>}
   </div>
 );
 
@@ -222,9 +222,9 @@ const TextInput = ({ value, onChange, placeholder, readOnly, type = "number" }) 
     readOnly={readOnly}
     placeholder={placeholder}
     className={cn(
-      "w-full h-11 bg-black border border-slate-700 rounded-lg px-3 font-mono text-sm text-white outline-none",
-      "focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all",
-      readOnly && "bg-slate-900/60 text-slate-400 cursor-not-allowed"
+      "w-full h-11 bg-field border border-line rounded-lg px-3 font-mono text-sm text-ink outline-none",
+      "focus:border-blue-line focus:ring-2 focus:ring-blue-line transition-all",
+      readOnly && "bg-panel/60 text-ink2 cursor-not-allowed"
     )}
   />
 );
@@ -235,10 +235,10 @@ const Select = ({ value, onChange, options, disabled }) => (
     onChange={e => onChange(e.target.value)}
     disabled={disabled}
     className={cn(
-      "w-full h-11 bg-black border border-slate-700 rounded-lg px-3 font-mono text-sm text-white outline-none",
-      "focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all appearance-none",
+      "w-full h-11 bg-field border border-line rounded-lg px-3 font-mono text-sm text-ink outline-none",
+      "focus:border-blue-line focus:ring-2 focus:ring-blue-line transition-all appearance-none",
       "bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 24 24%22 stroke=%22%2394a3b8%22><path stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%222%22 d=%22M19 9l-7 7-7-7%22/></svg>')] bg-no-repeat bg-[length:16px_16px] bg-[right_10px_center] pr-9",
-      disabled && "bg-slate-900/60 text-slate-500 cursor-not-allowed"
+      disabled && "bg-panel/60 text-ink3 cursor-not-allowed"
     )}
   >
     {options.map(o => <option key={o} value={o}>{o}</option>)}
@@ -276,21 +276,21 @@ function ResultDisplay({ result, diffPressUnit, maxFlowUnit, sizingMode }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2 text-xs text-emerald-400 font-bold">
+      <div className="flex items-center gap-2 text-xs text-emerald-ink font-bold">
         <Waves className="w-3.5 h-3.5 shrink-0" />
         <span className="truncate">계산 완료 · {result.calcRef} · {result.tapType}</span>
       </div>
 
-      <div className="bg-black/60 rounded-xl border border-emerald-700/40 p-4 flex flex-col items-center">
-        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">{mainLabel}</span>
+      <div className="bg-well rounded-xl border border-emerald-line p-4 flex flex-col items-center">
+        <span className="text-[10px] text-ink3 font-bold uppercase tracking-widest mb-1">{mainLabel}</span>
         <div className="flex items-baseline gap-1.5 flex-wrap justify-center">
-          <span className="font-mono text-4xl font-black text-blue-400 drop-shadow-[0_0_15px_rgba(59,130,246,0.3)] tracking-tighter">
+          <span className="font-mono text-4xl font-black text-blue-ink value-glow tracking-tighter">
             {mainValue}
           </span>
-          <span className="text-slate-400 text-sm font-bold">{mainUnit}</span>
+          <span className="text-ink2 text-sm font-bold">{mainUnit}</span>
         </div>
         {sizingMode === 'Exact DP' && diffPressUnit !== 'mmH2O' && (
-          <span className="text-[10px] text-slate-500 font-mono mt-1">
+          <span className="text-[10px] text-ink3 font-mono mt-1">
             = {dp_mmH2O.toFixed(2)} mmH₂O
           </span>
         )}
@@ -303,17 +303,17 @@ function ResultDisplay({ result, diffPressUnit, maxFlowUnit, sizingMode }) {
           { label: 'Reynolds', val: result.Re.toExponential(2) },
           { label: 'ε (eps)', val: result.eps.toFixed(4) },
         ].map(({ label, val }) => (
-          <div key={label} className="bg-black/40 rounded-lg p-2.5 border border-slate-800">
-            <div className="text-[9px] text-slate-500 font-bold uppercase">{label}</div>
-            <div className="font-mono text-sm text-slate-200 font-bold truncate">{val}</div>
+          <div key={label} className="bg-well rounded-lg p-2.5 border border-line-soft">
+            <div className="text-[9px] text-ink3 font-bold uppercase">{label}</div>
+            <div className="font-mono text-sm text-ink font-bold truncate">{val}</div>
           </div>
         ))}
       </div>
 
       {(result.beta < 0.20 || result.beta > 0.75) && (
-        <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-2.5 flex items-start gap-2">
-          <AlertTriangle className="w-3.5 h-3.5 text-orange-400 shrink-0 mt-0.5" />
-          <span className="text-[11px] text-orange-300 leading-relaxed">
+        <div className="bg-orange-soft border border-orange-line rounded-lg p-2.5 flex items-start gap-2">
+          <AlertTriangle className="w-3.5 h-3.5 text-orange-ink shrink-0 mt-0.5" />
+          <span className="text-[11px] text-orange-ink leading-relaxed">
             β = {result.beta.toFixed(4)} — ISO 5167 권장 범위(0.20~0.75) 벗어남. 참고값으로만 사용.
           </span>
         </div>
@@ -341,7 +341,7 @@ export default function FlowCalc() {
       style={{ maxWidth: '100%', boxSizing: 'border-box' }}
     >
       {/* ── 탭 셀렉터 — 3탭 sticky ── */}
-      <div className="grid grid-cols-3 bg-slate-900 rounded-2xl p-1 border border-slate-800 shrink-0 sticky top-0 z-20 gap-1">
+      <div className="grid grid-cols-3 bg-panel rounded-2xl p-1 border border-line-soft shrink-0 sticky top-0 z-20 gap-1">
         {tabs.map(t => (
           <button
             key={t.id}
@@ -350,8 +350,8 @@ export default function FlowCalc() {
               "py-2.5 rounded-xl font-bold text-xs transition-all active:scale-[0.97] touch-manipulation",
               "flex items-center justify-center gap-1 leading-tight",
               tab === t.id
-                ? "bg-blue-600 text-white shadow-lg shadow-blue-900/50"
-                : "bg-transparent text-slate-400"
+                ? "bg-blue-fill text-blue-on shadow-lg shadow-shade"
+                : "bg-transparent text-ink2"
             )}
           >
             {t.icon}
@@ -411,28 +411,28 @@ function FieldMode() {
   return (
     <div className="flex flex-col gap-3">
       {/* 결과 카드 */}
-      <div className="bg-black/80 rounded-2xl border border-slate-700 p-5 flex flex-col items-center min-h-[200px] justify-center gap-3">
-        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">현재 유량</span>
+      <div className="bg-well rounded-2xl border border-line p-5 flex flex-col items-center min-h-[200px] justify-center gap-3">
+        <span className="text-[10px] text-ink3 font-bold uppercase tracking-widest">현재 유량</span>
 
         {result && result.qCurr != null ? (
           <>
             {/* 숫자 */}
             <div className="flex items-baseline gap-1.5 flex-wrap justify-center">
-              <span className="font-mono font-black text-blue-400 drop-shadow-[0_0_20px_rgba(59,130,246,0.35)] tracking-tighter"
+              <span className="font-mono font-black text-blue-ink value-glow tracking-tighter"
                     style={{ fontSize: 'clamp(2rem, 10vw, 3.5rem)' }}>
                 {result.qCurr.toFixed(1)}
               </span>
-              <span className="text-slate-400 text-base font-bold">{qUnit}</span>
+              <span className="text-ink2 text-base font-bold">{qUnit}</span>
             </div>
 
             {/* 게이지 바 */}
             <div className="w-full">
-              <div className="flex justify-between text-[10px] text-slate-500 mb-1">
+              <div className="flex justify-between text-[10px] text-ink3 mb-1">
                 <span>0%</span>
                 <span className="font-bold" style={{ color: gaugeColor }}>{result.pct.toFixed(1)}%</span>
                 <span>100%</span>
               </div>
-              <div className="w-full h-3 bg-slate-800 rounded-full overflow-hidden">
+              <div className="w-full h-3 bg-elev rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{
@@ -444,33 +444,33 @@ function FieldMode() {
               </div>
             </div>
 
-            <div className="text-[11px] text-slate-500 font-mono">
+            <div className="text-[11px] text-ink3 font-mono">
               DP 비율: {(result.ratio * 100).toFixed(1)}% &nbsp;|&nbsp; Q = Q_max × √(DP / DP_max)
             </div>
           </>
         ) : result?.warn ? (
-          <div className="flex items-start gap-2 text-orange-300 text-xs font-medium">
-            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-orange-400" />
+          <div className="flex items-start gap-2 text-orange-ink text-xs font-medium">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-orange-ink" />
             {result.warn}
           </div>
         ) : (
-          <span className="text-sm text-slate-600 text-center px-4">DP 값을 입력하면 현재 유량이 자동 계산됩니다</span>
+          <span className="text-sm text-ink4 text-center px-4">DP 값을 입력하면 현재 유량이 자동 계산됩니다</span>
         )}
       </div>
 
       {/* 경고 — 90% 초과 */}
       {result?.pct != null && result.pct > 90 && (
-        <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-3 flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 text-orange-400 shrink-0 mt-0.5" />
-          <span className="text-xs text-orange-300 font-medium leading-relaxed">
+        <div className="bg-orange-soft border border-orange-line rounded-xl p-3 flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 text-orange-ink shrink-0 mt-0.5" />
+          <span className="text-xs text-orange-ink font-medium leading-relaxed">
             유량이 MAX의 90% 초과 — 운전 한계 접근 중. 현장 확인 필요.
           </span>
         </div>
       )}
 
       {/* 입력 카드 */}
-      <div className="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex flex-col gap-3">
-        <div className="text-sm font-bold text-slate-200 mb-1">📟 현장 입력값</div>
+      <div className="bg-elev/60 border border-line/60 rounded-xl p-4 flex flex-col gap-3">
+        <div className="text-sm font-bold text-ink mb-1">📟 현장 입력값</div>
 
         <Field label="① 설계 MAX DP (DP_max)">
           <InputWithUnit
@@ -490,7 +490,7 @@ function FieldMode() {
 
         <Field label={`③ 현재 계기 DP (${dpUnit})`}>
           <TextInput value={dpCurr} onChange={setDpCurr} placeholder="예) 3200" />
-          <span className="text-[10px] text-slate-500">현장 DP 계기 판독값 입력</span>
+          <span className="text-[10px] text-ink3">현장 DP 계기 판독값 입력</span>
         </Field>
       </div>
 
@@ -498,29 +498,29 @@ function FieldMode() {
       <div className="grid grid-cols-2 gap-2">
         <button
           onClick={loadExample}
-          className="bg-slate-800 hover:bg-slate-700 active:scale-[0.97] border border-slate-700 rounded-xl py-3 px-3 text-left transition-all touch-manipulation"
+          className="bg-elev hover:bg-elev2 active:scale-[0.97] border border-line rounded-xl py-3 px-3 text-left transition-all touch-manipulation"
         >
-          <div className="text-xs font-bold text-blue-400 mb-0.5">📋 예시 불러오기</div>
-          <div className="text-[10px] text-slate-500 leading-tight">DP_max:5000 / Q:400<br/>현재DP:3200 → 319.4 m³/h</div>
+          <div className="text-xs font-bold text-blue-ink mb-0.5">📋 예시 불러오기</div>
+          <div className="text-[10px] text-ink3 leading-tight">DP_max:5000 / Q:400<br/>현재DP:3200 → 319.4 m³/h</div>
         </button>
         <button
           onClick={clearAll}
-          className="bg-slate-800 hover:bg-slate-700 active:scale-[0.97] border border-slate-700 rounded-xl py-3 px-3 text-left transition-all touch-manipulation"
+          className="bg-elev hover:bg-elev2 active:scale-[0.97] border border-line rounded-xl py-3 px-3 text-left transition-all touch-manipulation"
         >
-          <div className="text-xs font-bold text-rose-400 mb-0.5 flex items-center gap-1">
+          <div className="text-xs font-bold text-rose-ink mb-0.5 flex items-center gap-1">
             <Trash2 className="w-3 h-3" />초기화
           </div>
-          <div className="text-[10px] text-slate-500 leading-tight">입력값 전체 삭제</div>
+          <div className="text-[10px] text-ink3 leading-tight">입력값 전체 삭제</div>
         </button>
       </div>
 
       {/* 공식 설명 박스 */}
-      <div className="bg-slate-900/60 border border-slate-700/40 rounded-xl p-3">
-        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">📌 현장 활용 공식</div>
-        <div className="font-mono text-xs text-slate-300 leading-loose">
+      <div className="bg-panel/60 border border-line/40 rounded-xl p-3">
+        <div className="text-[10px] font-bold text-ink3 uppercase tracking-wider mb-2">📌 현장 활용 공식</div>
+        <div className="font-mono text-xs text-ink2 leading-loose">
           Q_current = Q_max × √(DP_current / DP_max)
         </div>
-        <div className="text-[10px] text-slate-500 mt-1 leading-relaxed">
+        <div className="text-[10px] text-ink3 mt-1 leading-relaxed">
           오리피스/벤투리 DP 계기 판독값으로 현재 유량을 즉시 역산.<br/>
           Rangeability: DP_min ≥ 10% DP_max 권장 (정확도 유지)
         </div>
@@ -552,44 +552,44 @@ function SimpleMode() {
   const clearAll = () => { setQd(''); setDPd(''); setQn(''); setQunit('m³/h'); };
 
   return (
-    <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-4 shadow-2xl flex flex-col gap-4">
+    <div className="bg-panel/50 rounded-2xl border border-line-soft p-4 shadow-2xl flex flex-col gap-4">
       {/* 결과 카드 */}
-      <div className="bg-black/80 rounded-2xl border border-slate-700 p-4 flex flex-col items-center min-h-[140px] justify-center">
-        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">새로운 DP URV</span>
+      <div className="bg-well rounded-2xl border border-line p-4 flex flex-col items-center min-h-[140px] justify-center">
+        <span className="text-[10px] text-ink3 font-bold uppercase tracking-widest mb-1">새로운 DP URV</span>
         {result ? (
           <>
             <div className="flex items-baseline gap-1.5 flex-wrap justify-center">
-              <span className="font-mono font-black text-blue-400 drop-shadow-[0_0_20px_rgba(59,130,246,0.3)] tracking-tighter"
+              <span className="font-mono font-black text-blue-ink value-glow tracking-tighter"
                     style={{ fontSize: 'clamp(2rem, 10vw, 3rem)' }}>
                 {Math.round(result.DPnew).toLocaleString('ko-KR')}
               </span>
-              <span className="text-slate-400 text-base font-bold">mmH₂O</span>
+              <span className="text-ink2 text-base font-bold">mmH₂O</span>
             </div>
             <span className={cn(
               "mt-2 text-xs font-bold px-2.5 py-0.5 rounded-full",
-              result.changePct >= 0 ? "bg-orange-500/20 text-orange-400" : "bg-emerald-500/20 text-emerald-400"
+              result.changePct >= 0 ? "bg-orange-soft text-orange-ink" : "bg-emerald-soft text-emerald-ink"
             )}>
               변화율: {result.changePct >= 0 ? '+' : ''}{result.changePct.toFixed(1)}%
             </span>
           </>
         ) : (
-          <span className="text-sm text-slate-600 text-center">유량 값을 입력하면 자동 계산됩니다</span>
+          <span className="text-sm text-ink4 text-center">유량 값을 입력하면 자동 계산됩니다</span>
         )}
-        <span className="text-[10px] text-slate-600 font-mono mt-2">DP_new = DP_design × (Q_new / Q_design)²</span>
+        <span className="text-[10px] text-ink4 font-mono mt-2">DP_new = DP_design × (Q_new / Q_design)²</span>
       </div>
 
       {result && Math.abs(result.changePct) > 30 && (
-        <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-3 flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 text-orange-400 shrink-0 mt-0.5" />
-          <span className="text-xs text-orange-300 font-medium leading-relaxed">
+        <div className="bg-orange-soft border border-orange-line rounded-xl p-3 flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 text-orange-ink shrink-0 mt-0.5" />
+          <span className="text-xs text-orange-ink font-medium leading-relaxed">
             오리피스 설계 한계 초과 가능 — EPC 검토 필요
           </span>
         </div>
       )}
 
       {/* 입력 카드 */}
-      <div className="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex flex-col gap-3">
-        <div className="text-sm font-bold text-slate-200 mb-1">🔧 입력값</div>
+      <div className="bg-elev/60 border border-line/60 rounded-xl p-4 flex flex-col gap-3">
+        <div className="text-sm font-bold text-ink mb-1">🔧 입력값</div>
 
         <Field label="① 설계 MAX 유량 (Q_design)">
           <InputWithUnit
@@ -605,7 +605,7 @@ function SimpleMode() {
             <div className="flex-1 min-w-0">
               <TextInput value={DPd} onChange={setDPd} placeholder="예) 2800" />
             </div>
-            <div className="w-[90px] h-11 shrink-0 bg-slate-900 border border-slate-700 rounded-lg flex items-center justify-center text-sm text-slate-400 font-mono">
+            <div className="w-[90px] h-11 shrink-0 bg-panel border border-line rounded-lg flex items-center justify-center text-sm text-ink2 font-mono">
               mmH₂O
             </div>
           </div>
@@ -620,19 +620,19 @@ function SimpleMode() {
       <div className="grid grid-cols-2 gap-2">
         <button
           onClick={loadExample}
-          className="bg-slate-800 hover:bg-slate-700 active:scale-[0.97] border border-slate-700 rounded-xl py-3 px-3 text-left transition-all touch-manipulation"
+          className="bg-elev hover:bg-elev2 active:scale-[0.97] border border-line rounded-xl py-3 px-3 text-left transition-all touch-manipulation"
         >
-          <div className="text-xs font-bold text-blue-400 mb-0.5">📋 예시 불러오기</div>
-          <div className="text-[10px] text-slate-500 leading-tight">410 / 2800 / 450<br/>→ 3,373 mmH₂O</div>
+          <div className="text-xs font-bold text-blue-ink mb-0.5">📋 예시 불러오기</div>
+          <div className="text-[10px] text-ink3 leading-tight">410 / 2800 / 450<br/>→ 3,373 mmH₂O</div>
         </button>
         <button
           onClick={clearAll}
-          className="bg-slate-800 hover:bg-slate-700 active:scale-[0.97] border border-slate-700 rounded-xl py-3 px-3 text-left transition-all touch-manipulation"
+          className="bg-elev hover:bg-elev2 active:scale-[0.97] border border-line rounded-xl py-3 px-3 text-left transition-all touch-manipulation"
         >
-          <div className="text-xs font-bold text-rose-400 mb-0.5 flex items-center gap-1">
+          <div className="text-xs font-bold text-rose-ink mb-0.5 flex items-center gap-1">
             <Trash2 className="w-3 h-3" />초기화
           </div>
-          <div className="text-[10px] text-slate-500 leading-tight">입력값 전체 삭제</div>
+          <div className="text-[10px] text-ink3 leading-tight">입력값 전체 삭제</div>
         </button>
       </div>
     </div>
@@ -860,14 +860,14 @@ function DetailMode() {
       {(result || error) && (
         <div className={cn(
           "rounded-2xl border p-4 shadow-xl",
-          error ? "bg-rose-950/40 border-rose-700/60" : "bg-emerald-950/40 border-emerald-700/60"
+          error ? "bg-rose-soft border-rose-line" : "bg-emerald-soft border-emerald-line"
         )}>
           {error ? (
             <div className="flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              <AlertTriangle className="w-4 h-4 text-rose-ink shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold text-rose-400 mb-1">계산 오류</div>
-                <div className="text-xs text-rose-200 break-words">{error}</div>
+                <div className="text-xs font-bold text-rose-ink mb-1">계산 오류</div>
+                <div className="text-xs text-rose-ink break-words">{error}</div>
               </div>
             </div>
           ) : (
@@ -879,15 +879,15 @@ function DetailMode() {
       {/* Calculate 버튼 */}
       <button
         onClick={calculate}
-        className="bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-blue-900/50 flex items-center justify-center gap-2 transition-all touch-manipulation"
+        className="bg-blue-fill hover:bg-blue-fill active:scale-[0.98] text-blue-on font-bold py-3.5 rounded-2xl shadow-lg shadow-shade flex items-center justify-center gap-2 transition-all touch-manipulation"
       >
-        <Play className="w-4 h-4 fill-white shrink-0" />Calculate
+        <Play className="w-4 h-4 fill-blue-on shrink-0" />Calculate
       </button>
 
       {/* 예시 불러오기 */}
       <button
         onClick={loadExample}
-        className="bg-slate-800 hover:bg-slate-700 active:scale-[0.98] border border-slate-700 rounded-xl py-2.5 px-4 text-xs text-slate-300 font-medium transition-all touch-manipulation"
+        className="bg-elev hover:bg-elev2 active:scale-[0.98] border border-line rounded-xl py-2.5 px-4 text-xs text-ink2 font-medium transition-all touch-manipulation"
       >
         📋 예시 불러오기 (Quadrant Edge / 70cP / 550 Sm³/hr)
       </button>
@@ -906,13 +906,13 @@ function DetailMode() {
         </Field>
         <Field label="Hole Type (자동)">
           <input type="text" value={holeType} readOnly
-            className="w-full h-11 bg-slate-900/60 border border-slate-700 rounded-lg px-3 font-mono text-sm text-slate-400 outline-none cursor-not-allowed" />
+            className="w-full h-11 bg-panel/60 border border-line rounded-lg px-3 font-mono text-sm text-ink2 outline-none cursor-not-allowed" />
         </Field>
       </Section>
 
       {/* ═══ Design Data ═══ */}
       <Section icon="📋" title="Design Data" isOpen={open.design} onToggle={() => toggle('design')}>
-        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-1">🎯 Calculation Criteria</div>
+        <div className="text-[11px] font-bold text-ink3 uppercase tracking-wider mt-1">🎯 Calculation Criteria</div>
         <Field label="Sizing Mode">
           <Select value={sizingMode} onChange={setSizingMode} options={['Exact Flow', 'Exact DP', 'Exact Bore']} />
         </Field>
@@ -920,7 +920,7 @@ function DetailMode() {
           <Select value={calcRef} onChange={setCalcRef} options={calcRefOptions} />
         </Field>
 
-        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-2">📏 Piping Data</div>
+        <div className="text-[11px] font-bold text-ink3 uppercase tracking-wider mt-2">📏 Piping Data</div>
         <Field label="Pipe ID">
           <InputWithUnit value={pipeId} onChange={setPipeId} unit={pipeUnit} onUnitChange={setPipeUnit}
             units={['mm', 'inch']} placeholder="예) 303.23" />
@@ -930,7 +930,7 @@ function DetailMode() {
             options={['Carbon Steel', 'Stainless Steel', '316 SS', 'Monel']} />
         </Field>
 
-        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-2">⚙ Element Data</div>
+        <div className="text-[11px] font-bold text-ink3 uppercase tracking-wider mt-2">⚙ Element Data</div>
         <Field label="Bore Size">
           <InputWithUnit value={boreSize} onChange={setBoreSize} unit={boreUnit} onUnitChange={setBoreUnit}
             units={['mm', 'inch']} placeholder="예) 132.873" readOnly={isBoreReadonly} />
@@ -951,17 +951,17 @@ function DetailMode() {
       <Section icon="🌡" title="Process Data" isOpen={open.process} onToggle={() => toggle('process')}>
         {showBaseCondition && (
           <>
-            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Base Condition</div>
+            <div className="text-[11px] font-bold text-ink3 uppercase tracking-wider">Base Condition</div>
             <Field label="Base Temp">
               <div className="flex gap-1.5">
                 <div className="flex-1 min-w-0"><TextInput value={bcTemp} onChange={setBcTemp} readOnly /></div>
-                <div className="w-[90px] h-11 shrink-0 bg-slate-900 border border-slate-700 rounded-lg flex items-center justify-center text-sm text-slate-400 font-mono">DEG C</div>
+                <div className="w-[90px] h-11 shrink-0 bg-panel border border-line rounded-lg flex items-center justify-center text-sm text-ink2 font-mono">DEG C</div>
               </div>
             </Field>
             <Field label="Base Press">
               <div className="flex gap-1.5">
                 <div className="flex-1 min-w-0"><TextInput value={bcPress} onChange={setBcPress} readOnly /></div>
-                <div className="w-[90px] h-11 shrink-0 bg-slate-900 border border-slate-700 rounded-lg flex items-center justify-center text-sm text-slate-400 font-mono truncate px-1">kgf/cm²g</div>
+                <div className="w-[90px] h-11 shrink-0 bg-panel border border-line rounded-lg flex items-center justify-center text-sm text-ink2 font-mono truncate px-1">kgf/cm²g</div>
               </div>
             </Field>
             <Field label="Base Density">
@@ -971,7 +971,7 @@ function DetailMode() {
           </>
         )}
 
-        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-2">Flow Condition</div>
+        <div className="text-[11px] font-bold text-ink3 uppercase tracking-wider mt-2">Flow Condition</div>
         <Field label="Flow Temp">
           <InputWithUnit value={fcTemp} onChange={setFcTemp} unit={fcTempUnit} onUnitChange={setFcTempUnit}
             units={['DEG C', 'DEG F', 'K', 'DEG R']} placeholder="예) 94" />

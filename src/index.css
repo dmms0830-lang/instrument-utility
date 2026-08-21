@@ -1,17 +1,252 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════════════
+   테마 토큰 (Design Tokens)
+   ─────────────────────────────────────────────────────────────────────
+   기본값 = 라이트(햇빛 고대비). html.dark 가 붙으면 다크로 전환.
+
+   ▸ 규칙: 컴포넌트에서는 slate-800 / text-white 같은 팔레트 클래스를
+     직접 쓰지 말고 반드시 아래 토큰 클래스만 쓴다.
+       배경   bg-surface / bg-panel / bg-elev / bg-elev2 / bg-field / bg-well
+       테두리 border-line / border-line-soft
+       글자   text-ink / text-ink2 / text-ink3 / text-ink4
+       강조   text-{hue}-ink  bg-{hue}-fill  bg-{hue}-soft
+              border-{hue}-line  text-{hue}-on
+     그래야 이 파일 한 곳만 고쳐도 앱 전체 색이 따라온다.
+   ═══════════════════════════════════════════════════════════════════ */
+
 @theme {
-  --color-background: #121212;
-  --color-card: #1E1E1E;
-  --color-text: #E0E0E0;
+  /* ── 중립(뼈대) ───────────────────────────────────────────────── */
+  --color-surface: #f2f5f9;   /* 페이지 바탕 */
+  --color-panel: #ffffff;     /* 카드 · 헤더 · 드롭다운 */
+  --color-elev: #e3e9f1;      /* 버튼 · 칩 · 탭 */
+  --color-elev2: #d0d9e6;     /* hover · 눌림 · 한 단계 위 */
+  --color-field: #ffffff;     /* 입력창 */
+  --color-well: #e9eef5;      /* 계기판식 결과 표시 영역 */
+  --color-line: #8b97ab;      /* 기본 테두리(또렷하게) */
+  --color-line-soft: #bcc6d5; /* 구분선 */
+  --color-ink: #080d16;       /* 본문 · 수치 */
+  --color-ink2: #232d3d;      /* 보조 */
+  --color-ink3: #465063;      /* 캡션 · 라벨 */
+  --color-ink4: #616d80;   /* 비활성 · 워터마크 */
+  --color-scrim: #0f172a8c;   /* 모달 뒷배경 */
+  --color-shade: #0f172a2e;   /* 그림자 색 */
+  --color-hover: #0f172a0f;   /* 투명 hover 틴트 */
+  --color-ledoff: #cfd6e0;    /* 꺼진 LED 램프 */
+  --color-gloss: #ffffff66;   /* 램프 광택(테마 무관) */
+
+  /* ── 강조 색 (hue-ink 글자/아이콘, -fill 채움, -soft 틴트,
+        -line 테두리, -on 채움 위 글자) ─────────────────────────── */
+  --color-blue-ink: #1d4ed8;
+  --color-blue-fill: #2563eb;
+  --color-blue-soft: #dde8fe;
+  --color-blue-line: #7ea2f0;
+  --color-blue-on: #ffffff;
+
+  --color-cyan-ink: #0e7490;
+  --color-cyan-fill: #0891b2;
+  --color-cyan-soft: #d3f1f8;
+  --color-cyan-line: #5fb6cd;
+  --color-cyan-on: #ffffff;
+
+  --color-sky-ink: #0369a1;
+  --color-sky-fill: #0284c7;
+  --color-sky-soft: #dbeefc;
+  --color-sky-line: #6cb4e4;
+  --color-sky-on: #ffffff;
+
+  --color-lime-ink: #4d7c0f;
+  --color-lime-fill: #4d7c0f;
+  --color-lime-soft: #e6f5cd;
+  --color-lime-line: #9ac54b;
+  --color-lime-on: #ffffff;
+
+  --color-green-ink: #15803d;
+  --color-green-fill: #16a34a;
+  --color-green-soft: #d8f3e1;
+  --color-green-line: #63bd85;
+  --color-green-on: #ffffff;
+
+  --color-emerald-ink: #047857;
+  --color-emerald-fill: #059669;
+  --color-emerald-soft: #d2f2e6;
+  --color-emerald-line: #4dbb98;
+  --color-emerald-on: #ffffff;
+
+  --color-teal-ink: #0f766e;
+  --color-teal-fill: #0d9488;
+  --color-teal-soft: #d3f0ed;
+  --color-teal-line: #55b8b0;
+  --color-teal-on: #ffffff;
+
+  --color-amber-ink: #9a5800;
+  --color-amber-fill: #d97706;
+  --color-amber-soft: #fdecc9;
+  --color-amber-line: #e0a34a;
+  --color-amber-on: #ffffff;
+
+  --color-yellow-ink: #8a6100;
+  --color-yellow-fill: #ca8a04;
+  --color-yellow-soft: #fdf0c4;
+  --color-yellow-line: #dcb03f;
+  --color-yellow-on: #ffffff;
+
+  --color-orange-ink: #c2410c;
+  --color-orange-fill: #ea580c;
+  --color-orange-soft: #ffe4d3;
+  --color-orange-line: #f0a173;
+  --color-orange-on: #ffffff;
+
+  --color-red-ink: #b91c1c;
+  --color-red-fill: #dc2626;
+  --color-red-soft: #fde0e0;
+  --color-red-line: #ef8a8a;
+  --color-red-on: #ffffff;
+
+  --color-rose-ink: #be123c;
+  --color-rose-fill: #e11d48;
+  --color-rose-soft: #fddee6;
+  --color-rose-line: #f28ba5;
+  --color-rose-on: #ffffff;
+
+  --color-pink-ink: #be185d;
+  --color-pink-fill: #db2777;
+  --color-pink-soft: #fde0ec;
+  --color-pink-line: #f291bb;
+  --color-pink-on: #ffffff;
+
+  --color-purple-ink: #6d28d9;
+  --color-purple-fill: #7c3aed;
+  --color-purple-soft: #eadefb;
+  --color-purple-line: #b18ceb;
+  --color-purple-on: #ffffff;
 
   --font-mono: "Fira Code", "Roboto Mono", monospace;
   --font-sans: "Inter", system-ui, sans-serif;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   다크 테마 — 토큰 값만 갈아끼운다 (클래스는 그대로)
+   ═══════════════════════════════════════════════════════════════════ */
+html.dark {
+  --color-surface: #020617;
+  --color-panel: #0f172a;
+  --color-elev: #1e293b;
+  --color-elev2: #334155;
+  --color-field: #000000;
+  --color-well: #00000099;
+  --color-line: #334155;
+  --color-line-soft: #1e293b;
+  --color-ink: #ffffff;
+  --color-ink2: #94a3b8;
+  --color-ink3: #64748b;
+  --color-ink4: #475569;
+  --color-scrim: #000000a6;
+  --color-shade: #00000080;
+  --color-hover: #ffffff0f;
+  --color-ledoff: #0b1220;
+  --color-gloss: #ffffff66;
+
+  --color-blue-ink: #60a5fa;
+  --color-blue-fill: #2563eb;
+  --color-blue-soft: #1e3a8a66;
+  --color-blue-line: #3b82f680;
+  --color-blue-on: #ffffff;
+
+  --color-cyan-ink: #22d3ee;
+  --color-cyan-fill: #0891b2;
+  --color-cyan-soft: #164e6366;
+  --color-cyan-line: #22d3ee80;
+  --color-cyan-on: #04212a;
+
+  --color-sky-ink: #38bdf8;
+  --color-sky-fill: #0284c7;
+  --color-sky-soft: #0c4a6e66;
+  --color-sky-line: #38bdf880;
+  --color-sky-on: #04212a;
+
+  --color-lime-ink: #a3e635;
+  --color-lime-fill: #84cc16;
+  --color-lime-soft: #36531466;
+  --color-lime-line: #a3e63580;
+  --color-lime-on: #14210a;
+
+  --color-green-ink: #4ade80;
+  --color-green-fill: #16a34a;
+  --color-green-soft: #14532d66;
+  --color-green-line: #4ade8080;
+  --color-green-on: #052e16;
+
+  --color-emerald-ink: #34d399;
+  --color-emerald-fill: #059669;
+  --color-emerald-soft: #064e3b66;
+  --color-emerald-line: #34d39980;
+  --color-emerald-on: #022c22;
+
+  --color-teal-ink: #2dd4bf;
+  --color-teal-fill: #0d9488;
+  --color-teal-soft: #134e4a66;
+  --color-teal-line: #2dd4bf80;
+  --color-teal-on: #042f2e;
+
+  --color-amber-ink: #fbbf24;
+  --color-amber-fill: #d97706;
+  --color-amber-soft: #78350f66;
+  --color-amber-line: #fbbf2480;
+  --color-amber-on: #271603;
+
+  --color-yellow-ink: #facc15;
+  --color-yellow-fill: #ca8a04;
+  --color-yellow-soft: #854d0e66;
+  --color-yellow-line: #facc1580;
+  --color-yellow-on: #291f02;
+
+  --color-orange-ink: #fb923c;
+  --color-orange-fill: #ea580c;
+  --color-orange-soft: #7c2d1266;
+  --color-orange-line: #fb923c80;
+  --color-orange-on: #2a1206;
+
+  --color-red-ink: #f87171;
+  --color-red-fill: #dc2626;
+  --color-red-soft: #7f1d1d66;
+  --color-red-line: #f8717180;
+  --color-red-on: #ffffff;
+
+  --color-rose-ink: #fb7185;
+  --color-rose-fill: #e11d48;
+  --color-rose-soft: #88133766;
+  --color-rose-line: #fb718580;
+  --color-rose-on: #ffffff;
+
+  --color-pink-ink: #f472b6;
+  --color-pink-fill: #db2777;
+  --color-pink-soft: #83184366;
+  --color-pink-line: #f472b680;
+  --color-pink-on: #ffffff;
+
+  --color-purple-ink: #c084fc;
+  --color-purple-fill: #7c3aed;
+  --color-purple-soft: #4c1d9566;
+  --color-purple-line: #c084fc80;
+  --color-purple-on: #ffffff;
+}
+
 @layer base {
+  html {
+    background-color: var(--color-surface);
+  }
+
   body {
-    @apply bg-background text-text font-sans antialiased;
+    @apply bg-surface text-ink font-sans;
+    /* 라이트에서는 subpixel 렌더로 글자를 조금 더 두껍게 — 야외 가독성 */
+    -webkit-font-smoothing: auto;
+    font-weight: 500;
+  }
+
+  html.dark body {
+    -webkit-font-smoothing: antialiased;
+    font-weight: 400;
   }
 
   h1,
@@ -20,6 +255,50 @@
   h4 {
     @apply font-bold tracking-tight;
   }
+
+  /* 입력창 자동완성 배경이 테마를 깨지 않도록 */
+  input:-webkit-autofill,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-ink);
+    box-shadow: 0 0 0 1000px var(--color-field) inset;
+  }
+}
+
+/* 계기판 수치 강조.
+   다크: 글자색으로 네온 발광. 라이트: 발광은 흰 배경에서 번짐만 만들어 끈다. */
+.value-glow {
+  filter: none;
+}
+
+html.dark .value-glow {
+  filter: drop-shadow(0 0 16px currentColor);
+}
+
+/* 색 채워진 막대/그래프 위에 얹히는 수치 — 배경색 후광으로 읽히게 */
+.value-halo {
+  filter: drop-shadow(0 0 3px var(--color-panel)) drop-shadow(0 0 9px var(--color-panel));
+}
+
+/* 입력 중인 칸 강조 (기존 코드가 참조하던 클래스) */
+.glow-blue {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-blue-line) 60%, transparent);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-cyan-line) 60%, transparent);
+}
+
+.glow-green {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-green-line) 60%, transparent);
+}
+
+/* 흰색 단색 로고(HDO)는 라이트 배경에서 보이지 않으므로 검게 뒤집는다 */
+.brand-logo {
+  filter: brightness(0);
+}
+
+html.dark .brand-logo {
+  filter: none;
 }
 
 @utility pb-safe {

@@ -358,66 +358,66 @@ export default function LevelTransmitter() {
             <ShakeToast visible={shakeToast} countdown={shakeCountdown} />
 
             {/* TOP CARD */}
-            <div className="bg-card rounded-2xl border border-slate-800 shadow-xl flex-shrink-0">
+            <div className="bg-card rounded-2xl border border-line-soft shadow-xl flex-shrink-0">
                 <div className="px-3 pt-3 pb-2">
                     <div className="flex items-center gap-1.5 mb-1.5">
-                        <span className="text-[10px] font-bold text-slate-600 tracking-widest uppercase">Range</span>
-                        <div className="flex-1 h-px bg-slate-800" />
-                        <span className="text-[10px] text-slate-700 font-mono">mmH₂O</span>
+                        <span className="text-[10px] font-bold text-ink4 tracking-widest uppercase">Range</span>
+                        <div className="flex-1 h-px bg-elev" />
+                        <span className="text-[10px] text-ink4 font-mono">mmH₂O</span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                         <div ref={el => fieldWrapperRefs.current.lrv = el}
                             style={{ flex: 1 }}
-                            className={`flex flex-col px-3 py-2.5 cursor-pointer transition-all rounded-xl border ${activeField === 'lrv' ? 'bg-blue-950/50 border-blue-600/70 glow-blue' : lrv !== '' ? 'bg-black/70 border-slate-600/50' : 'bg-black/70 border-slate-600/40 border-dashed'}`}
+                            className={`flex flex-col px-3 py-2.5 cursor-pointer transition-all rounded-xl border ${activeField === 'lrv' ? 'bg-blue-soft border-blue-line glow-blue' : lrv !== '' ? 'bg-well border-line/50' : 'bg-well border-line/40 border-dashed'}`}
                             onClick={() => inputRefs.current.lrv?.focus()}>
-                            <span className={`text-[10px] font-black tracking-widest mb-1 flex items-center gap-1 ${activeField === 'lrv' ? 'text-blue-400' : 'text-slate-600'}`}>
+                            <span className={`text-[10px] font-black tracking-widest mb-1 flex items-center gap-1 ${activeField === 'lrv' ? 'text-blue-ink' : 'text-ink4'}`}>
                                 LRV
-                                {lrv === '' && activeField !== 'lrv' && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(148,163,184,0.5)', display: 'inline-block', flexShrink: 0 }} />}
+                                {lrv === '' && activeField !== 'lrv' && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--color-ink4)', display: 'inline-block', flexShrink: 0 }} />}
                             </span>
                             <input ref={el => inputRefs.current.lrv = el} type="text" inputMode="none"
                                 value={lrv} onChange={() => { }} onFocus={e => handleInputFocus('lrv', e)} onSelect={handleSelect}
-                                className={`w-full bg-transparent font-mono text-xl font-black outline-none placeholder:text-slate-700 placeholder:text-sm ${activeField === 'lrv' ? 'text-white' : 'text-slate-300'}`}
+                                className={`w-full bg-transparent font-mono text-xl font-black outline-none placeholder:text-ink4 placeholder:text-sm ${activeField === 'lrv' ? 'text-ink' : 'text-ink2'}`}
                                 placeholder="—" />
                         </div>
                         <div ref={el => fieldWrapperRefs.current.urv = el}
                             style={{ flex: 1 }}
-                            className={`flex flex-col px-3 py-2.5 cursor-pointer transition-all rounded-xl border ${activeField === 'urv' ? 'bg-blue-950/50 border-blue-600/70 glow-blue' : urv !== '' ? 'bg-black/70 border-slate-600/50' : 'bg-black/70 border-slate-600/40 border-dashed'}`}
+                            className={`flex flex-col px-3 py-2.5 cursor-pointer transition-all rounded-xl border ${activeField === 'urv' ? 'bg-blue-soft border-blue-line glow-blue' : urv !== '' ? 'bg-well border-line/50' : 'bg-well border-line/40 border-dashed'}`}
                             onClick={() => inputRefs.current.urv?.focus()}>
-                            <span className={`text-[10px] font-black tracking-widest mb-1 flex items-center gap-1 ${activeField === 'urv' ? 'text-blue-400' : 'text-slate-600'}`}>
+                            <span className={`text-[10px] font-black tracking-widest mb-1 flex items-center gap-1 ${activeField === 'urv' ? 'text-blue-ink' : 'text-ink4'}`}>
                                 URV
-                                {urv === '' && activeField !== 'urv' && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(148,163,184,0.5)', display: 'inline-block', flexShrink: 0 }} />}
+                                {urv === '' && activeField !== 'urv' && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--color-ink4)', display: 'inline-block', flexShrink: 0 }} />}
                             </span>
                             <input ref={el => inputRefs.current.urv = el} type="text" inputMode="none"
                                 value={urv} onChange={() => { }} onFocus={e => handleInputFocus('urv', e)} onSelect={handleSelect}
-                                className={`w-full bg-transparent font-mono text-xl font-black outline-none placeholder:text-slate-700 placeholder:text-sm ${activeField === 'urv' ? 'text-white' : 'text-slate-300'}`}
+                                className={`w-full bg-transparent font-mono text-xl font-black outline-none placeholder:text-ink4 placeholder:text-sm ${activeField === 'urv' ? 'text-ink' : 'text-ink2'}`}
                                 placeholder="—" />
                         </div>
                     </div>
                     {calculation?.inverted && (
-                        <div className="mt-1.5 flex items-center gap-2 text-orange-400 bg-orange-900/20 border border-orange-900/40 px-3 py-1.5 rounded-lg animate-pulse">
+                        <div className="mt-1.5 flex items-center gap-2 text-orange-ink bg-orange-soft border border-orange-line px-3 py-1.5 rounded-lg animate-pulse">
                             <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
                             <span className="text-[11px] font-bold">H/L 라인 역설치 감지됨</span>
                         </div>
                     )}
                 </div>
 
-                <div className="mx-3 h-px bg-slate-800" />
+                <div className="mx-3 h-px bg-elev" />
 
                 <div className="px-3 pt-2 pb-3">
                     <div className="flex items-center gap-1.5 mb-1.5">
-                        <span className="text-[10px] font-bold text-slate-600 tracking-widest uppercase">지시값</span>
-                        <div className="flex-1 h-px bg-slate-800" />
-                        <span className="text-[10px] text-slate-700 font-mono">LG는 %, LT는 선택</span>
+                        <span className="text-[10px] font-bold text-ink4 tracking-widest uppercase">지시값</span>
+                        <div className="flex-1 h-px bg-elev" />
+                        <span className="text-[10px] text-ink4 font-mono">LG는 %, LT는 선택</span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                         <div ref={el => fieldWrapperRefs.current.curr = el}
                             style={{ flex: 1 }}
-                            className={`flex flex-col px-3 py-2.5 cursor-pointer transition-all rounded-xl border ${activeField === 'curr' ? 'bg-cyan-950/35 border-cyan-600/70 glow-cyan' : currPct !== '' ? 'bg-black/70 border-slate-600/50' : 'bg-black/70 border-slate-600/40 border-dashed'}`}
+                            className={`flex flex-col px-3 py-2.5 cursor-pointer transition-all rounded-xl border ${activeField === 'curr' ? 'bg-cyan-soft border-cyan-line glow-cyan' : currPct !== '' ? 'bg-well border-line/50' : 'bg-well border-line/40 border-dashed'}`}
                             onClick={() => inputRefs.current.curr?.focus()}>
-                            <div className={`text-[10px] font-bold tracking-wide mb-1 flex items-center justify-between gap-1 ${activeField === 'curr' ? 'text-cyan-400' : 'text-slate-600'}`}>
+                            <div className={`text-[10px] font-bold tracking-wide mb-1 flex items-center justify-between gap-1 ${activeField === 'curr' ? 'text-cyan-ink' : 'text-ink4'}`}>
                                 <span className="flex items-center gap-1">
                                     LT값
-                                    {currPct === '' && activeField !== 'curr' && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(148,163,184,0.5)', display: 'inline-block', flexShrink: 0 }} />}
+                                    {currPct === '' && activeField !== 'curr' && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--color-ink4)', display: 'inline-block', flexShrink: 0 }} />}
                                 </span>
                                 {/* LT만 단위 선택 가능 (LG는 항상 %) */}
                                 <select
@@ -429,7 +429,7 @@ export default function LevelTransmitter() {
                                         setActiveField(null);
                                         if (navigator.vibrate) navigator.vibrate(15);
                                     }}
-                                    className="text-[10px] font-mono font-bold bg-slate-800 border border-slate-700 text-cyan-300 rounded px-1.5 py-0.5 outline-none focus:border-cyan-500 cursor-pointer touch-manipulation"
+                                    className="text-[10px] font-mono font-bold bg-elev border border-line text-cyan-ink rounded px-1.5 py-0.5 outline-none focus:border-cyan-line cursor-pointer touch-manipulation"
                                     aria-label="LT값 입력 단위"
                                 >
                                     <option value="pct">%</option>
@@ -438,24 +438,24 @@ export default function LevelTransmitter() {
                             </div>
                             <input ref={el => inputRefs.current.curr = el} type="text" inputMode="none"
                                 value={currPct} onChange={() => { }} onFocus={e => handleInputFocus('curr', e)} onSelect={handleSelect}
-                                className="w-full bg-transparent font-mono text-xl font-black text-cyan-400 outline-none placeholder:text-slate-700 placeholder:text-sm"
+                                className="w-full bg-transparent font-mono text-xl font-black text-cyan-ink outline-none placeholder:text-ink4 placeholder:text-sm"
                                 placeholder="—" />
                         </div>
                         <div ref={el => fieldWrapperRefs.current.target = el}
                             style={{ flex: 1 }}
-                            className={`flex flex-col px-3 py-2.5 cursor-pointer transition-all rounded-xl border ${activeField === 'target' ? 'bg-green-950/30 border-green-600/70 glow-green' : targetPct !== '' ? 'bg-black/70 border-slate-600/50' : 'bg-black/70 border-slate-600/40 border-dashed'}`}
+                            className={`flex flex-col px-3 py-2.5 cursor-pointer transition-all rounded-xl border ${activeField === 'target' ? 'bg-green-soft border-green-line glow-green' : targetPct !== '' ? 'bg-well border-line/50' : 'bg-well border-line/40 border-dashed'}`}
                             onClick={() => inputRefs.current.target?.focus()}>
-                            <span className={`text-[10px] font-bold tracking-wide mb-1 flex items-center justify-between gap-1 ${activeField === 'target' ? 'text-green-400' : 'text-slate-600'}`}>
+                            <span className={`text-[10px] font-bold tracking-wide mb-1 flex items-center justify-between gap-1 ${activeField === 'target' ? 'text-green-ink' : 'text-ink4'}`}>
                                 <span className="flex items-center gap-1">
                                     LG 값
-                                    {targetPct === '' && activeField !== 'target' && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(148,163,184,0.5)', display: 'inline-block', flexShrink: 0 }} />}
+                                    {targetPct === '' && activeField !== 'target' && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--color-ink4)', display: 'inline-block', flexShrink: 0 }} />}
                                 </span>
                                 {/* LG는 항상 % 고정 — 육안 게이지는 mmH2O 눈금이 없음 */}
-                                <span className="text-[10px] font-mono font-bold text-green-600/70 bg-green-950/30 border border-green-900/40 rounded px-1.5 py-0.5">%</span>
+                                <span className="text-[10px] font-mono font-bold text-green-ink/70 bg-green-soft border border-green-line rounded px-1.5 py-0.5">%</span>
                             </span>
                             <input ref={el => inputRefs.current.target = el} type="text" inputMode="none"
                                 value={targetPct} onChange={() => { }} onFocus={e => handleInputFocus('target', e)} onSelect={handleSelect}
-                                className="w-full bg-transparent font-mono text-xl font-black text-green-400 outline-none placeholder:text-slate-700 placeholder:text-sm"
+                                className="w-full bg-transparent font-mono text-xl font-black text-green-ink outline-none placeholder:text-ink4 placeholder:text-sm"
                                 placeholder="—" />
                         </div>
                     </div>
@@ -463,34 +463,34 @@ export default function LevelTransmitter() {
             </div>
 
             {/* LIVE VIEW */}
-            <div className="bg-card rounded-2xl border border-slate-800 shadow-2xl overflow-hidden"
+            <div className="bg-card rounded-2xl border border-line-soft shadow-2xl overflow-hidden"
                 style={{ flex: '1 1 auto', minHeight: '200px', display: 'flex', flexDirection: 'column' }}>
-                <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800/60 flex-shrink-0">
-                    <div className="flex items-center gap-2 text-cyan-500">
+                <div className="flex items-center justify-between px-3 py-2 border-b border-line-soft/60 flex-shrink-0">
+                    <div className="flex items-center gap-2 text-cyan-ink">
                         <Droplets className="w-3.5 h-3.5" />
                         <span className="text-[10px] font-bold tracking-widest uppercase">Live View</span>
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1.5">
-                            <div className="w-2 h-2 rounded-full bg-cyan-400"
+                            <div className="w-2 h-2 rounded-full bg-cyan-fill"
                                 style={{ boxShadow: hasCurrent ? '0 0 6px #00e5ff' : 'none' }} />
-                            <span className="text-[10px] text-slate-500">LT</span>
+                            <span className="text-[10px] text-ink3">LT</span>
                             {hasCurrent && (
-                                <span className="text-[10px] font-mono text-cyan-400 font-bold">
+                                <span className="text-[10px] font-mono text-cyan-ink font-bold">
                                     {parseFloat(currPct).toFixed(1)}{inputMode === 'mm' ? 'mm' : '%'}
                                 </span>
                             )}
                         </div>
                         <div className="flex items-center gap-1.5">
-                            <div className="w-2 h-2 rounded-sm bg-green-400"
+                            <div className="w-2 h-2 rounded-sm bg-green-fill"
                                 style={{ boxShadow: hasTarget ? '0 0 6px #22c55e' : 'none' }} />
-                            <span className="text-[10px] text-slate-500">LG</span>
-                            {hasTarget && <span className="text-[10px] font-mono text-green-400 font-bold">{parseFloat(targetPct).toFixed(1)}%</span>}
+                            <span className="text-[10px] text-ink3">LG</span>
+                            {hasTarget && <span className="text-[10px] font-mono text-green-ink font-bold">{parseFloat(targetPct).toFixed(1)}%</span>}
                         </div>
                         {calculation && (
-                            <div className={`px-2 py-0.5 rounded text-[10px] font-black border ${calculation.deltaLevel > 0 ? 'bg-amber-950/40 border-amber-800/50 text-amber-400'
-                                : calculation.deltaLevel < 0 ? 'bg-amber-950/40 border-amber-800/50 text-amber-400'
-                                    : 'bg-emerald-950/40 border-emerald-800/50 text-emerald-400'
+                            <div className={`px-2 py-0.5 rounded text-[10px] font-black border ${calculation.deltaLevel > 0 ? 'bg-amber-soft border-amber-line text-amber-ink'
+                                : calculation.deltaLevel < 0 ? 'bg-amber-soft border-amber-line text-amber-ink'
+                                    : 'bg-emerald-soft border-emerald-line text-emerald-ink'
                                 }`}>
                                 {calculation.deltaLevel > 0 ? `▲ +${calculation.deltaLevel.toFixed(1)}%p`
                                     : calculation.deltaLevel < 0 ? `▼ ${calculation.deltaLevel.toFixed(1)}%p`
@@ -508,24 +508,24 @@ export default function LevelTransmitter() {
             </div>
 
             {/* RESULTS */}
-            <div className="bg-yellow-900/10 rounded-2xl border border-yellow-700/50 px-2 py-1.5 shadow-xl flex-shrink-0">
-                <div className="flex items-center gap-2 mb-1.5 text-yellow-400">
+            <div className="bg-yellow-soft rounded-2xl border border-yellow-line px-2 py-1.5 shadow-xl flex-shrink-0">
+                <div className="flex items-center gap-2 mb-1.5 text-yellow-ink">
                     <ArrowRight className="w-4 h-4" />
                     <span className="text-sm font-bold">보정 결과값</span>
                 </div>
                 <div className="flex gap-2">
-                    <div className="flex-1 bg-black/50 p-3 rounded-xl border border-yellow-700/30 text-center">
-                        <div className="text-xs text-yellow-500 font-bold mb-1">New LRV</div>
+                    <div className="flex-1 bg-well p-3 rounded-xl border border-yellow-line text-center">
+                        <div className="text-xs text-yellow-ink font-bold mb-1">New LRV</div>
                         <div className="flex items-baseline justify-center gap-1.5">
-                            <span className="font-mono text-2xl font-bold text-white">{calculation ? calculation.newLrv.toFixed(2) : '--'}</span>
-                            <span className="text-slate-500 text-[10px]">mmH₂O</span>
+                            <span className="font-mono text-2xl font-bold text-ink">{calculation ? calculation.newLrv.toFixed(2) : '--'}</span>
+                            <span className="text-ink3 text-[10px]">mmH₂O</span>
                         </div>
                     </div>
-                    <div className="flex-1 bg-black/50 p-3 rounded-xl border border-yellow-700/30 text-center">
-                        <div className="text-xs text-yellow-500 font-bold mb-1">New URV</div>
+                    <div className="flex-1 bg-well p-3 rounded-xl border border-yellow-line text-center">
+                        <div className="text-xs text-yellow-ink font-bold mb-1">New URV</div>
                         <div className="flex items-baseline justify-center gap-1.5">
-                            <span className="font-mono text-2xl font-bold text-white">{calculation ? calculation.newUrv.toFixed(2) : '--'}</span>
-                            <span className="text-slate-500 text-[10px]">mmH₂O</span>
+                            <span className="font-mono text-2xl font-bold text-ink">{calculation ? calculation.newUrv.toFixed(2) : '--'}</span>
+                            <span className="text-ink3 text-[10px]">mmH₂O</span>
                         </div>
                     </div>
                 </div>
@@ -534,40 +534,40 @@ export default function LevelTransmitter() {
                     <button onClick={handleSave} disabled={!calculation}
                         className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl font-bold text-xs transition-all active:scale-95 touch-manipulation
                             ${saveFlash
-                                ? 'bg-emerald-800/70 border border-emerald-400/80 text-emerald-200 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
+                                ? 'bg-emerald-soft border border-emerald-line text-emerald-ink shadow-[0_0_20px_rgba(16,185,129,0.4)]'
                                 : calculation
-                                    ? 'bg-emerald-900/40 border border-emerald-600/60 text-emerald-300 hover:bg-emerald-800/50 shadow-[0_0_12px_rgba(16,185,129,0.15)]'
-                                    : 'bg-slate-800/30 border border-slate-700/40 text-slate-600 cursor-not-allowed'}`}>
+                                    ? 'bg-emerald-soft border border-emerald-line text-emerald-ink hover:bg-emerald-soft shadow-[0_0_12px_rgba(16,185,129,0.15)]'
+                                    : 'bg-elev/30 border border-line/40 text-ink4 cursor-not-allowed'}`}>
                         {saveFlash
-                            ? <Check className="w-4 h-4 text-emerald-300" />
-                            : <Save className={`w-4 h-4 ${calculation ? 'text-emerald-400' : 'text-slate-600'}`} />}
+                            ? <Check className="w-4 h-4 text-emerald-ink" />
+                            : <Save className={`w-4 h-4 ${calculation ? 'text-emerald-ink' : 'text-ink4'}`} />}
                         {saveFlash ? '저장됨' : '저장'}
                     </button>
                     {/* 2. 이력 — 항상 활성 */}
                     <button onClick={() => setShowHistory(true)}
-                        className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl font-bold text-xs transition-all active:scale-95 touch-manipulation bg-amber-900/40 border border-amber-600/60 text-amber-300 hover:bg-amber-800/50 shadow-[0_0_12px_rgba(245,158,11,0.15)] relative">
-                        <History className="w-4 h-4 text-amber-400" />
+                        className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl font-bold text-xs transition-all active:scale-95 touch-manipulation bg-amber-soft border border-amber-line text-amber-ink hover:bg-amber-soft shadow-[0_0_12px_rgba(245,158,11,0.15)] relative">
+                        <History className="w-4 h-4 text-amber-ink" />
                         이력
                         {history.length > 0 && (
-                            <span className="absolute top-1 right-1 text-[9px] font-mono bg-amber-500/30 text-amber-200 px-1 py-0 rounded leading-tight">{history.length}</span>
+                            <span className="absolute top-1 right-1 text-[9px] font-mono bg-amber-soft text-amber-ink px-1 py-0 rounded leading-tight">{history.length}</span>
                         )}
                     </button>
                     {/* 3. 초기화 — 아무 필드 하나라도 입력되면 활성화 */}
                     <button onClick={handleResetButtonClick} disabled={!hasAnyInput}
                         className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl font-bold text-xs transition-all active:scale-95 touch-manipulation
                             ${hasAnyInput
-                                ? 'bg-red-900/40 border border-red-600/60 text-red-300 hover:bg-red-800/50 shadow-[0_0_12px_rgba(239,68,68,0.15)]'
-                                : 'bg-slate-800/30 border border-slate-700/40 text-slate-600 cursor-not-allowed'}`}>
-                        <RotateCcw className={`w-4 h-4 ${hasAnyInput ? 'text-red-400' : 'text-slate-600'}`} />
+                                ? 'bg-red-soft border border-red-line text-red-ink hover:bg-red-soft shadow-[0_0_12px_rgba(239,68,68,0.15)]'
+                                : 'bg-elev/30 border border-line/40 text-ink4 cursor-not-allowed'}`}>
+                        <RotateCcw className={`w-4 h-4 ${hasAnyInput ? 'text-red-ink' : 'text-ink4'}`} />
                         초기화
                     </button>
                     {/* 4. 추가보정 — calculation 있어야 활성 */}
                     <button onClick={handleAdditionalCorrection} disabled={!calculation}
                         className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl font-bold text-xs transition-all active:scale-95 touch-manipulation
                             ${calculation
-                                ? 'bg-cyan-900/40 border border-cyan-600/60 text-cyan-300 hover:bg-cyan-800/50 shadow-[0_0_12px_rgba(34,211,238,0.15)]'
-                                : 'bg-slate-800/30 border border-slate-700/40 text-slate-600 cursor-not-allowed'}`}>
-                        <RefreshCw className={`w-4 h-4 ${calculation ? 'text-cyan-400' : 'text-slate-600'}`} />
+                                ? 'bg-cyan-soft border border-cyan-line text-cyan-ink hover:bg-cyan-soft shadow-[0_0_12px_rgba(34,211,238,0.15)]'
+                                : 'bg-elev/30 border border-line/40 text-ink4 cursor-not-allowed'}`}>
+                        <RefreshCw className={`w-4 h-4 ${calculation ? 'text-cyan-ink' : 'text-ink4'}`} />
                         추가보정
                     </button>
                 </div>
@@ -583,40 +583,40 @@ export default function LevelTransmitter() {
                     width: 'calc(100vw - 24px)',
                     maxWidth: '480px',
                     zIndex: 200,
-                    background: '#080f1e',
-                    border: '1px solid rgba(100,116,139,0.3)',
+                    background: 'var(--color-panel)',
+                    border: '1px solid var(--color-line)',
                     borderRadius: '20px',
                     padding: '12px',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.9)',
+                    boxShadow: '0 20px 60px var(--color-shade)',
                 }}>
                     <div className="grid grid-cols-4 gap-2">
                         {['1', '2', '3', 'DEL'].map(k => (
                             <button key={k}
                                 onPointerDown={e => { e.preventDefault(); handleKeypad(k); }}
-                                className={`aspect-[4/3] rounded-2xl font-black flex items-center justify-center transition-all active:scale-95 shadow-lg ${k === 'DEL' ? 'bg-red-900/60 text-red-400 text-base' : 'bg-slate-800 text-white text-3xl'}`}>
+                                className={`aspect-[4/3] rounded-2xl font-black flex items-center justify-center transition-all active:scale-95 shadow-lg ${k === 'DEL' ? 'bg-red-soft text-red-ink text-base' : 'bg-elev text-ink text-3xl'}`}>
                                 {k === 'DEL' ? <Delete className="w-6 h-6" /> : k}
                             </button>
                         ))}
                         {['4', '5', '6', 'CLR'].map(k => (
                             <button key={k}
                                 onPointerDown={e => { e.preventDefault(); handleKeypad(k); }}
-                                className={`aspect-[4/3] rounded-2xl font-black flex items-center justify-center transition-all active:scale-95 shadow-lg ${k === 'CLR' ? 'bg-orange-900/60 text-orange-400 text-base' : 'bg-slate-800 text-white text-3xl'}`}>
+                                className={`aspect-[4/3] rounded-2xl font-black flex items-center justify-center transition-all active:scale-95 shadow-lg ${k === 'CLR' ? 'bg-orange-soft text-orange-ink text-base' : 'bg-elev text-ink text-3xl'}`}>
                                 {k}
                             </button>
                         ))}
                         {['7', '8', '9', '.'].map(k => (
                             <button key={k}
                                 onPointerDown={e => { e.preventDefault(); handleKeypad(k); }}
-                                className={`aspect-[4/3] rounded-2xl font-black flex items-center justify-center transition-all active:scale-95 shadow-lg ${k === '.' ? 'bg-slate-700 text-blue-300 text-3xl' : 'bg-slate-800 text-white text-3xl'}`}>
+                                className={`aspect-[4/3] rounded-2xl font-black flex items-center justify-center transition-all active:scale-95 shadow-lg ${k === '.' ? 'bg-elev2 text-blue-ink text-3xl' : 'bg-elev text-ink text-3xl'}`}>
                                 {k}
                             </button>
                         ))}
                         <button
                             onPointerDown={e => { e.preventDefault(); handleKeypad('-'); }}
-                            className="aspect-[4/3] rounded-2xl font-black flex items-center justify-center transition-all active:scale-95 shadow-lg bg-slate-700 text-blue-300 text-4xl">-</button>
+                            className="aspect-[4/3] rounded-2xl font-black flex items-center justify-center transition-all active:scale-95 shadow-lg bg-elev2 text-blue-ink text-4xl">-</button>
                         <button
                             onPointerDown={e => { e.preventDefault(); handleKeypad('0'); }}
-                            className="aspect-[4/3] rounded-2xl font-black flex items-center justify-center transition-all active:scale-95 shadow-lg bg-slate-800 text-white text-3xl">0</button>
+                            className="aspect-[4/3] rounded-2xl font-black flex items-center justify-center transition-all active:scale-95 shadow-lg bg-elev text-ink text-3xl">0</button>
                         <button
                             onPointerDown={e => {
                                 e.preventDefault();
@@ -630,7 +630,7 @@ export default function LevelTransmitter() {
                                 }
                                 setActiveField(null);
                             }}
-                            className="col-span-2 aspect-[8/3] rounded-2xl font-black flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-lg bg-emerald-700 hover:bg-emerald-600 text-white text-base tracking-wide touch-manipulation">
+                            className="col-span-2 aspect-[8/3] rounded-2xl font-black flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-lg bg-emerald-fill hover:bg-emerald-fill text-emerald-on text-base tracking-wide touch-manipulation">
                             ✓ 입력완료
                         </button>
                     </div>
@@ -643,7 +643,7 @@ export default function LevelTransmitter() {
                     onClick={() => setShowHistory(false)}
                     style={{
                         position: 'fixed', inset: 0, zIndex: 10000,
-                        background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)',
+                        background: 'var(--color-scrim)', backdropFilter: 'blur(4px)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         padding: '16px',
                     }}>
@@ -651,29 +651,29 @@ export default function LevelTransmitter() {
                         onClick={e => e.stopPropagation()}
                         style={{
                             width: '100%', maxWidth: '520px', maxHeight: '85vh',
-                            background: 'linear-gradient(180deg, #0a1420 0%, #050b14 100%)',
-                            border: '1px solid rgba(245,158,11,0.4)',
+                            background: 'var(--color-panel)',
+                            border: '1px solid var(--color-amber-line)',
                             borderRadius: '20px',
-                            boxShadow: '0 0 40px rgba(245,158,11,0.15)',
+                            boxShadow: '0 20px 60px var(--color-shade)',
                             display: 'flex', flexDirection: 'column',
                             overflow: 'hidden',
                         }}>
                         {/* 헤더 */}
-                        <div className="flex items-center justify-between px-4 py-3 border-b border-amber-900/40">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-amber-line">
                             <div className="flex items-center gap-2">
-                                <History className="w-5 h-5 text-amber-400" />
-                                <span className="font-bold text-amber-300">LT Cal 이력</span>
-                                <span className="text-[10px] font-mono text-slate-500">({history.length}건)</span>
+                                <History className="w-5 h-5 text-amber-ink" />
+                                <span className="font-bold text-amber-ink">LT Cal 이력</span>
+                                <span className="text-[10px] font-mono text-ink3">({history.length}건)</span>
                             </div>
                             <div className="flex items-center gap-1">
                                 {history.length > 0 && (
                                     <button onClick={clearAllHistory}
-                                        className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] text-red-400 hover:bg-red-900/30 transition-all">
+                                        className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] text-red-ink hover:bg-red-soft transition-all">
                                         <Trash2 className="w-3 h-3" /> 전체삭제
                                     </button>
                                 )}
                                 <button onClick={() => setShowHistory(false)}
-                                    className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-800/60 transition-all">
+                                    className="p-1.5 rounded-lg text-ink2 hover:bg-elev/60 transition-all">
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
@@ -682,52 +682,52 @@ export default function LevelTransmitter() {
                         {/* 리스트 */}
                         <div style={{ overflowY: 'auto', flex: 1 }} className="px-3 py-2">
                             {history.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-16 text-slate-600">
+                                <div className="flex flex-col items-center justify-center py-16 text-ink4">
                                     <History className="w-10 h-10 mb-3 opacity-40" />
                                     <div className="text-sm">저장된 Cal 이력이 없습니다</div>
-                                    <div className="text-[11px] mt-1 text-slate-700">추가 오차보정 시 자동 기록됩니다</div>
+                                    <div className="text-[11px] mt-1 text-ink4">추가 오차보정 시 자동 기록됩니다</div>
                                 </div>
                             ) : (
                                 history.map((e) => {
                                     const d = new Date(e.timestamp);
                                     const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
                                     const delta = e.currPct - e.targetPct;
-                                    const deltaCol = delta > 0 ? '#ef4444' : delta < 0 ? '#22c55e' : '#94a3b8';
+                                    const deltaCol = delta > 0 ? 'var(--color-red-ink)' : delta < 0 ? 'var(--color-green-ink)' : 'var(--color-ink3)';
                                     return (
                                         <div key={e.id}
-                                            className="mb-2 p-3 rounded-xl bg-black/50 border border-slate-800/60 hover:border-amber-700/50 transition-all">
+                                            className="mb-2 p-3 rounded-xl bg-well border border-line-soft/60 hover:border-amber-line transition-all">
                                             <div className="flex items-center justify-between mb-2">
-                                                <span className="text-[11px] font-mono text-slate-400">{dateStr}</span>
+                                                <span className="text-[11px] font-mono text-ink2">{dateStr}</span>
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-[10px] font-mono font-bold" style={{ color: deltaCol }}>
                                                         {delta > 0 ? '▼' : delta < 0 ? '▲' : ''} {Math.abs(delta).toFixed(1)}%p
                                                     </span>
                                                     <button onClick={() => deleteHistoryEntry(e.id)}
-                                                        className="p-1 rounded text-slate-600 hover:text-red-400 hover:bg-red-900/20 transition-all">
+                                                        className="p-1 rounded text-ink4 hover:text-red-ink hover:bg-red-soft transition-all">
                                                         <X className="w-3 h-3" />
                                                     </button>
                                                 </div>
                                             </div>
                                             <div className="grid grid-cols-2 gap-2 text-[11px] mb-2">
-                                                <div className="bg-slate-900/50 rounded px-2 py-1">
-                                                    <div className="text-slate-600 text-[9px] font-bold">이전 LRV/URV</div>
-                                                    <div className="font-mono text-slate-300">{e.oldLrv.toFixed(1)} / {e.oldUrv.toFixed(1)}</div>
+                                                <div className="bg-panel/50 rounded px-2 py-1">
+                                                    <div className="text-ink4 text-[9px] font-bold">이전 LRV/URV</div>
+                                                    <div className="font-mono text-ink2">{e.oldLrv.toFixed(1)} / {e.oldUrv.toFixed(1)}</div>
                                                 </div>
-                                                <div className="bg-amber-950/30 rounded px-2 py-1 border border-amber-900/40">
-                                                    <div className="text-amber-600 text-[9px] font-bold">신규 LRV/URV</div>
-                                                    <div className="font-mono text-amber-200">{e.newLrv.toFixed(1)} / {e.newUrv.toFixed(1)}</div>
+                                                <div className="bg-amber-soft rounded px-2 py-1 border border-amber-line">
+                                                    <div className="text-amber-ink text-[9px] font-bold">신규 LRV/URV</div>
+                                                    <div className="font-mono text-amber-ink">{e.newLrv.toFixed(1)} / {e.newUrv.toFixed(1)}</div>
                                                 </div>
-                                                <div className="bg-cyan-950/30 rounded px-2 py-1">
-                                                    <div className="text-cyan-600 text-[9px] font-bold">LT (현재)</div>
-                                                    <div className="font-mono text-cyan-300">{e.currPct.toFixed(1)}%</div>
+                                                <div className="bg-cyan-soft rounded px-2 py-1">
+                                                    <div className="text-cyan-ink text-[9px] font-bold">LT (현재)</div>
+                                                    <div className="font-mono text-cyan-ink">{e.currPct.toFixed(1)}%</div>
                                                 </div>
-                                                <div className="bg-green-950/30 rounded px-2 py-1">
-                                                    <div className="text-green-600 text-[9px] font-bold">LG (목표)</div>
-                                                    <div className="font-mono text-green-300">{e.targetPct.toFixed(1)}%</div>
+                                                <div className="bg-green-soft rounded px-2 py-1">
+                                                    <div className="text-green-ink text-[9px] font-bold">LG (목표)</div>
+                                                    <div className="font-mono text-green-ink">{e.targetPct.toFixed(1)}%</div>
                                                 </div>
                                             </div>
                                             <button onClick={() => restoreFromHistory(e)}
-                                                className="w-full flex items-center justify-center gap-1 py-1.5 rounded-lg text-[11px] font-bold bg-amber-900/30 border border-amber-700/40 text-amber-300 hover:bg-amber-800/40 active:scale-95 transition-all">
+                                                className="w-full flex items-center justify-center gap-1 py-1.5 rounded-lg text-[11px] font-bold bg-amber-soft border border-amber-line text-amber-ink hover:bg-amber-soft active:scale-95 transition-all">
                                                 <RefreshCw className="w-3 h-3" /> 이 값으로 복원
                                             </button>
                                         </div>
@@ -737,7 +737,7 @@ export default function LevelTransmitter() {
                         </div>
 
                         {/* 푸터 */}
-                        <div className="px-4 py-2 border-t border-amber-900/40 text-[10px] text-slate-600 text-center">
+                        <div className="px-4 py-2 border-t border-amber-line text-[10px] text-ink4 text-center">
                             최근 {HISTORY_MAX}건까지 저장 · 1시간마다 자동 리프레시 · 이 기기에만 저장됨
                         </div>
                     </div>

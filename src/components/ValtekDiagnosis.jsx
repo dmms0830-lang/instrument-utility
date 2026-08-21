@@ -9,12 +9,12 @@ function cn(...inputs) {
 
 // Color Definitions
 const COLOR_MAP = {
-    'OFF': 'bg-gray-900 border-gray-700',
-    'Y': 'bg-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.6)] border-yellow-500',
-    'G': 'bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.6)] border-green-600',
-    'R': 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.6)] border-red-600',
-    'B': 'bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)] border-blue-600',
-    'O': 'bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.6)] border-orange-600',
+    'OFF': 'bg-ledoff border-line',
+    'Y': 'bg-yellow-fill shadow-[0_0_15px_rgba(250,204,21,0.6)] border-yellow-line',
+    'G': 'bg-green-fill shadow-[0_0_15px_rgba(34,197,94,0.6)] border-green-line',
+    'R': 'bg-red-fill shadow-[0_0_15px_rgba(239,68,68,0.6)] border-red-line',
+    'B': 'bg-blue-fill shadow-[0_0_15px_rgba(59,130,246,0.6)] border-blue-line',
+    'O': 'bg-orange-fill shadow-[0_0_15px_rgba(249,115,22,0.6)] border-orange-line',
 };
 
 // 3200MD Database — Official IOM LGENIM0059-12 (11/24) Table X 기준
@@ -166,13 +166,13 @@ const DB_3800 = [
 // Helper to get style based on Type/Category
 const getStyleByType = (type) => {
     switch (type) {
-        case '운전': return { icon: CheckCircle, color: 'text-green-400', badge: 'bg-green-900/80 text-green-300 border-green-700', bg: 'bg-green-950/30' };
-        case '정보': return { icon: Info, color: 'text-blue-400', badge: 'bg-blue-900/80 text-blue-300 border-blue-700', bg: 'bg-blue-950/30' };
-        case '설정': return { icon: Wrench, color: 'text-orange-400', badge: 'bg-orange-900/80 text-orange-300 border-orange-700', bg: 'bg-orange-950/30' };
-        case '경고': return { icon: AlertTriangle, color: 'text-yellow-400', badge: 'bg-yellow-900/80 text-yellow-300 border-yellow-700', bg: 'bg-yellow-950/30' };
-        case '알람': return { icon: AlertOctagon, color: 'text-red-500', badge: 'bg-red-900/80 text-red-200 border-red-700', bg: 'bg-red-950/40' };
-        case '시스템': return { icon: Cpu, color: 'text-blue-400', badge: 'bg-blue-900/80 text-blue-300 border-blue-700', bg: 'bg-blue-950/40' };
-        default: return { icon: Info, color: 'text-slate-400', badge: 'bg-slate-800 text-slate-400 border-slate-700', bg: 'bg-transparent' };
+        case '운전': return { icon: CheckCircle, color: 'text-green-ink', badge: 'bg-green-soft text-green-ink border-green-line', bg: 'bg-green-soft' };
+        case '정보': return { icon: Info, color: 'text-blue-ink', badge: 'bg-blue-soft text-blue-ink border-blue-line', bg: 'bg-blue-soft' };
+        case '설정': return { icon: Wrench, color: 'text-orange-ink', badge: 'bg-orange-soft text-orange-ink border-orange-line', bg: 'bg-orange-soft' };
+        case '경고': return { icon: AlertTriangle, color: 'text-yellow-ink', badge: 'bg-yellow-soft text-yellow-ink border-yellow-line', bg: 'bg-yellow-soft' };
+        case '알람': return { icon: AlertOctagon, color: 'text-red-ink', badge: 'bg-red-soft text-red-ink border-red-line', bg: 'bg-red-soft' };
+        case '시스템': return { icon: Cpu, color: 'text-blue-ink', badge: 'bg-blue-soft text-blue-ink border-blue-line', bg: 'bg-blue-soft' };
+        default: return { icon: Info, color: 'text-ink2', badge: 'bg-elev text-ink2 border-line', bg: 'bg-transparent' };
     }
 };
 
@@ -216,23 +216,23 @@ export default function ValtekDiagnosis() {
                     className={cn(
                         "flex-1 rounded-2xl border-2 p-3 transition-all active:scale-[0.98] touch-manipulation overflow-hidden relative shadow-lg",
                         model === '3200MD'
-                            ? "border-blue-500 bg-blue-600/20 ring-2 ring-blue-500/40 shadow-blue-900/40"
-                            : "border-slate-800 bg-card hover:bg-slate-800/50"
+                            ? "border-blue-line bg-blue-soft ring-2 ring-blue-line shadow-shade"
+                            : "border-line-soft bg-card hover:bg-elev/50"
                     )}
                 >
                     {model === '3200MD' && (
                         <div className="absolute top-2 right-2 w-7 h-7 bg-[#0066B3] rounded-full flex items-center justify-center z-10 shadow-lg">
-                            <Check className="w-5 h-5 text-white" strokeWidth={3} />
+                            <Check className="w-5 h-5 text-ink" strokeWidth={3} />
                         </div>
                     )}
                     <img
                         src="/pic/Logix 3200MD.png"
                         alt="Logix 3200MD 디지털 포지셔너"
-                        className="w-full aspect-video object-contain rounded bg-white/5"
+                        className="w-full aspect-video object-contain rounded bg-well"
                     />
                     <div className="text-center">
-                        <div className="text-sm font-bold text-white">Logix 3200MD</div>
-                        <div className="text-[10px] text-gray-500">Legacy (G/Y/R)</div>
+                        <div className="text-sm font-bold text-ink">Logix 3200MD</div>
+                        <div className="text-[10px] text-ink3">Legacy (G/Y/R)</div>
                     </div>
                 </button>
 
@@ -242,39 +242,39 @@ export default function ValtekDiagnosis() {
                     className={cn(
                         "flex-1 rounded-2xl border-2 p-3 transition-all active:scale-[0.98] touch-manipulation overflow-hidden relative shadow-lg",
                         model === '3800MD'
-                            ? "border-blue-500 bg-blue-600/20 ring-2 ring-blue-500/40 shadow-blue-900/40"
-                            : "border-slate-800 bg-card hover:bg-slate-800/50"
+                            ? "border-blue-line bg-blue-soft ring-2 ring-blue-line shadow-shade"
+                            : "border-line-soft bg-card hover:bg-elev/50"
                     )}
                 >
                     {model === '3800MD' && (
                         <div className="absolute top-2 right-2 w-7 h-7 bg-[#0066B3] rounded-full flex items-center justify-center z-10 shadow-lg">
-                            <Check className="w-5 h-5 text-white" strokeWidth={3} />
+                            <Check className="w-5 h-5 text-ink" strokeWidth={3} />
                         </div>
                     )}
                     <img
                         src="/pic/Logix 3800MD.png"
                         alt="Logix 3800MD 스마트 포지셔너"
-                        className="w-full aspect-video object-contain rounded bg-white/5"
+                        className="w-full aspect-video object-contain rounded bg-well"
                     />
                     <div className="text-center">
-                        <div className="text-sm font-bold text-white">Logix 3800MD</div>
-                        <div className="text-[10px] text-gray-500">Advanced (+B/O)</div>
+                        <div className="text-sm font-bold text-ink">Logix 3800MD</div>
+                        <div className="text-[10px] text-ink3">Advanced (+B/O)</div>
                     </div>
                 </button>
             </div>
 
             {/* LED Selector - Compact */}
             <div className="flex items-center justify-between gap-2 px-3">
-                <span className="text-xs text-gray-500 font-bold">LED 상태 입력</span>
+                <span className="text-xs text-ink3 font-bold">LED 상태 입력</span>
                 <button
                     onClick={() => setLeds(['OFF', 'OFF', 'OFF', 'OFF'])}
-                    className="text-xs text-gray-400 hover:text-white transition-colors px-2 py-1 bg-gray-800 rounded border border-gray-700 hover:bg-gray-700"
+                    className="text-xs text-ink2 hover:text-ink transition-colors px-2 py-1 bg-elev rounded border border-line hover:bg-elev2"
                 >
                     초기화
                 </button>
             </div>
 
-            <div className="grid grid-cols-4 gap-2 p-4 bg-slate-900/50 rounded-2xl border border-slate-800 shadow-inner place-items-center">
+            <div className="grid grid-cols-4 gap-2 p-4 bg-panel/50 rounded-2xl border border-line-soft shadow-inner place-items-center">
                 {leds.map((color, idx) => (
                     <div key={idx} className="flex flex-col items-center gap-1 w-full">
                         <button
@@ -282,18 +282,18 @@ export default function ValtekDiagnosis() {
                             className={cn(
                                 "w-full aspect-square max-w-[60px] rounded-full border-4 transition-all duration-200 focus:outline-none overflow-hidden relative shadow-lg active:scale-95 touch-manipulation",
                                 COLOR_MAP[color],
-                                color === 'OFF' ? 'ring-0 border-gray-700 bg-gray-900' : `border-transparent ring-2 ring-offset-2 ring-offset-black ${color === 'Y' ? 'ring-yellow-600' :
-                                    color === 'G' ? 'ring-green-600' :
-                                        color === 'R' ? 'ring-red-600' :
-                                            color === 'B' ? 'ring-blue-600' :
-                                                'ring-orange-600'
+                                color === 'OFF' ? 'ring-0 border-line bg-ledoff' : `border-transparent ring-2 ring-offset-2 ring-offset-panel ${color === 'Y' ? 'ring-yellow-line' :
+                                    color === 'G' ? 'ring-green-line' :
+                                        color === 'R' ? 'ring-red-line' :
+                                            color === 'B' ? 'ring-blue-line' :
+                                                'ring-orange-line'
                                     }`
                             )}
                             aria-label={`LED ${idx + 1}: ${color}`}
                         >
-                            {color !== 'OFF' && <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-white/40 to-transparent rounded-bl-full pointer-events-none" />}
+                            {color !== 'OFF' && <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-gloss to-transparent rounded-bl-full pointer-events-none" />}
                         </button>
-                        <span className="text-[10px] text-gray-500 font-mono font-bold">LED{idx + 1}</span>
+                        <span className="text-[10px] text-ink3 font-mono font-bold">LED{idx + 1}</span>
                     </div>
                 ))}
             </div>
@@ -301,7 +301,7 @@ export default function ValtekDiagnosis() {
             {/* Result Display - Compact */}
             <div className={cn(
                 "rounded-2xl border flex-1 min-h-[180px] flex flex-col justify-center items-center text-center relative overflow-hidden shadow-2xl transition-all duration-300 p-1",
-                result ? `${style.bg} border-${style.color.split('-')[1]}-900/50` : "bg-card border-slate-800"
+                result ? `${style.bg} border-${style.color.split('-')[1]}-900/50` : "bg-card border-line-soft"
             )}>
                 {result && style ? (
                     <div className="w-full h-full p-4 animate-in slide-in-from-bottom-2 fade-in duration-300 flex flex-col items-center">
@@ -310,28 +310,28 @@ export default function ValtekDiagnosis() {
                         </div>
 
                         <div className={cn("flex flex-col items-center justify-center gap-2 mb-4", style.color)}>
-                            <style.icon className="w-12 h-12 drop-shadow-[0_0_15px_rgba(0,0,0,0.5)]" strokeWidth={2} />
-                            <span className="text-xl font-bold tracking-tight text-white leading-tight break-keep text-center">
+                            <style.icon className="w-12 h-12 value-glow" strokeWidth={2} />
+                            <span className="text-xl font-bold tracking-tight text-ink leading-tight break-keep text-center">
                                 {result.status}
                             </span>
                         </div>
 
-                        <div className="w-full bg-black/40 border border-white/10 p-3 rounded-lg text-left">
-                            <span className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1 block flex items-center gap-1">
+                        <div className="w-full bg-well border border-line-soft p-3 rounded-lg text-left">
+                            <span className="text-ink2 text-[10px] font-bold uppercase tracking-wider mb-1 block flex items-center gap-1">
                                 <Wrench className="w-3 h-3" /> 조치 권고
                             </span>
-                            <p className="text-white text-sm font-medium leading-relaxed break-keep">
+                            <p className="text-ink text-sm font-medium leading-relaxed break-keep">
                                 {result.action}
                             </p>
                         </div>
                     </div>
                 ) : (
-                    <div className="text-slate-600 flex flex-col items-center py-6 opacity-60">
+                    <div className="text-ink4 flex flex-col items-center py-6 opacity-60">
                         <Activity className="w-16 h-16 mb-3 opacity-20" />
-                        <p className="text-lg font-bold text-gray-500 mb-1">LED 상태를 입력하세요</p>
-                        <p className="text-xs text-gray-600">
-                            현재: <span className="text-blue-400 font-bold">Logix {model}</span>
-                            {model === '3800MD' && <span className="text-orange-400 ml-1">(+Blue/Orange)</span>}
+                        <p className="text-lg font-bold text-ink3 mb-1">LED 상태를 입력하세요</p>
+                        <p className="text-xs text-ink4">
+                            현재: <span className="text-blue-ink font-bold">Logix {model}</span>
+                            {model === '3800MD' && <span className="text-orange-ink ml-1">(+Blue/Orange)</span>}
                         </p>
                     </div>
                 )}

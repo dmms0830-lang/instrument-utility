@@ -161,7 +161,7 @@ export default function ConnectorStudio() {
         if (!listRef.current || savedList.length === 0) return;
         try {
             const canvas = await html2canvas(listRef.current, {
-                backgroundColor: '#0f172a', // slate-900
+                backgroundColor: 'var(--color-field)',
                 scale: 2, // High resolution
             });
             const link = document.createElement('a');
@@ -178,32 +178,32 @@ export default function ConnectorStudio() {
         <div className="flex flex-col gap-4 h-full">
             {/* Header */}
             <div className="flex items-center gap-3 shrink-0">
-                <div className="w-10 h-10 bg-lime-500/20 rounded-xl flex items-center justify-center border border-lime-500/30">
-                    <Layers className="w-5 h-5 text-lime-400" />
+                <div className="w-10 h-10 bg-lime-soft rounded-xl flex items-center justify-center border border-lime-line">
+                    <Layers className="w-5 h-5 text-lime-ink" />
                 </div>
                 <div>
-                    <h2 className="text-lg font-bold text-white">피팅 자재 선정</h2>
-                    <p className="text-xs text-lime-400/70">Fitting Selector & List Builder</p>
+                    <h2 className="text-lg font-bold text-ink">피팅 자재 선정</h2>
+                    <p className="text-xs text-lime-ink/70">Fitting Selector & List Builder</p>
                 </div>
             </div>
 
             <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
                 {/* ── SECTION 1: SELECTION ── */}
-                <div className="bg-slate-900/80 rounded-2xl p-4 border border-slate-800 shadow-xl">
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">1. 부품 선택</h3>
+                <div className="bg-panel/80 rounded-2xl p-4 border border-line-soft shadow-xl">
+                    <h3 className="text-xs font-bold text-ink2 uppercase tracking-wider mb-3">1. 부품 선택</h3>
 
                     {/* Type Selector */}
                     <div className="mb-4">
-                        <label className="block text-xs text-lime-400 font-bold mb-1 ml-1">부품 종류</label>
+                        <label className="block text-xs text-lime-ink font-bold mb-1 ml-1">부품 종류</label>
                         <select
                             value={selectedType}
                             onChange={handleTypeChange}
-                            className="w-full h-12 bg-slate-800 rounded-xl px-3 text-base font-bold text-lime-400 border border-lime-500 focus:ring-2 focus:ring-lime-500/50 outline-none appearance-none"
+                            className="w-full h-12 bg-elev rounded-xl px-3 text-base font-bold text-lime-ink border border-lime-line focus:ring-2 focus:ring-lime-line outline-none appearance-none"
                             style={{ backgroundImage: 'none' }} // Ensure cross-browser consistency
                         >
-                            <option value="" className="text-slate-500">부품을 선택하세요...</option>
+                            <option value="" className="text-ink3">부품을 선택하세요...</option>
                             {FITTING_KEYS.map(key => (
-                                <option key={key} value={key} className="bg-slate-800 text-lime-400 py-2">
+                                <option key={key} value={key} className="bg-elev text-lime-ink py-2">
                                     {FITTING_TYPES[key].label}
                                 </option>
                             ))}
@@ -215,15 +215,15 @@ export default function ConnectorStudio() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
                             {activeConfig.fields.map(field => (
                                 <div key={field.id} className="flex flex-col">
-                                    <label className="text-xs text-slate-500 font-bold mb-1 ml-1">{field.label}</label>
+                                    <label className="text-xs text-ink3 font-bold mb-1 ml-1">{field.label}</label>
                                     <select
                                         value={fieldValues[field.id] || ''}
                                         onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                                        className="w-full h-12 bg-slate-800 rounded-xl px-3 text-base font-bold text-lime-400 border border-lime-500 focus:ring-2 focus:ring-lime-500/50 outline-none appearance-none"
+                                        className="w-full h-12 bg-elev rounded-xl px-3 text-base font-bold text-lime-ink border border-lime-line focus:ring-2 focus:ring-lime-line outline-none appearance-none"
                                     >
-                                        <option value="" className="text-slate-500">선택...</option>
+                                        <option value="" className="text-ink3">선택...</option>
                                         {field.options.map(opt => (
-                                            <option key={opt} value={opt} className="bg-slate-800 text-lime-400">
+                                            <option key={opt} value={opt} className="bg-elev text-lime-ink">
                                                 {opt}
                                             </option>
                                         ))}
@@ -238,8 +238,8 @@ export default function ConnectorStudio() {
                         onClick={handleAddToList}
                         disabled={!currentDescription}
                         className={`w-full mt-4 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 ${currentDescription
-                                ? 'bg-lime-500 text-slate-900 hover:bg-lime-400 shadow-lg shadow-lime-500/20'
-                                : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+                                ? 'bg-lime-fill text-lime-on hover:bg-lime-fill shadow-lg shadow-shade'
+                                : 'bg-elev text-ink3 cursor-not-allowed border border-line'
                             }`}
                     >
                         <Plus className="w-5 h-5" />
@@ -248,23 +248,23 @@ export default function ConnectorStudio() {
 
                     {/* Live Preview */}
                     {currentDescription && (
-                        <div className="mt-3 p-3 bg-slate-950/50 rounded-lg border border-slate-800 text-center">
-                            <span className="text-xs text-slate-500 block mb-1">PREVIEW</span>
-                            <span className="text-lime-300 font-mono font-bold">{currentDescription}</span>
+                        <div className="mt-3 p-3 bg-surface/50 rounded-lg border border-line-soft text-center">
+                            <span className="text-xs text-ink3 block mb-1">PREVIEW</span>
+                            <span className="text-lime-ink font-mono font-bold">{currentDescription}</span>
                         </div>
                     )}
                 </div>
 
                 {/* ── SECTION 2: SAVED LIST ── */}
-                <div className="flex-1 bg-slate-900/80 rounded-2xl p-4 border border-slate-800 shadow-xl flex flex-col min-h-[200px]">
+                <div className="flex-1 bg-panel/80 rounded-2xl p-4 border border-line-soft shadow-xl flex flex-col min-h-[200px]">
                     <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                            2. 자재 목록 <span className="bg-lime-500/20 text-lime-400 px-2 py-0.5 rounded-full text-[10px]">{savedList.length}</span>
+                        <h3 className="text-xs font-bold text-ink2 uppercase tracking-wider flex items-center gap-2">
+                            2. 자재 목록 <span className="bg-lime-soft text-lime-ink px-2 py-0.5 rounded-full text-[10px]">{savedList.length}</span>
                         </h3>
                         {savedList.length > 0 && (
                             <button
                                 onClick={handleSaveImage}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-lime-400 text-xs font-bold rounded-lg border border-slate-700 transition-colors"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-elev hover:bg-elev2 text-lime-ink text-xs font-bold rounded-lg border border-line transition-colors"
                             >
                                 <Camera className="w-3.5 h-3.5" />
                                 <span>이미지 저장</span>
@@ -274,10 +274,10 @@ export default function ConnectorStudio() {
 
                     <div
                         ref={listRef}
-                        className="flex-1 flex flex-col gap-2 p-2 bg-slate-900/50 rounded-xl border border-slate-800/50 min-h-[150px]"
+                        className="flex-1 flex flex-col gap-2 p-2 bg-panel/50 rounded-xl border border-line-soft/50 min-h-[150px]"
                     >
                         {savedList.length === 0 ? (
-                            <div className="flex-1 flex flex-col items-center justify-center text-slate-600 opacity-50">
+                            <div className="flex-1 flex flex-col items-center justify-center text-ink4 opacity-50">
                                 <AlertCircle className="w-12 h-12 mb-2" />
                                 <p className="text-sm font-bold">리스트가 비어있습니다</p>
                             </div>
@@ -285,20 +285,20 @@ export default function ConnectorStudio() {
                             savedList.map((item, index) => (
                                 <div
                                     key={item.id}
-                                    className="flex items-center justify-between bg-slate-800 p-3 rounded-lg border border-slate-700 group hover:border-lime-500/50 transition-colors"
+                                    className="flex items-center justify-between bg-elev p-3 rounded-lg border border-line group hover:border-lime-line transition-colors"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <span className="w-6 h-6 flex items-center justify-center bg-slate-900 text-slate-500 text-xs font-bold rounded-full">
+                                        <span className="w-6 h-6 flex items-center justify-center bg-panel text-ink3 text-xs font-bold rounded-full">
                                             {index + 1}
                                         </span>
                                         <div>
-                                            <p className="text-xs text-slate-500 font-bold mb-0.5">{item.type}</p>
-                                            <p className="text-sm text-white font-mono font-bold leading-tight">{item.description}</p>
+                                            <p className="text-xs text-ink3 font-bold mb-0.5">{item.type}</p>
+                                            <p className="text-sm text-ink font-mono font-bold leading-tight">{item.description}</p>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => handleRemoveItem(item.id)}
-                                        className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                                        className="p-2 text-ink4 hover:text-red-ink hover:bg-red-soft rounded-lg transition-colors"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -307,7 +307,7 @@ export default function ConnectorStudio() {
                         )}
                         {/* Timestamp for screenshot */}
                         {savedList.length > 0 && (
-                            <div className="mt-4 pt-2 border-t border-slate-800 flex justify-between items-center text-[10px] text-slate-600">
+                            <div className="mt-4 pt-2 border-t border-line-soft flex justify-between items-center text-[10px] text-ink4">
                                 <span>Instrument Fitting List</span>
                                 <span>{new Date().toLocaleString()}</span>
                             </div>

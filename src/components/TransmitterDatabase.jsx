@@ -74,8 +74,8 @@ export default function TransmitterDatabase() {
         const formattedNum = Number(finalValue.toFixed(4)).toString();
 
         return (
-            <span className="font-mono font-bold text-blue-400">
-                {formattedNum} <span className="text-slate-500 text-xs font-normal ml-0.5">{finalUnit}</span>
+            <span className="font-mono font-bold text-blue-ink">
+                {formattedNum} <span className="text-ink3 text-xs font-normal ml-0.5">{finalUnit}</span>
             </span>
         );
     };
@@ -84,42 +84,42 @@ export default function TransmitterDatabase() {
         <div className="space-y-6 pb-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Brand Selection */}
-                <div className="bg-card rounded-2xl border border-slate-800 p-4 shadow-xl">
-                    <label className="block text-sm text-gray-500 mb-2 flex items-center gap-2">
+                <div className="bg-card rounded-2xl border border-line-soft p-4 shadow-xl">
+                    <label className="block text-sm text-ink3 mb-2 flex items-center gap-2">
                         <Factory className="w-4 h-4" /> Brand
                     </label>
                     <select
                         value={maker}
                         onChange={handleMakerChange}
-                        className="w-full h-14 bg-black border border-slate-700 rounded-lg px-4 text-lg font-bold focus:border-blue-500 outline-none appearance-none transition-all text-white"
+                        className="w-full h-14 bg-field border border-line rounded-lg px-4 text-lg font-bold focus:border-blue-line outline-none appearance-none transition-all text-ink"
                     >
                         {Object.keys(TM_DB).map(k => <option key={k} value={k}>{k}</option>)}
                     </select>
                 </div>
 
                 {/* Model Selection */}
-                <div className="bg-card rounded-2xl border border-slate-800 p-4 shadow-xl">
-                    <label className="block text-sm text-slate-500 mb-2 flex items-center gap-2">
+                <div className="bg-card rounded-2xl border border-line-soft p-4 shadow-xl">
+                    <label className="block text-sm text-ink3 mb-2 flex items-center gap-2">
                         <Database className="w-4 h-4" /> Model
                     </label>
                     <select
                         value={model}
                         onChange={e => setModel(e.target.value)}
-                        className="w-full h-14 bg-black border border-slate-700 rounded-lg px-4 text-lg font-bold focus:border-blue-500 outline-none appearance-none transition-all text-white"
+                        className="w-full h-14 bg-field border border-line rounded-lg px-4 text-lg font-bold focus:border-blue-line outline-none appearance-none transition-all text-ink"
                     >
                         {currentData.models.map(m => <option key={m} value={m}>{m}</option>)}
                     </select>
                 </div>
 
                 {/* Unit Selection */}
-                <div className="bg-card rounded-2xl border border-slate-800 p-4 shadow-xl">
-                    <label className="block text-sm text-slate-500 mb-2 flex items-center gap-2">
+                <div className="bg-card rounded-2xl border border-line-soft p-4 shadow-xl">
+                    <label className="block text-sm text-ink3 mb-2 flex items-center gap-2">
                         <Settings className="w-4 h-4" /> Display Unit
                     </label>
                     <select
                         value={displayUnit}
                         onChange={e => setDisplayUnit(e.target.value)}
-                        className="w-full h-14 bg-black border border-slate-700 rounded-lg px-4 text-lg font-bold focus:border-blue-500 outline-none appearance-none transition-all text-white"
+                        className="w-full h-14 bg-field border border-line rounded-lg px-4 text-lg font-bold focus:border-blue-line outline-none appearance-none transition-all text-ink"
                     >
                         <option value="Original">Maker Original</option>
                         {Object.keys(UNITS).map(u => <option key={u} value={u}>{u}</option>)}
@@ -127,30 +127,30 @@ export default function TransmitterDatabase() {
                 </div>
             </div>
 
-            <div className="bg-card rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
-                <div className="px-6 py-4 border-b border-slate-800 bg-black/40 flex items-center justify-between">
-                    <h3 className="text-xl font-bold text-white tracking-tight">
-                        <span className="text-blue-400">{maker}</span> Capsule Data
+            <div className="bg-card rounded-2xl border border-line-soft overflow-hidden shadow-2xl">
+                <div className="px-6 py-4 border-b border-line-soft bg-well flex items-center justify-between">
+                    <h3 className="text-xl font-bold text-ink tracking-tight">
+                        <span className="text-blue-ink">{maker}</span> Capsule Data
                     </h3>
-                    <span className="text-xs text-slate-500 font-mono border border-slate-800 rounded px-2 py-1">{model} Series</span>
+                    <span className="text-xs text-ink3 font-mono border border-line-soft rounded px-2 py-1">{model} Series</span>
                 </div>
 
                 {/* Mobile Card View (< md) */}
-                <div className="block md:hidden divide-y divide-gray-800">
+                <div className="block md:hidden divide-y divide-line-soft">
                     {currentData.table.map((row, idx) => (
-                        <div key={idx} className="p-4 hover:bg-white/5 transition-colors">
+                        <div key={idx} className="p-4 hover:bg-hover transition-colors">
                             <div className="flex justify-between items-center mb-2">
-                                <span className="font-mono font-bold text-blue-300 text-lg">{row.code}</span>
-                                <span className="text-xs text-gray-500 border border-gray-700 px-2 py-0.5 rounded-full">{row.note}</span>
+                                <span className="font-mono font-bold text-blue-ink text-lg">{row.code}</span>
+                                <span className="text-xs text-ink3 border border-line px-2 py-0.5 rounded-full">{row.note}</span>
                             </div>
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <div className="text-gray-500 text-xs mb-1">MIN SPAN</div>
-                                    <div className="font-mono text-gray-200">{formatValue(row.minVal, row.unit)}</div>
+                                    <div className="text-ink3 text-xs mb-1">MIN SPAN</div>
+                                    <div className="font-mono text-ink">{formatValue(row.minVal, row.unit)}</div>
                                 </div>
                                 <div>
-                                    <div className="text-gray-500 text-xs mb-1">MAX SPAN</div>
-                                    <div className="font-mono text-gray-200">{formatValue(row.maxVal, row.unit)}</div>
+                                    <div className="text-ink3 text-xs mb-1">MAX SPAN</div>
+                                    <div className="font-mono text-ink">{formatValue(row.maxVal, row.unit)}</div>
                                 </div>
                             </div>
                         </div>
@@ -161,26 +161,26 @@ export default function TransmitterDatabase() {
                 <div className="hidden md:block overflow-x-auto pb-2">
                     <table className="w-full text-left border-collapse whitespace-normal">
                         <thead>
-                            <tr className="bg-slate-900/80 text-slate-400 text-xs uppercase tracking-wider">
-                                <th className="p-4 border-b border-slate-800 w-1/4">Capsule/Range</th>
-                                <th className="p-4 border-b border-slate-800 w-1/4">Min Span</th>
-                                <th className="p-4 border-b border-slate-800 w-1/4">Max Span</th>
-                                <th className="p-4 border-b border-slate-800 w-1/4">Note</th>
+                            <tr className="bg-panel/80 text-ink2 text-xs uppercase tracking-wider">
+                                <th className="p-4 border-b border-line-soft w-1/4">Capsule/Range</th>
+                                <th className="p-4 border-b border-line-soft w-1/4">Min Span</th>
+                                <th className="p-4 border-b border-line-soft w-1/4">Max Span</th>
+                                <th className="p-4 border-b border-line-soft w-1/4">Note</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-800">
+                        <tbody className="divide-y divide-line-soft">
                             {currentData.table.map((row, idx) => (
-                                <tr key={idx} className="hover:bg-white/5 transition-colors group text-sm md:text-base">
-                                    <td className="p-4 font-mono font-bold text-blue-300 group-hover:text-blue-200">
+                                <tr key={idx} className="hover:bg-hover transition-colors group text-sm md:text-base">
+                                    <td className="p-4 font-mono font-bold text-blue-ink group-hover:text-blue-ink">
                                         {row.code}
                                     </td>
-                                    <td className="p-4 font-mono text-slate-300 group-hover:text-white">
+                                    <td className="p-4 font-mono text-ink2 group-hover:text-ink">
                                         {formatValue(row.minVal, row.unit)}
                                     </td>
-                                    <td className="p-4 font-mono text-slate-300 group-hover:text-white">
+                                    <td className="p-4 font-mono text-ink2 group-hover:text-ink">
                                         {formatValue(row.maxVal, row.unit)}
                                     </td>
-                                    <td className="p-4 text-slate-500 text-xs md:text-sm group-hover:text-slate-400">
+                                    <td className="p-4 text-ink3 text-xs md:text-sm group-hover:text-ink2">
                                         {row.note}
                                     </td>
                                 </tr>

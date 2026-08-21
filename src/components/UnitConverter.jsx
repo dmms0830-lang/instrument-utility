@@ -43,9 +43,9 @@ const formatResult = (raw) => {
 };
 
 const TABS = [
-    { key: 'pressure', label: '압력', icon: '⚙', accent: '#22d3ee', bg: 'rgba(34,211,238,0.06)', border: 'rgba(34,211,238,0.2)' },
-    { key: 'temperature', label: '온도', icon: '🌡', accent: '#f97316', bg: 'rgba(249,115,22,0.06)', border: 'rgba(249,115,22,0.2)' },
-    { key: 'length', label: '길이', icon: '📐', accent: '#a78bfa', bg: 'rgba(167,139,250,0.06)', border: 'rgba(167,139,250,0.2)' },
+    { key: 'pressure', label: '압력', icon: '⚙', accent: 'var(--color-cyan-ink)', bg: 'var(--color-cyan-soft)', border: 'var(--color-cyan-line)' },
+    { key: 'temperature', label: '온도', icon: '🌡', accent: 'var(--color-orange-ink)', bg: 'var(--color-orange-soft)', border: 'var(--color-orange-line)' },
+    { key: 'length', label: '길이', icon: '📐', accent: 'var(--color-purple-ink)', bg: 'var(--color-purple-soft)', border: 'var(--color-purple-line)' },
 ];
 
 const SwapIcon = ({ color }) => (
@@ -66,8 +66,9 @@ const CheckIcon = () => (
     </svg>
 );
 
-const selectBgImage = (strokeColor) =>
-    `url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='${encodeURIComponent(strokeColor)}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`;
+// 셀렉트 화살표. data URI 안에는 CSS 변수를 못 넣으므로
+// 라이트/다크 양쪽에서 모두 보이는 중간 회색(--color-line 값)을 쓴다.
+const CHEVRON = `url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%238b97ab' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`;
 
 const ConversionPanel = ({ value, onValueChange, fromUnit, onFromUnitChange, toUnit, onToUnitChange, units, unitNames, result, theme, onSwap }) => {
     const [copied, setCopied] = useState(false);
@@ -80,6 +81,7 @@ const ConversionPanel = ({ value, onValueChange, fromUnit, onFromUnitChange, toU
     }, [result]);
 
     const selectBase = {
+        backgroundImage: CHEVRON,
         backgroundPosition: 'right 0.5rem center',
         backgroundRepeat: 'no-repeat',
         backgroundSize: '0.8em 0.8em',
@@ -89,24 +91,24 @@ const ConversionPanel = ({ value, onValueChange, fromUnit, onFromUnitChange, toU
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '24px 0 8px' }}>
             {/* Input */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <span style={{ fontSize: 11, color: '#475569', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', paddingLeft: 2 }}>입력값</span>
-                <div style={{ display: 'flex', alignItems: 'center', borderRadius: 12, overflow: 'hidden', border: '1.5px solid #1e293b', background: '#0a0f1a', height: 48 }}>
+                <span style={{ fontSize: 11, color: 'var(--color-ink3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', paddingLeft: 2 }}>입력값</span>
+                <div style={{ display: 'flex', alignItems: 'center', borderRadius: 12, overflow: 'hidden', border: '1.5px solid var(--color-line)', background: 'var(--color-field)', height: 48 }}>
                     <input
                         type="number" inputMode="decimal" value={value}
                         onChange={e => onValueChange(e.target.value)}
                         onFocus={e => e.target.select()}
                         placeholder="0"
-                        className="flex-1 w-full bg-transparent text-lg font-mono text-white pl-4 pr-2 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="flex-1 w-full bg-transparent text-lg font-mono text-ink pl-4 pr-2 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         style={{ caretColor: theme.accent }}
                     />
-                    <div style={{ width: 1, height: 24, background: '#1e293b', margin: '0 4px' }} />
+                    <div style={{ width: 1, height: 24, background: 'var(--color-line-soft)', margin: '0 4px' }} />
                     <select value={fromUnit} onChange={e => onFromUnitChange(e.target.value)}
-                        className="bg-transparent text-slate-400 font-mono text-sm pr-7 pl-2 outline-none cursor-pointer h-full appearance-none hover:text-white transition-colors"
-                        style={{ ...selectBase, backgroundImage: selectBgImage('#64748b') }}>
-                        {units.map(u => <option key={u} value={u} className="bg-slate-900">{u} — {unitNames[u]}</option>)}
+                        className="bg-transparent text-ink2 font-mono text-sm pr-7 pl-2 outline-none cursor-pointer h-full appearance-none hover:text-ink transition-colors"
+                        style={selectBase}>
+                        {units.map(u => <option key={u} value={u} className="bg-panel">{u} — {unitNames[u]}</option>)}
                     </select>
                 </div>
-                <span className="text-[11px] text-slate-700 font-medium pl-0.5">{unitNames[fromUnit]}</span>
+                <span className="text-[11px] text-ink4 font-medium pl-0.5">{unitNames[fromUnit]}</span>
             </div>
 
             {/* Swap */}
@@ -120,7 +122,7 @@ const ConversionPanel = ({ value, onValueChange, fromUnit, onFromUnitChange, toU
 
             {/* Result */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <span style={{ fontSize: 11, color: '#475569', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', paddingLeft: 2 }}>결과</span>
+                <span style={{ fontSize: 11, color: 'var(--color-ink3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', paddingLeft: 2 }}>결과</span>
                 <div style={{ display: 'flex', alignItems: 'center', borderRadius: 12, overflow: 'hidden', border: `1.5px solid ${theme.border}`, background: theme.bg, height: 48 }}>
                     <div className="flex-1 text-lg font-mono font-bold pl-4 pr-2 flex items-center overflow-x-auto whitespace-nowrap"
                         style={{ color: theme.accent }}>
@@ -128,18 +130,18 @@ const ConversionPanel = ({ value, onValueChange, fromUnit, onFromUnitChange, toU
                     </div>
                     <div style={{ width: 1, height: 24, background: theme.border, margin: '0 4px' }} />
                     <select value={toUnit} onChange={e => onToUnitChange(e.target.value)}
-                        className="bg-transparent text-slate-300 font-mono text-sm pr-7 pl-2 outline-none cursor-pointer h-full appearance-none hover:text-white transition-colors"
-                        style={{ ...selectBase, backgroundImage: selectBgImage('#94a3b8') }}>
-                        {units.map(u => <option key={u} value={u} className="bg-slate-900">{u} — {unitNames[u]}</option>)}
+                        className="bg-transparent text-ink2 font-mono text-sm pr-7 pl-2 outline-none cursor-pointer h-full appearance-none hover:text-ink transition-colors"
+                        style={selectBase}>
+                        {units.map(u => <option key={u} value={u} className="bg-panel">{u} — {unitNames[u]}</option>)}
                     </select>
                 </div>
                 <div className="flex items-center justify-between px-0.5">
-                    <span className="text-[11px] text-slate-700 font-medium">{unitNames[toUnit]}</span>
+                    <span className="text-[11px] text-ink4 font-medium">{unitNames[toUnit]}</span>
                     <button onClick={handleCopy}
                         className="flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-md cursor-pointer transition-all font-medium border-none"
                         style={{
-                            color: copied ? '#4ade80' : '#475569',
-                            background: copied ? 'rgba(74,222,128,0.12)' : 'transparent',
+                            color: copied ? 'var(--color-green-ink)' : 'var(--color-ink3)',
+                            background: copied ? 'var(--color-green-soft)' : 'transparent',
                         }}>
                         {copied ? <><CheckIcon /> 복사됨</> : <><CopyIcon /> 복사</>}
                     </button>
@@ -181,7 +183,7 @@ export default function UnitConverter() {
             <div className="w-full max-w-md flex flex-col">
 
                 {/* Tab Bar */}
-                <div className="flex gap-1.5 rounded-xl p-1 bg-slate-950 border border-slate-800">
+                <div className="flex gap-1.5 rounded-xl p-1 bg-surface border border-line-soft">
                     {TABS.map(tab => {
                         const isActive = activeTab === tab.key;
                         return (
@@ -192,7 +194,7 @@ export default function UnitConverter() {
                                 style={{
                                     border: isActive ? `1px solid ${tab.border}` : '1px solid transparent',
                                     background: isActive ? tab.bg : 'transparent',
-                                    color: isActive ? tab.accent : '#64748b',
+                                    color: isActive ? tab.accent : 'var(--color-ink3)',
                                     fontSize: 14,
                                     fontWeight: isActive ? 700 : 500,
                                 }}
@@ -207,7 +209,7 @@ export default function UnitConverter() {
                 {/* Panel */}
                 <div className="mt-3 rounded-2xl px-5 pb-4"
                     style={{
-                        background: 'linear-gradient(145deg, #0c1221 0%, #131c30 100%)',
+                        background: 'var(--color-panel)',
                         border: `1px solid ${currentTab.border}`,
                     }}>
                     {activeTab === 'pressure' && (

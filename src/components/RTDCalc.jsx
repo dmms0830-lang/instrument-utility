@@ -4,10 +4,11 @@ import { Copy, Check, AlertTriangle } from 'lucide-react';
 
 // ── 회로도 SVG ──────────────────────────────────────────────
 function WireDiagram({ wireType }) {
+    // SVG도 CSS 변수를 그대로 받으므로 테마 토큰을 쓴다 (라이트/다크 자동 대응)
     const theme = {
-        '2': { stroke: '#ca8a04', text: '#fde047', sub: '#fbbf24', bg: '#1c1408' },
-        '3': { stroke: '#16a34a', text: '#86efac', sub: '#4ade80', bg: '#0c1f10' },
-        '4': { stroke: '#2563eb', text: '#93c5fd', sub: '#60a5fa', bg: '#0d1b3e' },
+        '2': { stroke: 'var(--color-yellow-ink)', text: 'var(--color-yellow-ink)', sub: 'var(--color-ink3)', bg: 'var(--color-yellow-soft)' },
+        '3': { stroke: 'var(--color-green-ink)', text: 'var(--color-green-ink)', sub: 'var(--color-ink3)', bg: 'var(--color-green-soft)' },
+        '4': { stroke: 'var(--color-blue-ink)', text: 'var(--color-blue-ink)', sub: 'var(--color-ink3)', bg: 'var(--color-blue-soft)' },
     }[wireType];
 
     const s = theme.stroke;
@@ -258,25 +259,28 @@ export default function RTDCalc() {
 
     const THEME = {
         '2': {
-            bg: 'bg-yellow-900/20', border: 'border-yellow-700/50',
-            label: 'text-yellow-400', inputText: 'text-yellow-400',
-            focusBorder: 'border-yellow-500', unit: 'text-yellow-500',
-            btnActive: 'bg-yellow-600 ring-2 ring-yellow-400',
-            footerText: 'text-yellow-600', offsetText: 'text-yellow-600',
+            bg: 'bg-yellow-soft', border: 'border-yellow-line',
+            label: 'text-yellow-ink', inputText: 'text-yellow-ink',
+            focusBorder: 'border-yellow-line', unit: 'text-yellow-ink',
+            btnActiveText: 'text-yellow-on',
+            btnActive: 'bg-yellow-fill ring-2 ring-yellow-line',
+            footerText: 'text-yellow-ink', offsetText: 'text-yellow-ink',
         },
         '3': {
-            bg: 'bg-green-900/20', border: 'border-green-700/50',
-            label: 'text-green-400', inputText: 'text-green-400',
-            focusBorder: 'border-green-500', unit: 'text-green-500',
-            btnActive: 'bg-green-600 ring-2 ring-green-400',
-            footerText: 'text-green-600', offsetText: 'text-green-600',
+            bg: 'bg-green-soft', border: 'border-green-line',
+            label: 'text-green-ink', inputText: 'text-green-ink',
+            focusBorder: 'border-green-line', unit: 'text-green-ink',
+            btnActiveText: 'text-green-on',
+            btnActive: 'bg-green-fill ring-2 ring-green-line',
+            footerText: 'text-green-ink', offsetText: 'text-green-ink',
         },
         '4': {
-            bg: 'bg-blue-900/20', border: 'border-blue-700/50',
-            label: 'text-blue-400', inputText: 'text-blue-400',
-            focusBorder: 'border-blue-500', unit: 'text-blue-500',
-            btnActive: 'bg-blue-600 ring-2 ring-blue-400',
-            footerText: 'text-blue-600', offsetText: 'text-blue-600',
+            bg: 'bg-blue-soft', border: 'border-blue-line',
+            label: 'text-blue-ink', inputText: 'text-blue-ink',
+            focusBorder: 'border-blue-line', unit: 'text-blue-ink',
+            btnActiveText: 'text-blue-on',
+            btnActive: 'bg-blue-fill ring-2 ring-blue-line',
+            footerText: 'text-blue-ink', offsetText: 'text-blue-ink',
         },
     };
     const t = THEME[wireType];
@@ -328,8 +332,8 @@ export default function RTDCalc() {
     return (
         <div className="flex flex-col gap-2 h-full">
             <div className="flex items-center gap-2">
-                <span className="text-lg font-black text-blue-400">Pt100</span>
-                <span className="text-xs text-slate-500 font-mono">IEC 60751</span>
+                <span className="text-lg font-black text-blue-ink">Pt100</span>
+                <span className="text-xs text-ink3 font-mono">IEC 60751</span>
             </div>
 
             <div className="grid grid-cols-3 gap-2">
@@ -339,8 +343,8 @@ export default function RTDCalc() {
                         onClick={() => setWireType(w)}
                         className={`py-3 rounded-2xl font-bold text-lg transition-all active:scale-[0.98] touch-manipulation flex items-center justify-center gap-2
                             ${wireType === w
-                                ? `${THEME[w].btnActive} text-white shadow-lg`
-                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+                                ? `${THEME[w].btnActive} ${THEME[w].btnActiveText} shadow-lg`
+                                : 'bg-elev text-ink2 hover:bg-elev2'}`}
                     >
                         {wireType === w && (w === '2'
                             ? <AlertTriangle className="w-4 h-4" />
@@ -372,10 +376,10 @@ export default function RTDCalc() {
                             onChange={e => setCompValue(e.target.value)}
                             onFocus={(e) => handleFocus('comp', e)}
                             onBlur={() => setActiveField(null)}
-                            className={`w-full h-12 bg-black rounded-xl px-3 pr-10 font-mono text-xl font-bold text-center outline-none transition-all
+                            className={`w-full h-12 bg-field rounded-xl px-3 pr-10 font-mono text-xl font-bold text-center outline-none transition-all
                                 ${t.inputText} ${activeField === 'comp'
                                     ? `border-2 ${t.focusBorder}`
-                                    : 'border border-slate-700'}`}
+                                    : 'border border-line'}`}
                             placeholder={COMP_PLACEHOLDER[wireType]}
                         />
                         <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold ${t.unit}`}>Ω</span>
@@ -383,24 +387,24 @@ export default function RTDCalc() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 bg-slate-900 rounded-2xl p-1 border border-slate-800">
+            <div className="grid grid-cols-2 bg-panel rounded-2xl p-1 border border-line-soft">
                 {['R2T', 'T2R'].map(m => (
                     <button
                         key={m}
                         onClick={() => setMode(m)}
                         className={`py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] touch-manipulation
                             ${mode === m
-                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/50'
-                                : 'bg-transparent text-slate-400 hover:text-white'}`}
+                                ? 'bg-purple-fill text-purple-on shadow-lg shadow-shade'
+                                : 'bg-transparent text-ink2 hover:text-ink'}`}
                     >
                         {m === 'R2T' ? 'Ω → °C' : '°C → Ω'}
                     </button>
                 ))}
             </div>
 
-            <div className="bg-card rounded-2xl border border-slate-800 p-3 shadow-2xl flex-1 flex flex-col">
+            <div className="bg-card rounded-2xl border border-line-soft p-3 shadow-2xl flex-1 flex flex-col">
                 <div className="mb-2">
-                    <label className="block text-[10px] text-slate-500 font-bold mb-1 uppercase tracking-wider">
+                    <label className="block text-[10px] text-ink3 font-bold mb-1 uppercase tracking-wider">
                         {MAIN_LABEL[wireType]}
                     </label>
                     <div className="relative">
@@ -411,34 +415,34 @@ export default function RTDCalc() {
                             onChange={e => setInputValue(e.target.value)}
                             onFocus={(e) => handleFocus('input', e)}
                             onBlur={() => setActiveField(null)}
-                            className={`w-full h-14 bg-black rounded-xl px-3 pr-12 font-mono text-2xl font-bold text-center outline-none transition-all text-white
+                            className={`w-full h-14 bg-field rounded-xl px-3 pr-12 font-mono text-2xl font-bold text-center outline-none transition-all text-ink
                                 ${activeField === 'input'
-                                    ? 'border-2 border-blue-500 ring-2 ring-blue-500/30'
-                                    : 'border border-slate-700'}`}
+                                    ? 'border-2 border-blue-line ring-2 ring-blue-line'
+                                    : 'border border-line'}`}
                             placeholder={mode === 'R2T' ? '100.00' : '0.00'}
                         />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">{inputUnit}</span>
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-ink2 font-bold text-lg">{inputUnit}</span>
                     </div>
                 </div>
 
                 <div
-                    className="bg-black/80 rounded-2xl border border-slate-700 p-3 flex-1 flex flex-col items-center justify-center cursor-pointer hover:border-green-600/50 transition-all relative overflow-hidden min-h-[120px] shadow-lg"
+                    className="bg-well rounded-2xl border border-line p-3 flex-1 flex flex-col items-center justify-center cursor-pointer hover:border-green-line transition-all relative overflow-hidden min-h-[120px] shadow-lg"
                     onClick={copyToClipboard}
                 >
-                    <div className="absolute inset-0 bg-gradient-to-t from-green-950/20 to-transparent pointer-events-none" />
-                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1 relative z-10">
+                    <div className="absolute inset-0 bg-gradient-to-t from-green-soft to-transparent pointer-events-none" />
+                    <span className="text-[10px] text-ink3 font-bold uppercase tracking-wider mb-1 relative z-10">
                         {mode === 'R2T' ? '온도 (IEC 60751)' : '저항값'}
                     </span>
                     <div className="flex items-baseline gap-2 relative z-10">
-                        <span className="font-mono text-5xl font-black text-green-400 drop-shadow-[0_0_20px_rgba(34,197,94,0.5)]">
+                        <span className="font-mono text-5xl font-black text-green-ink value-glow">
                             {result !== null && !isNaN(result)
                                 ? result.toFixed(2)
                                 : (result !== null && isNaN(result) ? 'ERR' : '--.-')}
                         </span>
-                        <span className="text-slate-500 text-xl font-thin">{outputUnit}</span>
+                        <span className="text-ink3 text-xl font-thin">{outputUnit}</span>
                     </div>
                     {result !== null && !isNaN(result) && (
-                        <div className="flex items-center gap-1 mt-1 text-slate-600 text-xs relative z-10">
+                        <div className="flex items-center gap-1 mt-1 text-ink4 text-xs relative z-10">
                             <Copy className="w-3 h-3" />
                             <span>탭하여 복사</span>
                         </div>

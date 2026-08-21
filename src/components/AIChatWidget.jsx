@@ -40,7 +40,7 @@ function renderInline(text, keyPrefix) {
     const tok = m[0];
     if (tok.startsWith('**')) {
       parts.push(
-        <strong key={`${keyPrefix}-b${i}`} className="font-bold text-white">
+        <strong key={`${keyPrefix}-b${i}`} className="font-bold text-ink">
           {tok.slice(2, -2)}
         </strong>
       );
@@ -48,7 +48,7 @@ function renderInline(text, keyPrefix) {
       parts.push(
         <code
           key={`${keyPrefix}-c${i}`}
-          className="px-1 py-0.5 mx-0.5 rounded bg-slate-700/70 text-cyan-300 font-mono text-[12px]"
+          className="px-1 py-0.5 mx-0.5 rounded bg-elev2/70 text-cyan-ink font-mono text-[12px]"
         >
           {tok.slice(1, -1)}
         </code>
@@ -125,7 +125,7 @@ function MarkdownLite({ text }) {
                 {header.map((c, ci) => (
                   <th
                     key={ci}
-                    className="border border-slate-600 bg-slate-700/60 px-2 py-1 text-left font-bold text-slate-100 whitespace-nowrap"
+                    className="border border-line bg-elev2/60 px-2 py-1 text-left font-bold text-ink whitespace-nowrap"
                   >
                     {renderInline(c, `th-${i}-${ci}`)}
                   </th>
@@ -138,7 +138,7 @@ function MarkdownLite({ text }) {
                   {r.map((c, ci) => (
                     <td
                       key={ci}
-                      className="border border-slate-700 px-2 py-1 align-top text-slate-200"
+                      className="border border-line px-2 py-1 align-top text-ink"
                     >
                       {renderInline(c, `td-${i}-${ri}-${ci}`)}
                     </td>
@@ -155,7 +155,7 @@ function MarkdownLite({ text }) {
     // 구분선 (--- *** ___)
     if (/^\s*([-*_])\1{2,}\s*$/.test(line)) {
       flush(i);
-      blocks.push(<hr key={`hr-${i}`} className="my-2.5 border-slate-700" />);
+      blocks.push(<hr key={`hr-${i}`} className="my-2.5 border-line" />);
       i += 1;
       continue;
     }
@@ -169,10 +169,10 @@ function MarkdownLite({ text }) {
       const lv = h[1].length;
       const cls =
         lv === 1
-          ? 'text-[15px] font-black mt-2 mb-1 text-white'
+          ? 'text-[15px] font-black mt-2 mb-1 text-ink'
           : lv === 2
-          ? 'text-[14px] font-bold mt-2 mb-0.5 text-cyan-300'
-          : 'text-[13px] font-bold mt-1.5 text-cyan-200';
+          ? 'text-[14px] font-bold mt-2 mb-0.5 text-cyan-ink'
+          : 'text-[13px] font-bold mt-1.5 text-cyan-ink';
       blocks.push(
         <div key={`h-${i}`} className={cls}>
           {renderInline(h[2], `h${i}`)}
@@ -402,27 +402,27 @@ export default function AIChatWidget() {
       {/* ── 채팅창 (열렸을 때) ── */}
       {isOpen && (
         <div
-          className="aichat-pop fixed z-[1000] inset-0 sm:inset-4 w-auto flex flex-col rounded-none sm:rounded-2xl overflow-hidden bg-slate-900/95 backdrop-blur-xl border-0 sm:border border-slate-700 shadow-2xl shadow-black/50"
+          className="aichat-pop fixed z-[1000] inset-0 sm:inset-4 w-auto flex flex-col rounded-none sm:rounded-2xl overflow-hidden bg-panel/95 backdrop-blur-xl border-0 sm:border border-line shadow-2xl shadow-shade"
         >
           {/* 헤더 */}
-          <div className="flex items-center justify-between px-4 h-14 flex-shrink-0 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 border-b border-slate-700">
+          <div className="flex items-center justify-between px-4 h-14 flex-shrink-0 bg-gradient-to-r from-cyan-soft to-blue-soft border-b border-line">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="aichat-float w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg flex-shrink-0">
-                <Bot className="w-[18px] h-[18px] text-white" />
+              <div className="aichat-float w-8 h-8 rounded-full bg-gradient-to-br from-cyan-fill to-blue-fill flex items-center justify-center shadow-lg flex-shrink-0">
+                <Bot className="w-[18px] h-[18px] text-ink" />
               </div>
               <div className="min-w-0">
-                <div className="text-sm font-bold text-white leading-tight">AI 어시스턴트</div>
+                <div className="text-sm font-bold text-ink leading-tight">AI 어시스턴트</div>
                 <div className="text-[10px] font-mono truncate flex items-center gap-1.5">
                   <span
                     className={`inline-block w-1.5 h-1.5 rounded-full flex-shrink-0 ${
                       serverStatus === 'online'
-                        ? 'bg-lime-400'
+                        ? 'bg-lime-fill'
                         : serverStatus === 'offline'
-                        ? 'bg-amber-400'
-                        : 'bg-slate-500 animate-pulse'
+                        ? 'bg-amber-fill'
+                        : 'bg-elev2 animate-pulse'
                     }`}
                   />
-                  <span className={serverStatus === 'offline' ? 'text-amber-400/90' : 'text-cyan-400/80'}>
+                  <span className={serverStatus === 'offline' ? 'text-amber-ink/90' : 'text-cyan-ink/80'}>
                     {serverStatus === 'offline' ? '점검 중' : serverStatus === 'checking' ? '연결 확인 중…' : MODEL_LABEL}
                   </span>
                 </div>
@@ -431,7 +431,7 @@ export default function AIChatWidget() {
             <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={resetChat}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-ink2 hover:text-ink hover:bg-hover transition-colors"
                 aria-label="대화 초기화"
                 title="대화 초기화"
               >
@@ -439,7 +439,7 @@ export default function AIChatWidget() {
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-ink2 hover:text-ink hover:bg-hover transition-colors"
                 aria-label="닫기"
               >
                 <X className="w-5 h-5" />
@@ -457,8 +457,8 @@ export default function AIChatWidget() {
                 <div
                   className={`max-w-[88%] px-3.5 py-2.5 rounded-2xl text-[13.5px] leading-relaxed break-words ${
                     m.role === 'user'
-                      ? 'bg-blue-600 text-white rounded-br-md whitespace-pre-wrap'
-                      : 'bg-slate-800 text-slate-100 border border-slate-700 rounded-bl-md'
+                      ? 'bg-blue-fill text-blue-on rounded-br-md whitespace-pre-wrap'
+                      : 'bg-elev text-ink border border-line rounded-bl-md'
                   }`}
                 >
                   {m.role === 'user' ? m.content : <MarkdownLite text={m.content} />}
@@ -467,11 +467,11 @@ export default function AIChatWidget() {
                 {m.role !== 'user' && i !== 0 && (
                   <button
                     onClick={() => handleCopy(m.content, i)}
-                    className="mt-1 ml-1 flex items-center gap-1 text-[11.5px] font-medium text-slate-400 hover:text-cyan-300 transition-colors"
+                    className="mt-1 ml-1 flex items-center gap-1 text-[11.5px] font-medium text-ink2 hover:text-cyan-ink transition-colors"
                   >
                     {copiedIndex === i ? (
                       <>
-                        <Check className="w-3.5 h-3.5 text-lime-400" /> 복사됨
+                        <Check className="w-3.5 h-3.5 text-lime-ink" /> 복사됨
                       </>
                     ) : (
                       <>
@@ -485,8 +485,8 @@ export default function AIChatWidget() {
 
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-slate-800 border border-slate-700 text-slate-400 px-3.5 py-2.5 rounded-2xl rounded-bl-md flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+                <div className="bg-elev border border-line text-ink2 px-3.5 py-2.5 rounded-2xl rounded-bl-md flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-cyan-ink" />
                   <span className="text-[13px]">생각 중...</span>
                 </div>
               </div>
@@ -494,7 +494,7 @@ export default function AIChatWidget() {
 
             {error && serverStatus !== 'offline' && (
               <div className="flex justify-start">
-                <div className="bg-red-950/60 border border-red-500/40 text-red-300 px-3.5 py-2.5 rounded-2xl text-[12.5px] max-w-[90%] break-words">
+                <div className="bg-red-soft border border-red-line text-red-ink px-3.5 py-2.5 rounded-2xl text-[12.5px] max-w-[90%] break-words">
                   ⚠️ {error}
                 </div>
               </div>
@@ -503,17 +503,17 @@ export default function AIChatWidget() {
             {/* 서버 꺼짐 → 수리 중 안내 */}
             {serverStatus === 'offline' && (
               <div className="flex justify-center pt-3">
-                <div className="text-center bg-slate-800/80 border border-amber-500/30 rounded-2xl px-5 py-5 max-w-[92%]">
-                  <Wrench className="w-8 h-8 text-amber-400 mx-auto mb-2.5" />
-                  <div className="text-[14px] font-bold text-amber-300 mb-1.5">AI 점검 중입니다</div>
-                  <div className="text-[12.5px] text-slate-400 leading-relaxed">
+                <div className="text-center bg-elev/80 border border-amber-line rounded-2xl px-5 py-5 max-w-[92%]">
+                  <Wrench className="w-8 h-8 text-amber-ink mx-auto mb-2.5" />
+                  <div className="text-[14px] font-bold text-amber-ink mb-1.5">AI 점검 중입니다</div>
+                  <div className="text-[12.5px] text-ink2 leading-relaxed">
                     서버가 잠시 꺼져 있어요.
                     <br />
                     곧 다시 찾아뵙겠습니다 🙏
                   </div>
                   <button
                     onClick={checkHealth}
-                    className="mt-3.5 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-cyan-400 hover:text-cyan-300 transition-colors"
+                    className="mt-3.5 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-cyan-ink hover:text-cyan-ink transition-colors"
                   >
                     <RotateCw className="w-3.5 h-3.5" /> 다시 확인
                   </button>
@@ -523,12 +523,12 @@ export default function AIChatWidget() {
           </div>
 
           {/* 입력 영역 */}
-          <div className="flex-shrink-0 p-2.5 border-t border-slate-700 bg-slate-900/80">
+          <div className="flex-shrink-0 p-2.5 border-t border-line bg-panel/80">
             {/* 계장설비팀 전달용 메시지 작성 버튼 */}
             <button
               onClick={() => sendMessage(HANDOFF_PROMPT)}
               disabled={isLoading || serverStatus === 'offline'}
-              className="w-full mb-2 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[12.5px] font-bold transition-colors hover:bg-amber-500/25 active:scale-[0.99] disabled:opacity-40 touch-manipulation"
+              className="w-full mb-2 flex items-center justify-center gap-1.5 h-9 rounded-xl bg-amber-soft border border-amber-line text-amber-ink text-[12.5px] font-bold transition-colors hover:bg-amber-soft active:scale-[0.99] disabled:opacity-40 touch-manipulation"
             >
               <ClipboardList className="w-4 h-4" /> 계장설비팀 전달용 메시지 작성
             </button>
@@ -541,12 +541,12 @@ export default function AIChatWidget() {
                 rows={1}
                 disabled={serverStatus === 'offline'}
                 placeholder={serverStatus === 'offline' ? '점검 중입니다…' : '질문을 입력하세요…'}
-                className="flex-1 resize-none max-h-28 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-[14px] text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 transition-colors disabled:opacity-50"
+                className="flex-1 resize-none max-h-28 bg-elev border border-line rounded-xl px-3 py-2.5 text-[14px] text-ink placeholder:text-ink3 focus:outline-none focus:border-cyan-line transition-colors disabled:opacity-50"
               />
               <button
                 onClick={() => sendMessage()}
                 disabled={isLoading || !input.trim() || serverStatus === 'offline'}
-                className="w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 disabled:opacity-40 disabled:hover:translate-y-0 touch-manipulation"
+                className="w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-xl bg-gradient-to-br from-cyan-fill to-blue-fill text-ink shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 disabled:opacity-40 disabled:hover:translate-y-0 touch-manipulation"
                 aria-label="전송"
               >
                 {isLoading ? (
@@ -566,10 +566,10 @@ export default function AIChatWidget() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="aichat-float fixed z-[1001] bottom-5 right-4 sm:right-6 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl shadow-cyan-900/40 transition-colors touch-manipulation bg-gradient-to-br from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500"
+          className="aichat-float fixed z-[1001] bottom-5 right-4 sm:right-6 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl shadow-shade transition-colors touch-manipulation bg-gradient-to-br from-cyan-fill to-blue-fill hover:from-cyan-soft hover:to-blue-fill"
           aria-label="AI 채팅 열기"
         >
-          <Bot className="w-7 h-7 text-white" />
+          <Bot className="w-7 h-7 text-ink" />
         </button>
       )}
     </>

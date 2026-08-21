@@ -136,7 +136,7 @@ const ResistorVisual = ({ bands, isFiveBand }) => {
     return (
         <div className="relative w-full h-24 sm:h-28 flex items-center justify-center">
             {/* 리드선 (왼쪽) */}
-            <div className="flex-1 h-1 bg-gradient-to-b from-slate-400 via-slate-300 to-slate-500 shadow-md" />
+            <div className="flex-1 h-1 bg-gradient-to-b from-elev2 via-elev to-elev2 shadow-md" />
 
             {/* 저항 몸통 */}
             <div
@@ -179,7 +179,7 @@ const ResistorVisual = ({ bands, isFiveBand }) => {
             </div>
 
             {/* 리드선 (오른쪽) */}
-            <div className="flex-1 h-1 bg-gradient-to-b from-slate-400 via-slate-300 to-slate-500 shadow-md" />
+            <div className="flex-1 h-1 bg-gradient-to-b from-elev2 via-elev to-elev2 shadow-md" />
         </div>
     );
 };
@@ -198,10 +198,10 @@ const ColorPalette = ({ bandType, bandIndex, selectedColor, onSelect, label }) =
     ) : '-';
 
     return (
-        <div className="bg-slate-900/60 rounded-xl p-2 border border-slate-800">
+        <div className="bg-panel/60 rounded-xl p-2 border border-line-soft">
             <div className="flex items-center justify-between mb-1.5 px-1">
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{label}</span>
-                <span className="text-xs font-mono font-bold text-yellow-400">{currentDisplay}</span>
+                <span className="text-[10px] text-ink3 font-bold uppercase tracking-wider">{label}</span>
+                <span className="text-xs font-mono font-bold text-yellow-ink">{currentDisplay}</span>
             </div>
             <div className="grid grid-cols-6 gap-1">
                 {COLORS.map(c => {
@@ -212,13 +212,13 @@ const ColorPalette = ({ bandType, bandIndex, selectedColor, onSelect, label }) =
                             key={c.name}
                             onClick={() => isAllowed && onSelect(c)}
                             disabled={!isAllowed}
-                            className={`aspect-square rounded-md transition-all touch-manipulation ${isSelected ? 'ring-2 ring-yellow-400 scale-105' : ''
-                                } ${!isAllowed ? 'opacity-20 cursor-not-allowed' : 'active:scale-95 hover:ring-1 hover:ring-slate-500'
+                            className={`aspect-square rounded-md transition-all touch-manipulation ${isSelected ? 'ring-2 ring-yellow-line scale-105' : ''
+                                } ${!isAllowed ? 'opacity-20 cursor-not-allowed' : 'active:scale-95 hover:ring-1 hover:ring-line'
                                 }`}
                             style={{
                                 backgroundColor: c.hex,
                                 backgroundImage: 'linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, transparent 50%, rgba(0,0,0,0.4) 100%)',
-                                border: c.name === 'White' ? '1px solid #64748b' : '1px solid rgba(0,0,0,0.3)',
+                                border: (c.name === 'White' || c.name === 'Silver') ? '1px solid #475569' : '1px solid rgba(0,0,0,0.38)',
                             }}
                             title={c.name}
                         />
@@ -310,12 +310,12 @@ export default function ResistorCalc() {
     return (
         <div className="flex flex-col gap-2 h-full">
             {/* Band count selector */}
-            <div className="grid grid-cols-2 bg-slate-900 rounded-2xl p-1 border border-slate-800">
+            <div className="grid grid-cols-2 bg-panel rounded-2xl p-1 border border-line-soft">
                 <button
                     onClick={() => handleBandModeChange('4')}
                     className={`py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] touch-manipulation ${bandMode === '4'
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
-                        : 'bg-transparent text-slate-400 hover:text-white'
+                        ? 'bg-blue-fill text-blue-on shadow-lg shadow-shade'
+                        : 'bg-transparent text-ink2 hover:text-ink'
                         }`}
                 >
                     4-Band (±5%)
@@ -323,8 +323,8 @@ export default function ResistorCalc() {
                 <button
                     onClick={() => handleBandModeChange('5')}
                     className={`py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] touch-manipulation ${bandMode === '5'
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
-                        : 'bg-transparent text-slate-400 hover:text-white'
+                        ? 'bg-blue-fill text-blue-on shadow-lg shadow-shade'
+                        : 'bg-transparent text-ink2 hover:text-ink'
                         }`}
                 >
                     5-Band (±1%)
@@ -332,12 +332,12 @@ export default function ResistorCalc() {
             </div>
 
             {/* Direction selector */}
-            <div className="grid grid-cols-2 bg-slate-900 rounded-2xl p-1 border border-slate-800">
+            <div className="grid grid-cols-2 bg-panel rounded-2xl p-1 border border-line-soft">
                 <button
                     onClick={() => setDirection('c2v')}
                     className={`py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] touch-manipulation ${direction === 'c2v'
-                        ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/50'
-                        : 'bg-transparent text-slate-400 hover:text-white'
+                        ? 'bg-orange-fill text-orange-on shadow-lg shadow-shade'
+                        : 'bg-transparent text-ink2 hover:text-ink'
                         }`}
                 >
                     색 → Ω
@@ -345,8 +345,8 @@ export default function ResistorCalc() {
                 <button
                     onClick={() => setDirection('v2c')}
                     className={`py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98] touch-manipulation ${direction === 'v2c'
-                        ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/50'
-                        : 'bg-transparent text-slate-400 hover:text-white'
+                        ? 'bg-orange-fill text-orange-on shadow-lg shadow-shade'
+                        : 'bg-transparent text-ink2 hover:text-ink'
                         }`}
                 >
                     Ω → 색
@@ -354,16 +354,16 @@ export default function ResistorCalc() {
             </div>
 
             {/* 저항 실물 시각화 */}
-            <div className="bg-card rounded-2xl border border-slate-800 p-3 shadow-2xl">
+            <div className="bg-card rounded-2xl border border-line-soft p-3 shadow-2xl">
                 <ResistorVisual bands={displayBands} isFiveBand={isFiveBand} />
             </div>
 
             {/* 결과 디스플레이 */}
             <div
-                className="bg-black/80 rounded-2xl border border-slate-700 p-3 flex flex-col items-center justify-center cursor-pointer hover:border-yellow-600/50 transition-all min-h-[90px] shadow-lg"
+                className="bg-well rounded-2xl border border-line p-3 flex flex-col items-center justify-center cursor-pointer hover:border-yellow-line transition-all min-h-[90px] shadow-lg"
                 onClick={copyResult}
             >
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">
+                <span className="text-[10px] text-ink3 font-bold uppercase tracking-wider mb-1">
                     {direction === 'c2v' ? '저항값' : `표준값 (${isFiveBand ? 'E96' : 'E24'})`}
                 </span>
 
@@ -371,47 +371,47 @@ export default function ResistorCalc() {
                     colorResult ? (
                         <>
                             <div className="flex items-baseline gap-2">
-                                <span className="font-mono text-4xl font-black text-yellow-400 drop-shadow-[0_0_20px_rgba(250,204,21,0.4)]">
+                                <span className="font-mono text-4xl font-black text-yellow-ink value-glow">
                                     {formatOhm(colorResult.value).split(' ')[0]}
                                 </span>
-                                <span className="text-slate-400 text-xl font-thin">
+                                <span className="text-ink2 text-xl font-thin">
                                     {formatOhm(colorResult.value).split(' ')[1]}
                                 </span>
-                                <span className="text-slate-500 text-base font-mono ml-2">
+                                <span className="text-ink3 text-base font-mono ml-2">
                                     ±{colorResult.tolerance}%
                                 </span>
                             </div>
-                            <div className="flex items-center gap-1 mt-1 text-slate-600 text-xs">
+                            <div className="flex items-center gap-1 mt-1 text-ink4 text-xs">
                                 <Copy className="w-3 h-3" />
                                 <span>탭하여 복사</span>
                             </div>
                         </>
                     ) : (
-                        <span className="text-slate-600 font-mono">색띠 오류</span>
+                        <span className="text-ink4 font-mono">색띠 오류</span>
                     )
                 ) : (
                     valueResult ? (
                         <>
                             <div className="flex items-baseline gap-2">
-                                <span className="font-mono text-4xl font-black text-yellow-400 drop-shadow-[0_0_20px_rgba(250,204,21,0.4)]">
+                                <span className="font-mono text-4xl font-black text-yellow-ink value-glow">
                                     {formatOhm(valueResult.actualValue).split(' ')[0]}
                                 </span>
-                                <span className="text-slate-400 text-xl font-thin">
+                                <span className="text-ink2 text-xl font-thin">
                                     {formatOhm(valueResult.actualValue).split(' ')[1]}
                                 </span>
                             </div>
                             {valueResult.diffPercent > 0.1 && (
-                                <span className="text-[10px] text-slate-500 mt-1">
+                                <span className="text-[10px] text-ink3 mt-1">
                                     입력값 대비 {valueResult.diffPercent.toFixed(2)}% 차이
                                 </span>
                             )}
-                            <div className="flex items-center gap-1 mt-1 text-slate-600 text-xs">
+                            <div className="flex items-center gap-1 mt-1 text-ink4 text-xs">
                                 <Copy className="w-3 h-3" />
                                 <span>탭하여 복사</span>
                             </div>
                         </>
                     ) : (
-                        <span className="text-slate-600 font-mono">값 입력 필요</span>
+                        <span className="text-ink4 font-mono">값 입력 필요</span>
                     )
                 )}
             </div>
@@ -419,14 +419,14 @@ export default function ResistorCalc() {
             {/* 입력 영역 (방향에 따라 다름) */}
             {direction === 'c2v' ? (
                 /* 색 선택 팔레트들 */
-                <div className="bg-card rounded-2xl border border-slate-800 p-2 sm:p-3 shadow-2xl flex-1 flex flex-col gap-2 overflow-y-auto">
+                <div className="bg-card rounded-2xl border border-line-soft p-2 sm:p-3 shadow-2xl flex-1 flex flex-col gap-2 overflow-y-auto">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-400 font-black uppercase tracking-widest">
+                        <span className="text-xs text-ink2 font-black uppercase tracking-widest">
                             색띠 선택
                         </span>
                         <button
                             onClick={resetBands}
-                            className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-300 px-2 py-1 rounded-md border border-slate-700 transition-colors"
+                            className="flex items-center gap-1 text-[11px] text-ink3 hover:text-ink2 px-2 py-1 rounded-md border border-line transition-colors"
                         >
                             <RotateCcw className="w-3 h-3" /> 초기화
                         </button>
@@ -468,10 +468,10 @@ export default function ResistorCalc() {
                 </div>
             ) : (
                 /* 값 입력 */
-                <div className="bg-card rounded-2xl border border-slate-800 p-3 shadow-2xl flex-1 flex flex-col gap-3">
+                <div className="bg-card rounded-2xl border border-line-soft p-3 shadow-2xl flex-1 flex flex-col gap-3">
                     <div className="flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-yellow-400" />
-                        <span className="text-sm text-slate-300 font-bold">목표 저항값 (Ω)</span>
+                        <Zap className="w-4 h-4 text-yellow-ink" />
+                        <span className="text-sm text-ink2 font-bold">목표 저항값 (Ω)</span>
                     </div>
                     <div className="relative">
                         <input
@@ -480,10 +480,10 @@ export default function ResistorCalc() {
                             value={ohmInput}
                             onChange={e => setOhmInput(e.target.value)}
                             onFocus={e => e.target.select()}
-                            className="w-full h-14 bg-black rounded-xl px-4 pr-14 font-mono text-2xl font-bold text-center text-white border border-slate-700 focus:border-2 focus:border-yellow-500 outline-none transition-all"
+                            className="w-full h-14 bg-field rounded-xl px-4 pr-14 font-mono text-2xl font-bold text-center text-ink border border-line focus:border-2 focus:border-yellow-line outline-none transition-all"
                             placeholder="1000"
                         />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">Ω</span>
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-ink2 font-bold text-lg">Ω</span>
                     </div>
 
                     {/* 빠른 입력 단위 */}
@@ -500,7 +500,7 @@ export default function ResistorCalc() {
                                     const cur = parseFloat(ohmInput) || 0;
                                     setOhmInput((cur * q.mult).toString());
                                 }}
-                                className="py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm hover:bg-slate-700 active:scale-95 transition-all"
+                                className="py-2 rounded-lg bg-elev border border-line text-ink2 font-bold text-sm hover:bg-elev2 active:scale-95 transition-all"
                             >
                                 {q.label}
                             </button>
@@ -509,21 +509,21 @@ export default function ResistorCalc() {
 
                     {/* 색띠 순서 가이드 */}
                     {valueResult && (
-                        <div className="bg-slate-900/60 rounded-xl p-3 border border-slate-800 mt-1">
-                            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-2">
+                        <div className="bg-panel/60 rounded-xl p-3 border border-line-soft mt-1">
+                            <div className="text-[10px] text-ink3 font-bold uppercase tracking-wider mb-2">
                                 색띠 순서 (좌 → 우)
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {valueResult.bands.map((c, idx) => (
-                                    <div key={idx} className="flex items-center gap-1.5 bg-black/40 rounded-md px-2 py-1 border border-slate-800">
+                                    <div key={idx} className="flex items-center gap-1.5 bg-well rounded-md px-2 py-1 border border-line-soft">
                                         <div
                                             className="w-4 h-4 rounded"
                                             style={{
                                                 backgroundColor: c.hex,
-                                                border: c.name === 'White' ? '1px solid #64748b' : '1px solid rgba(0,0,0,0.3)',
+                                                border: (c.name === 'White' || c.name === 'Silver') ? '1px solid #475569' : '1px solid rgba(0,0,0,0.38)',
                                             }}
                                         />
-                                        <span className="text-xs font-mono text-slate-300">{c.name}</span>
+                                        <span className="text-xs font-mono text-ink2">{c.name}</span>
                                     </div>
                                 ))}
                             </div>

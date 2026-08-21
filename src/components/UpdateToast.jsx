@@ -69,22 +69,22 @@ export default function UpdateToast() {
 
     return (
         <div className="fixed bottom-20 left-4 right-4 z-[998] flex justify-center animate-in slide-in-from-bottom-4 fade-in duration-300">
-            <div className="w-full max-w-md bg-slate-800/95 backdrop-blur-xl border border-slate-600 rounded-2xl shadow-2xl shadow-black/40 p-4 flex items-center gap-3">
+            <div className="w-full max-w-md bg-elev/95 backdrop-blur-xl border border-line rounded-2xl shadow-2xl shadow-shade p-4 flex items-center gap-3">
                 {/* 아이콘 */}
-                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-lime-500/15 flex items-center justify-center">
-                    <RefreshCw className="w-5 h-5 text-lime-400" />
+                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-lime-soft flex items-center justify-center">
+                    <RefreshCw className="w-5 h-5 text-lime-ink" />
                 </div>
 
                 {/* 메시지 */}
                 <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-white">새로운 업데이트가 있습니다.</p>
-                    <p className="text-xs text-slate-400 mt-0.5">지금 적용하시겠습니까?</p>
+                    <p className="text-sm font-bold text-ink">새로운 업데이트가 있습니다.</p>
+                    <p className="text-xs text-ink2 mt-0.5">지금 적용하시겠습니까?</p>
                 </div>
 
                 {/* 업데이트 버튼 */}
                 <button
                     onClick={handleUpdate}
-                    className="flex-shrink-0 h-10 px-4 bg-lime-500 text-slate-950 font-bold text-sm rounded-xl shadow-lg shadow-lime-500/30 transition-all duration-200 hover:bg-lime-400 hover:shadow-xl hover:shadow-lime-400/40 active:scale-95 touch-manipulation"
+                    className="flex-shrink-0 h-10 px-4 bg-lime-fill text-lime-on font-bold text-sm rounded-xl shadow-lg shadow-shade transition-all duration-200 hover:bg-lime-fill hover:shadow-xl hover:shadow-shade active:scale-95 touch-manipulation"
                 >
                     적용하기
                 </button>
@@ -92,7 +92,7 @@ export default function UpdateToast() {
                 {/* 닫기 */}
                 <button
                     onClick={handleDismiss}
-                    className="flex-shrink-0 p-2 text-slate-500 hover:text-white transition-colors touch-manipulation"
+                    className="flex-shrink-0 p-2 text-ink3 hover:text-ink transition-colors touch-manipulation"
                     aria-label="닫기"
                 >
                     <X className="w-4 h-4" />
