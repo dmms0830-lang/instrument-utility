@@ -1,0 +1,46 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.pdadiag.tester'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.pdadiag.tester"
+        minSdk 16          // Android 4.1+ — 구형 PDA(4.x)까지 설치 가능
+        targetSdk 28       // PM85 (Android 8.1/9) 최적화
+        versionCode 2
+        versionName "1.1"
+    }
+
+    signingConfigs {
+        release {
+            // 진단용 공개 키 — 비밀 아님. 일관된 서명으로 업데이트 설치를 가능하게 하기 위한 용도.
+            storeFile file('pda-diag.keystore')
+            storePassword 'pdadiag123'
+            keyAlias 'pdadiag'
+            keyPassword 'pdadiag123'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+        debug {
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
